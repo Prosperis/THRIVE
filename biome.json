@@ -16,7 +16,8 @@
       "!**/coverage",
       "!**/storybook-static",
       "!**/*.min.js",
-      "!**/*.css"
+      "!**/*.css",
+      "!**/routeTree.gen.ts"
     ]
   },
   "formatter": {

@@ -1,4 +1,5 @@
 import { Menu } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from './ThemeToggle';
 
@@ -11,40 +12,60 @@ export default function Header() {
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </Button>
-          <a href="/" className="mr-6 flex items-center space-x-2">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
             <span className="text-xl font-bold">THRIVE</span>
-          </a>
+          </Link>
           <nav className="hidden md:flex md:gap-6">
-            <a
-              href="/dashboard"
+            <Link
+              to="/dashboard"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
             >
               Dashboard
-            </a>
-            <a
-              href="/applications"
+            </Link>
+            <Link
+              to="/applications"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
             >
               Applications
-            </a>
-            <a
-              href="/interviews"
+            </Link>
+            <Link
+              to="/interviews"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
             >
               Interviews
-            </a>
-            <a
-              href="/documents"
+            </Link>
+            <Link
+              to="/documents"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
             >
               Documents
-            </a>
-            <a
-              href="/analytics"
+            </Link>
+            <Link
+              to="/analytics"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
             >
               Analytics
-            </a>
+            </Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
