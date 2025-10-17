@@ -15,7 +15,8 @@
       "!**/.next",
       "!**/coverage",
       "!**/storybook-static",
-      "!**/*.min.js"
+      "!**/*.min.js",
+      "!**/*.css"
     ]
   },
   "formatter": {
