@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import PageHeader from '@/components/layout/PageHeader';
 import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
+import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { useApplicationsStore } from '@/stores';
 import { Button } from '@/components/ui/button';
 import { Plus, Table as TableIcon, LayoutGrid } from 'lucide-react';
@@ -62,9 +63,7 @@ function ApplicationsPage() {
         ) : activeView === 'table' ? (
           <ApplicationsTable />
         ) : (
-          <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground">Kanban view coming soon...</p>
-          </div>
+          <KanbanBoard />
         )}
       </div>
     </>
