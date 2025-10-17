@@ -17,7 +17,8 @@ import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 
 export function KanbanBoard() {
-  const { applications, updateApplication } = useApplicationsStore();
+  const { getFilteredApplications, updateApplication } = useApplicationsStore();
+  const applications = getFilteredApplications();
   const [activeCard, setActiveCard] = useState<Application | null>(null);
 
   const sensors = useSensors(

@@ -34,7 +34,8 @@ const priorityColors: Record<NonNullable<Application['priority']>, string> = {
 };
 
 export function ApplicationsTable() {
-  const { applications, deleteApplication } = useApplicationsStore();
+  const { getFilteredApplications, deleteApplication } = useApplicationsStore();
+  const applications = getFilteredApplications();
 
   const columns = useMemo<ColumnDef<Application>[]>(
     () => [

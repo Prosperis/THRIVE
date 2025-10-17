@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import PageHeader from '@/components/layout/PageHeader';
 import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
+import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
 import { useApplicationsStore } from '@/stores';
 import { Button } from '@/components/ui/button';
 import { Plus, Table as TableIcon, LayoutGrid } from 'lucide-react';
@@ -60,10 +61,18 @@ function ApplicationsPage() {
           <div className="flex items-center justify-center h-64">
             <p className="text-muted-foreground">Loading applications...</p>
           </div>
-        ) : activeView === 'table' ? (
-          <ApplicationsTable />
         ) : (
-          <KanbanBoard />
+          <div className="space-y-6">
+            {/* Filters */}
+            <ApplicationFilters />
+
+            {/* View Content */}
+            {activeView === 'table' ? (
+              <ApplicationsTable />
+            ) : (
+              <KanbanBoard />
+            )}
+          </div>
         )}
       </div>
     </>

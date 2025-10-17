@@ -11,6 +11,9 @@ interface ApplicationsState {
   isLoading: boolean;
   error: string | null;
 
+  // Getters
+  getFilteredApplications: () => Application[];
+
   // Actions
   fetchApplications: () => Promise<void>;
   addApplication: (application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
@@ -24,12 +27,60 @@ interface ApplicationsState {
 export const useApplicationsStore = create<ApplicationsState>()(
   devtools(
     persist(
-      (set, _get) => ({
+      (set, get) => ({
         applications: [],
         filters: {},
         selectedApplicationId: null,
         isLoading: false,
         error: null,
+
+        getFilteredApplications: () => {
+          const { applications, filters } = get();
+          
+          return applications.filter((app) => {
+            // Filter by status
+            if (filters.status && filters.status.length > 0) {
+              if (!filters.status.includes(app.status)) {
+                return false;
+              }
+            }
+
+            // Filter by priority
+            if (filters.priority && filters.priority.length > 0) {
+              if (!app.priority || !filters.priority.includes(app.priority)) {
+                return false;
+              }
+            }
+
+            // Filter by work type
+            if (filters.workType && filters.workType.length > 0) {
+              if (!app.workType || !filters.workType.includes(app.workType)) {
+                return false;
+              }
+            }
+
+            // Filter by date range
+            if (filters.dateRange?.start && app.appliedDate) {
+              const appliedDate = new Date(app.appliedDate);
+              const fromDate = new Date(filters.dateRange.start);
+              if (appliedDate < fromDate) {
+                return false;
+              }
+            }
+
+            if (filters.dateRange?.end && app.appliedDate) {
+              const appliedDate = new Date(app.appliedDate);
+              const toDate = new Date(filters.dateRange.end);
+              // Set to end of day
+              toDate.setHours(23, 59, 59, 999);
+              if (appliedDate > toDate) {
+                return false;
+              }
+            }
+
+            return true;
+          });
+        },
 
         fetchApplications: async () => {
           set({ isLoading: true, error: null });
