@@ -1,60 +1,71 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageHeader } from '@/components/layout';
+import { useEffect } from 'react';
+import PageHeader from '@/components/layout/PageHeader';
+import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
+import { useApplicationsStore } from '@/stores';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Table as TableIcon, LayoutGrid } from 'lucide-react';
+import { useUIStore } from '@/stores';
+import { seedDatabase } from '@/lib/seed';
 
 export const Route = createFileRoute('/applications')({
   component: ApplicationsPage,
 });
 
 function ApplicationsPage() {
+  const { fetchApplications, isLoading } = useApplicationsStore();
+  const { activeView, setActiveView } = useUIStore();
+
+  useEffect(() => {
+    // Seed database with sample data on first load
+    seedDatabase().then(() => {
+      fetchApplications();
+    });
+  }, [fetchApplications]);
+
   return (
     <>
       <PageHeader
         title="Applications"
         description="Track and manage your job applications"
-      />
-
-      <div className="space-y-6">
-        {/* Actions Bar */}
-        <div className="flex items-center justify-between">
+        action={
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-            <Button size="sm" variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-          </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Application
-          </Button>
-        </div>
-
-        {/* Applications Table Placeholder */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Applications</CardTitle>
-            <CardDescription>
-              All your job applications in one place
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12">
-              <p className="text-sm text-muted-foreground mb-4">
-                No applications yet. Start tracking your job search!
-              </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Application
+            <div className="flex items-center rounded-lg border">
+              <Button
+                variant={activeView === 'table' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('table')}
+              >
+                <TableIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={activeView === 'kanban' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('kanban')}
+              >
+                <LayoutGrid className="h-4 w-4" />
               </Button>
             </div>
-          </CardContent>
-        </Card>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Application
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="p-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">Loading applications...</p>
+          </div>
+        ) : activeView === 'table' ? (
+          <ApplicationsTable />
+        ) : (
+          <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
+            <p className="text-muted-foreground">Kanban view coming soon...</p>
+          </div>
+        )}
       </div>
     </>
   );
