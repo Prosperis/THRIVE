@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import './index.css';
 import { ThemeProvider } from '@/components/layout';
+import { QueryProvider } from '@/lib/queryClient';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -22,8 +23,10 @@ if (!rootElement) throw new Error('Root element not found');
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="light">
-      <RouterProvider router={router} />
-    </ThemeProvider>
+    <QueryProvider>
+      <ThemeProvider defaultTheme="light">
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </QueryProvider>
   </StrictMode>
 );

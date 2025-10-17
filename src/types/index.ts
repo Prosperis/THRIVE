@@ -68,11 +68,13 @@ export interface Interview {
   id: string;
   applicationId: string;
   round: number; // 1st interview, 2nd interview, etc.
-  type: 'phone-screen' | 'video' | 'onsite' | 'technical' | 'behavioral' | 'panel' | 'other';
+  type: 'phone-screen' | 'video' | 'on-site' | 'technical' | 'behavioral' | 'panel' | 'final' | 'other';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show';
 
-  scheduledDate?: Date;
+  scheduledAt?: Date; // Renamed from scheduledDate
   duration?: number; // minutes
   location?: string;
+  meetingUrl?: string; // For virtual interviews
 
   interviewers?: Interviewer[];
 
@@ -126,17 +128,20 @@ export interface Document {
   type: 'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other';
 
   // File info
-  fileName: string;
+  fileName?: string;
   fileUrl?: string; // Local path or URL
+  url?: string; // Alternative field name
   fileSize?: number; // bytes
   mimeType?: string;
+  content?: string; // For text-based documents
 
   // Versioning
   version: number;
   baseDocumentId?: string; // If this is a version of another doc
 
   // Tracking
-  usedInApplicationIds: string[]; // Applications where this was used
+  applicationId?: string; // Primary application this document is for
+  usedInApplicationIds?: string[]; // All applications where this was used
   lastUsedDate?: Date;
 
   // Metadata

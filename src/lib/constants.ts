@@ -108,14 +108,30 @@ export const DOCUMENT_TYPES = [
  * Interview types
  */
 export const INTERVIEW_TYPES = [
-  { value: 'phone-screen', label: 'Phone Screen' },
-  { value: 'video', label: 'Video Interview' },
-  { value: 'onsite', label: 'On-site' },
-  { value: 'technical', label: 'Technical Interview' },
-  { value: 'behavioral', label: 'Behavioral Interview' },
-  { value: 'panel', label: 'Panel Interview' },
-  { value: 'other', label: 'Other' },
+  'phone-screen',
+  'video',
+  'on-site',
+  'technical',
+  'behavioral',
+  'panel',
+  'final',
+  'other',
 ] as const;
+
+/**
+ * Interview statuses
+ */
+export const INTERVIEW_STATUSES = [
+  'scheduled',
+  'completed',
+  'cancelled',
+  'rescheduled',
+  'no-show',
+] as const;
+
+/**
+ * Currency options
+ */
 
 /**
  * Contact relationship types
