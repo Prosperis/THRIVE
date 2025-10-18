@@ -18,6 +18,7 @@ import { BulkActions } from './BulkActions';
 import { ApplicationDialog } from './ApplicationDialog';
 import { CSVImportDialog } from './CSVImportDialog';
 import { JSONImportDialog } from './JSONImportDialog';
+import { BackupManagementDialog } from './BackupManagementDialog';
 import { useApplicationsStore } from '@/stores';
 import type { Application } from '@/types';
 import { formatDate } from '@/lib/utils';
@@ -26,7 +27,7 @@ import {
   exportAndDownloadApplicationsJSON,
 } from '@/lib/export';
 import { toast } from 'sonner';
-import { MoreHorizontal, Eye, Pencil, Trash2, Download, FileDown, Upload } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Trash2, Download, FileDown, Upload, Settings } from 'lucide-react';
 
 const statusColors: Record<Application['status'], string> = {
   target: 'bg-gray-500',
@@ -52,6 +53,7 @@ export function ApplicationsTable() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCSVImportDialogOpen, setIsCSVImportDialogOpen] = useState(false);
   const [isJSONImportDialogOpen, setIsJSONImportDialogOpen] = useState(false);
+  const [isBackupDialogOpen, setIsBackupDialogOpen] = useState(false);
 
   const handleEdit = useCallback((application: Application) => {
     setEditingApplication(application);
@@ -337,6 +339,11 @@ export function ApplicationsTable() {
                   <FileDown className="mr-2 h-4 w-4" />
                   Export as JSON
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsBackupDialogOpen(true)}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Backup Settings
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </>
@@ -357,6 +364,11 @@ export function ApplicationsTable() {
       <JSONImportDialog
         open={isJSONImportDialogOpen}
         onOpenChange={setIsJSONImportDialogOpen}
+      />
+      
+      <BackupManagementDialog
+        open={isBackupDialogOpen}
+        onOpenChange={setIsBackupDialogOpen}
       />
     </>
   );
