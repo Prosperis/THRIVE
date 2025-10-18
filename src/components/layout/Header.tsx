@@ -87,6 +87,16 @@ export default function Header() {
               Prep
             </Link>
             <Link
+              to="/export"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
+            >
+              Export
+            </Link>
+            <Link
               to="/settings"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               activeProps={{

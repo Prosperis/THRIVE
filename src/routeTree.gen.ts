@@ -9,17 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as InterviewsRouteImport } from './routes/interviews'
+import { Route as InterviewprepRouteImport } from './routes/interviewprep'
+import { Route as ExportRouteImport } from './routes/export'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CompaniesRouteImport } from './routes/companies'
 import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InterviewsRoute = InterviewsRouteImport.update({
   id: '/interviews',
   path: '/interviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InterviewprepRoute = InterviewprepRouteImport.update({
+  id: '/interviewprep',
+  path: '/interviewprep',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExportRoute = ExportRouteImport.update({
+  id: '/export',
+  path: '/export',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsRoute = DocumentsRouteImport.update({
@@ -30,6 +49,11 @@ const DocumentsRoute = DocumentsRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompaniesRoute = CompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApplicationsRoute = ApplicationsRouteImport.update({
@@ -58,18 +82,26 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/analytics': typeof AnalyticsRoute
   '/applications': typeof ApplicationsRoute
+  '/companies': typeof CompaniesRoute
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
+  '/export': typeof ExportRoute
+  '/interviewprep': typeof InterviewprepRoute
   '/interviews': typeof InterviewsRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/analytics': typeof AnalyticsRoute
   '/applications': typeof ApplicationsRoute
+  '/companies': typeof CompaniesRoute
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
+  '/export': typeof ExportRoute
+  '/interviewprep': typeof InterviewprepRoute
   '/interviews': typeof InterviewsRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +109,13 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/analytics': typeof AnalyticsRoute
   '/applications': typeof ApplicationsRoute
+  '/companies': typeof CompaniesRoute
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
+  '/export': typeof ExportRoute
+  '/interviewprep': typeof InterviewprepRoute
   '/interviews': typeof InterviewsRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +124,39 @@ export interface FileRouteTypes {
     | '/$'
     | '/analytics'
     | '/applications'
+    | '/companies'
     | '/dashboard'
     | '/documents'
+    | '/export'
+    | '/interviewprep'
     | '/interviews'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/$'
     | '/analytics'
     | '/applications'
+    | '/companies'
     | '/dashboard'
     | '/documents'
+    | '/export'
+    | '/interviewprep'
     | '/interviews'
+    | '/settings'
   id:
     | '__root__'
     | '/'
     | '/$'
     | '/analytics'
     | '/applications'
+    | '/companies'
     | '/dashboard'
     | '/documents'
+    | '/export'
+    | '/interviewprep'
     | '/interviews'
+    | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,18 +164,43 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   AnalyticsRoute: typeof AnalyticsRoute
   ApplicationsRoute: typeof ApplicationsRoute
+  CompaniesRoute: typeof CompaniesRoute
   DashboardRoute: typeof DashboardRoute
   DocumentsRoute: typeof DocumentsRoute
+  ExportRoute: typeof ExportRoute
+  InterviewprepRoute: typeof InterviewprepRoute
   InterviewsRoute: typeof InterviewsRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/interviews': {
       id: '/interviews'
       path: '/interviews'
       fullPath: '/interviews'
       preLoaderRoute: typeof InterviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/interviewprep': {
+      id: '/interviewprep'
+      path: '/interviewprep'
+      fullPath: '/interviewprep'
+      preLoaderRoute: typeof InterviewprepRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/export': {
+      id: '/export'
+      path: '/export'
+      fullPath: '/export'
+      preLoaderRoute: typeof ExportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documents': {
@@ -142,6 +215,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies': {
+      id: '/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof CompaniesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/applications': {
@@ -180,9 +260,13 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   AnalyticsRoute: AnalyticsRoute,
   ApplicationsRoute: ApplicationsRoute,
+  CompaniesRoute: CompaniesRoute,
   DashboardRoute: DashboardRoute,
   DocumentsRoute: DocumentsRoute,
+  ExportRoute: ExportRoute,
+  InterviewprepRoute: InterviewprepRoute,
   InterviewsRoute: InterviewsRoute,
+  SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
