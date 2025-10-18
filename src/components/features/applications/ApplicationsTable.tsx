@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
+import { AnimatedStatusBadge } from '@/components/ui/animated-status-badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -109,9 +110,12 @@ export function ApplicationsTable() {
         cell: ({ row }) => {
           const status = row.getValue('status') as Application['status'];
           return (
-            <Badge className={statusColors[status]}>
+            <AnimatedStatusBadge 
+              status={status}
+              className={statusColors[status]}
+            >
               {status.replace('-', ' ')}
-            </Badge>
+            </AnimatedStatusBadge>
           );
         },
         filterFn: (row, id, value) => {

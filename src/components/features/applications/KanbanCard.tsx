@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import type { Application } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { AnimatedBadge } from '@/components/ui/animated-badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -92,9 +93,13 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
           
           <div className="flex items-center gap-1">
             {application.priority && (
-              <Badge className={cn('text-xs h-5', priorityColors[application.priority])} variant="outline">
+              <AnimatedBadge 
+                className={cn('text-xs h-5', priorityColors[application.priority])} 
+                variant="outline"
+                animateOnMount={false}
+              >
                 {application.priority}
-              </Badge>
+              </AnimatedBadge>
             )}
             
             {!isOverlay && (
