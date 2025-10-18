@@ -8,9 +8,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  closestCenter,
 } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { useApplicationsStore } from '@/stores';
 import type { Application, ApplicationStatus } from '@/types';
 import { APPLICATION_STATUSES } from '@/lib/constants';
@@ -30,7 +30,7 @@ export function KanbanBoard() {
     })
   );
 
-  // Group applications by status
+  // Group applications by status and sort by sortOrder
   const applicationsByStatus = useMemo(() => {
     const grouped = new Map<ApplicationStatus, Application[]>();
     
@@ -44,6 +44,21 @@ export function KanbanBoard() {
       const statusApps = grouped.get(app.status) || [];
       statusApps.push(app);
       grouped.set(app.status, statusApps);
+    }
+    
+    // Sort each group by sortOrder (if present), then by updatedAt
+    for (const apps of grouped.values()) {
+      apps.sort((a, b) => {
+        // If both have sortOrder, use that
+        if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+          return a.sortOrder - b.sortOrder;
+        }
+        // If only one has sortOrder, prioritize it
+        if (a.sortOrder !== undefined) return -1;
+        if (b.sortOrder !== undefined) return 1;
+        // Otherwise sort by updatedAt (newest first)
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      });
     }
     
     return grouped;
@@ -65,28 +80,59 @@ export function KanbanBoard() {
       return;
     }
 
-    const applicationId = active.id as string;
-    const newStatus = over.id as ApplicationStatus;
+    const draggedId = active.id as string;
+    const overId = over.id as string;
 
-    // Check if the status is valid
-    const isValidStatus = APPLICATION_STATUSES.some((s) => s.value === newStatus);
-    if (!isValidStatus) {
+    // Find the dragged application
+    const draggedApp = applications.find((app) => app.id === draggedId);
+    if (!draggedApp) {
       setActiveCard(null);
       return;
     }
 
-    // Update application status
-    const application = applications.find((app) => app.id === applicationId);
-    if (application && application.status !== newStatus) {
-      updateApplication(applicationId, { status: newStatus });
+    // Check if we're dropping on a column (status change)
+    const isDropOnColumn = APPLICATION_STATUSES.some((s) => s.value === overId);
+    
+    if (isDropOnColumn) {
+      // Status change - dropping on column
+      const newStatus = overId as ApplicationStatus;
       
-      // Find the new status label for the toast
-      const statusLabel = APPLICATION_STATUSES.find((s) => s.value === newStatus)?.label || newStatus;
+      if (draggedApp.status !== newStatus) {
+        updateApplication(draggedId, { status: newStatus });
+        
+        // Find the new status label for the toast
+        const statusLabel = APPLICATION_STATUSES.find((s) => s.value === newStatus)?.label || newStatus;
+        
+        // Show success toast with application details
+        toast.success('Status Updated', {
+          description: `${draggedApp.position} moved to ${statusLabel}`,
+        });
+      }
+    } else {
+      // Reordering within column - dropping on another card
+      const overApp = applications.find((app) => app.id === overId);
       
-      // Show success toast with application details
-      toast.success('Status Updated', {
-        description: `${application.position} moved to ${statusLabel}`,
-      });
+      if (overApp && draggedApp.status === overApp.status && draggedId !== overId) {
+        // Both apps are in the same column, reorder them
+        const statusApps = applicationsByStatus.get(draggedApp.status) || [];
+        const oldIndex = statusApps.findIndex((app) => app.id === draggedId);
+        const newIndex = statusApps.findIndex((app) => app.id === overId);
+        
+        if (oldIndex !== -1 && newIndex !== -1) {
+          // We'll use the array index as a simple sort order
+          // In a real app, you might want to store this in the database
+          const reorderedApps = arrayMove(statusApps, oldIndex, newIndex);
+          
+          // Update the sortOrder for all affected applications
+          reorderedApps.forEach((app, index) => {
+            updateApplication(app.id, { sortOrder: index });
+          });
+          
+          toast.success('Reordered', {
+            description: `${draggedApp.position} position updated`,
+          });
+        }
+      }
     }
 
     setActiveCard(null);
@@ -99,7 +145,7 @@ export function KanbanBoard() {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}

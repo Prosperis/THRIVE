@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core';
 import { motion, AnimatePresence } from 'framer-motion';
+import { GripVertical } from 'lucide-react';
 import type { Application, ApplicationStatus } from '@/types';
 import { KanbanCard } from './KanbanCard';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +48,14 @@ export function KanbanColumn({ status, applications, count }: KanbanColumnProps)
 
       {/* Column Description */}
       <p className="text-xs text-muted-foreground mb-3">{status.description}</p>
+
+      {/* Reorder Hint */}
+      {count > 1 && (
+        <p className="text-xs text-muted-foreground/70 mb-2 flex items-center gap-1">
+          <GripVertical className="w-3 h-3" />
+          Drag to reorder
+        </p>
+      )}
 
       {/* Droppable Area */}
       <div

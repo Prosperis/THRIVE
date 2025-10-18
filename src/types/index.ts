@@ -49,6 +49,7 @@ export interface Application {
   priority?: 'low' | 'medium' | 'high';
   source?: string; // Where you found the job (LinkedIn, referral, etc.)
   referralName?: string;
+  sortOrder?: number; // Custom sort order within status column
 }
 
 /**
