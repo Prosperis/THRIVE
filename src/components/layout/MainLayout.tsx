@@ -9,9 +9,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="relative flex min-h-screen flex-col">
       <Header />
-      <div className="flex-1">
+      <main id="main-content" className="flex-1" tabIndex={-1}>
         <div className="container py-6">{children}</div>
-      </div>
+      </main>
     </div>
   );
 }
