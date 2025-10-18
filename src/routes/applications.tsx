@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import PageHeader from '@/components/layout/PageHeader';
+import { PageTransition } from '@/components/layout';
 import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
@@ -30,7 +31,7 @@ function ApplicationsPage() {
   }, [fetchApplications]);
 
   return (
-    <>
+    <PageTransition>
       <PageHeader
         title="Applications"
         description="Track and manage your job applications"
@@ -98,6 +99,6 @@ function ApplicationsPage() {
           </div>
         )}
       </div>
-    </>
+    </PageTransition>
   );
 }

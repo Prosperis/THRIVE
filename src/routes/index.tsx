@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { PageHeader } from '@/components/layout';
+import { PageHeader, PageTransition } from '@/components/layout';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -14,7 +14,7 @@ function HomePage() {
   const [count, setCount] = useState(0);
 
   return (
-    <>
+    <PageTransition>
       <PageHeader
         title="Welcome to THRIVE! 🎯"
         description="Target, Hunt, Reach, Interview, Validate, Employ"
@@ -108,6 +108,6 @@ function HomePage() {
           </Card>
         </div>
       </div>
-    </>
+    </PageTransition>
   );
 }
