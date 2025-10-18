@@ -27,6 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { TableHelpDialog } from '@/components/ui/table-help-dialog';
 import { ChevronDown } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
@@ -106,6 +107,23 @@ export function DataTable<TData, TValue>({
         })
       )}
 
+      {/* Active Filters/Sort Summary */}
+      {(columnFilters.length > 0 || sorting.length > 0) && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
+          <span className="font-medium">Active:</span>
+          {columnFilters.length > 0 && (
+            <span>{columnFilters.length} filter{columnFilters.length > 1 ? 's' : ''}</span>
+          )}
+          {columnFilters.length > 0 && sorting.length > 0 && <span>•</span>}
+          {sorting.length > 0 && (
+            <span>{sorting.length} sort{sorting.length > 1 ? 's' : ''}</span>
+          )}
+          <span className="ml-auto">
+            {table.getFilteredRowModel().rows.length} of {data.length} rows shown
+          </span>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center space-x-2">
@@ -134,6 +152,7 @@ export function DataTable<TData, TValue>({
             </Button>
           )}
         </div>
+        <TableHelpDialog />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="ml-auto">
@@ -192,7 +211,12 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                    <p className="text-sm font-medium">No results found</p>
+                    {(columnFilters.length > 0 || sorting.length > 0) && (
+                      <p className="text-xs">Try adjusting your filters or clearing the sort</p>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -245,6 +269,13 @@ export function DataTable<TData, TValue>({
             </Button>
           </div>
         </div>
+
+        {/* Helpful Tips */}
+        {table.getRowModel().rows?.length > 0 && (
+          <div className="text-xs text-muted-foreground text-center mt-2">
+            💡 Tip: Hold <kbd className="px-1.5 py-0.5 text-xs border rounded bg-muted">Shift</kbd> while clicking column headers to sort by multiple columns
+          </div>
+        )}
       </div>
     </div>
   );
