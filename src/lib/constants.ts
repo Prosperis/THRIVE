@@ -92,6 +92,38 @@ export const EMPLOYMENT_TYPES = [
 ] as const;
 
 /**
+ * Company sizes
+ */
+export const COMPANY_SIZES = [
+  { value: '1-10', label: '1-10 employees' },
+  { value: '11-50', label: '11-50 employees' },
+  { value: '51-200', label: '51-200 employees' },
+  { value: '201-500', label: '201-500 employees' },
+  { value: '501-1000', label: '501-1000 employees' },
+  { value: '1001-5000', label: '1001-5000 employees' },
+  { value: '5001+', label: '5001+ employees' },
+] as const;
+
+/**
+ * Industries
+ */
+export const INDUSTRIES = [
+  { value: 'technology', label: 'Technology' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'healthcare', label: 'Healthcare' },
+  { value: 'education', label: 'Education' },
+  { value: 'retail', label: 'Retail' },
+  { value: 'manufacturing', label: 'Manufacturing' },
+  { value: 'consulting', label: 'Consulting' },
+  { value: 'media', label: 'Media & Entertainment' },
+  { value: 'real-estate', label: 'Real Estate' },
+  { value: 'energy', label: 'Energy' },
+  { value: 'government', label: 'Government' },
+  { value: 'nonprofit', label: 'Non-profit' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+/**
  * Document types
  */
 export const DOCUMENT_TYPES = [
