@@ -12,12 +12,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DataTable } from '@/components/ui/data-table';
+import { SortableHeader } from '@/components/ui/sortable-header';
 import { BulkActions } from './BulkActions';
 import { ApplicationDialog } from './ApplicationDialog';
 import { useApplicationsStore } from '@/stores';
 import type { Application } from '@/types';
 import { formatDate } from '@/lib/utils';
-import { ArrowUpDown, MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
 
 const statusColors: Record<Application['status'], string> = {
   target: 'bg-gray-500',
@@ -79,17 +80,9 @@ export function ApplicationsTable() {
       },
       {
         accessorKey: 'position',
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Position
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
+        header: ({ column }) => (
+          <SortableHeader column={column}>Position</SortableHeader>
+        ),
         cell: ({ row }) => {
           return (
             <div>
@@ -100,18 +93,19 @@ export function ApplicationsTable() {
         },
       },
       {
-        accessorKey: 'status',
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Status
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
+        accessorKey: 'companyName',
+        header: ({ column }) => (
+          <SortableHeader column={column}>Company</SortableHeader>
+        ),
+        cell: ({ row }) => {
+          return <div className="font-medium">{row.getValue('companyName')}</div>;
         },
+      },
+      {
+        accessorKey: 'status',
+        header: ({ column }) => (
+          <SortableHeader column={column}>Status</SortableHeader>
+        ),
         cell: ({ row }) => {
           const status = row.getValue('status') as Application['status'];
           return (
@@ -126,17 +120,9 @@ export function ApplicationsTable() {
       },
       {
         accessorKey: 'priority',
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Priority
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
+        header: ({ column }) => (
+          <SortableHeader column={column}>Priority</SortableHeader>
+        ),
         cell: ({ row }) => {
           const priority = row.getValue('priority') as Application['priority'];
           if (!priority) return <span className="text-muted-foreground">-</span>;
@@ -162,8 +148,11 @@ export function ApplicationsTable() {
         },
       },
       {
-        accessorKey: 'salary',
-        header: 'Salary',
+        accessorKey: 'salary.min',
+        id: 'salary',
+        header: ({ column }) => (
+          <SortableHeader column={column}>Salary</SortableHeader>
+        ),
         cell: ({ row }) => {
           const salary = row.original.salary;
           if (!salary?.min && !salary?.max) return <span className="text-muted-foreground">N/A</span>;
@@ -190,17 +179,9 @@ export function ApplicationsTable() {
       },
       {
         accessorKey: 'appliedDate',
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Applied
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
+        header: ({ column }) => (
+          <SortableHeader column={column}>Applied</SortableHeader>
+        ),
         cell: ({ row }) => {
           const date = row.getValue('appliedDate') as Date | undefined;
           return date ? formatDate(date) : <span className="text-muted-foreground">Not applied</span>;
@@ -208,17 +189,9 @@ export function ApplicationsTable() {
       },
       {
         accessorKey: 'updatedAt',
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Updated
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
+        header: ({ column }) => (
+          <SortableHeader column={column}>Updated</SortableHeader>
+        ),
         cell: ({ row }) => {
           return formatDate(row.getValue('updatedAt'));
         },
@@ -275,6 +248,7 @@ export function ApplicationsTable() {
         data={applications}
         searchKey="position"
         searchPlaceholder="Search positions..."
+        storageKey="thrive-applications-table"
         renderBulkActions={({ selectedRows, table }) => (
           <BulkActions
             selectedRows={selectedRows}

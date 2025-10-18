@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -34,6 +34,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchKey?: string;
   searchPlaceholder?: string;
+  storageKey?: string; // Key for localStorage persistence
   renderBulkActions?: (props: {
     selectedRows: TData[];
     table: ReturnType<typeof useReactTable<TData>>;
@@ -45,12 +46,32 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   searchPlaceholder = 'Search...',
+  storageKey,
   renderBulkActions,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  // Load initial sorting from localStorage if available
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    if (storageKey) {
+      try {
+        const stored = localStorage.getItem(`${storageKey}-sorting`);
+        return stored ? JSON.parse(stored) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+
+  // Persist sorting to localStorage whenever it changes
+  useEffect(() => {
+    if (storageKey && sorting.length > 0) {
+      localStorage.setItem(`${storageKey}-sorting`, JSON.stringify(sorting));
+    }
+  }, [sorting, storageKey]);
 
   const table = useReactTable({
     data,
@@ -63,6 +84,8 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableMultiSort: true, // Enable multi-column sorting
+    maxMultiSortColCount: 3, // Limit to 3 columns
     state: {
       sorting,
       columnFilters,
@@ -93,6 +116,22 @@ export function DataTable<TData, TValue>({
               onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
               className="h-8 w-[150px] lg:w-[250px]"
             />
+          )}
+          {/* Clear Sorting Button */}
+          {sorting.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSorting([]);
+                if (storageKey) {
+                  localStorage.removeItem(`${storageKey}-sorting`);
+                }
+              }}
+              className="h-8 px-2 lg:px-3"
+            >
+              Clear sorting ({sorting.length})
+            </Button>
           )}
         </div>
         <DropdownMenu>
