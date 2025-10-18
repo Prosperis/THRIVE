@@ -68,3 +68,14 @@ export function StatCard({
     </AnimatedCard>
   );
 }
+
+/**
+ * Grid layout for metric cards
+ */
+export function MetricGrid({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>
+      {children}
+    </div>
+  );
+}
