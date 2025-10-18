@@ -38,6 +38,18 @@ export const useApplicationsStore = create<ApplicationsState>()(
           const { applications, filters } = get();
           
           return applications.filter((app) => {
+            // Filter by search query
+            if (filters.searchQuery?.trim()) {
+              const query = filters.searchQuery.toLowerCase();
+              const matchesPosition = app.position.toLowerCase().includes(query);
+              const matchesCompany = app.companyName.toLowerCase().includes(query);
+              const matchesLocation = app.location?.toLowerCase().includes(query);
+              
+              if (!matchesPosition && !matchesCompany && !matchesLocation) {
+                return false;
+              }
+            }
+
             // Filter by status
             if (filters.status && filters.status.length > 0) {
               if (!filters.status.includes(app.status)) {

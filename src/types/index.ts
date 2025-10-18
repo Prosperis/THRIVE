@@ -225,6 +225,19 @@ export interface ApplicationFilters {
 }
 
 /**
+ * Interview filter and search criteria
+ */
+export interface InterviewFilters {
+  type?: ('phone-screen' | 'video' | 'on-site' | 'technical' | 'behavioral' | 'panel' | 'final' | 'other')[];
+  status?: ('scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show')[];
+  dateRange?: {
+    start?: Date;
+    end?: Date;
+  };
+  searchQuery?: string; // Search by application name
+}
+
+/**
  * Statistics and analytics
  */
 export interface ApplicationStats {

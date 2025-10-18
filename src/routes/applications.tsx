@@ -5,6 +5,7 @@ import { ApplicationsTable } from '@/components/features/applications/Applicatio
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
 import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
+import { SearchInput } from '@/components/ui/search-input';
 import { useApplicationsStore } from '@/stores';
 import { Button } from '@/components/ui/button';
 import { Plus, Table as TableIcon, LayoutGrid } from 'lucide-react';
@@ -16,7 +17,7 @@ export const Route = createFileRoute('/applications')({
 });
 
 function ApplicationsPage() {
-  const { fetchApplications, isLoading } = useApplicationsStore();
+  const { fetchApplications, isLoading, filters, setFilters } = useApplicationsStore();
   const { activeView, setActiveView } = useUIStore();
 
   useEffect(() => {
@@ -68,6 +69,14 @@ function ApplicationsPage() {
           </div>
         ) : (
           <div className="space-y-6">
+            {/* Search */}
+            <SearchInput
+              value={filters.searchQuery || ''}
+              onChange={(value) => setFilters({ searchQuery: value || undefined })}
+              placeholder="Search by position, company, or location..."
+              className="max-w-md"
+            />
+
             {/* Filters */}
             <ApplicationFilters />
 

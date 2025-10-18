@@ -1,14 +1,18 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Interview } from '@/types';
+import type { Interview, InterviewFilters } from '@/types';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
 
 interface InterviewsState {
   interviews: Interview[];
+  filters: InterviewFilters;
   selectedInterviewId: string | null;
   isLoading: boolean;
   error: string | null;
+
+  // Getters
+  getFilteredInterviews: () => Interview[];
 
   // Actions
   fetchInterviews: () => Promise<void>;
@@ -18,6 +22,7 @@ interface InterviewsState {
   getInterviewsByApplication: (applicationId: string) => Interview[];
   getUpcomingInterviews: () => Interview[];
   getPastInterviews: () => Interview[];
+  setFilters: (filters: Partial<InterviewFilters>) => void;
   setSelectedInterview: (id: string | null) => void;
   clearError: () => void;
 }
@@ -26,9 +31,50 @@ export const useInterviewsStore = create<InterviewsState>()(
   devtools(
     (set, get) => ({
       interviews: [],
+      filters: {},
       selectedInterviewId: null,
       isLoading: false,
       error: null,
+
+      getFilteredInterviews: () => {
+        const { interviews, filters } = get();
+        
+        return interviews.filter((interview) => {
+          // Filter by type
+          if (filters.type && filters.type.length > 0) {
+            if (!filters.type.includes(interview.type)) {
+              return false;
+            }
+          }
+
+          // Filter by status
+          if (filters.status && filters.status.length > 0) {
+            if (!filters.status.includes(interview.status)) {
+              return false;
+            }
+          }
+
+          // Filter by date range
+          if (filters.dateRange?.start && interview.scheduledAt) {
+            const scheduledDate = new Date(interview.scheduledAt);
+            const fromDate = new Date(filters.dateRange.start);
+            if (scheduledDate < fromDate) {
+              return false;
+            }
+          }
+
+          if (filters.dateRange?.end && interview.scheduledAt) {
+            const scheduledDate = new Date(interview.scheduledAt);
+            const toDate = new Date(filters.dateRange.end);
+            toDate.setHours(23, 59, 59, 999);
+            if (scheduledDate > toDate) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+      },
 
       fetchInterviews: async () => {
         set({ isLoading: true, error: null });
@@ -117,7 +163,8 @@ export const useInterviewsStore = create<InterviewsState>()(
       getUpcomingInterviews: () => {
         const now = new Date();
         return get()
-          .interviews.filter(
+          .getFilteredInterviews()
+          .filter(
             (interview) =>
               interview.scheduledAt &&
               interview.scheduledAt > now &&
@@ -129,7 +176,8 @@ export const useInterviewsStore = create<InterviewsState>()(
       getPastInterviews: () => {
         const now = new Date();
         return get()
-          .interviews.filter(
+          .getFilteredInterviews()
+          .filter(
             (interview) =>
               (interview.scheduledAt && interview.scheduledAt <= now) ||
               interview.status === 'completed'
@@ -139,6 +187,12 @@ export const useInterviewsStore = create<InterviewsState>()(
 
       setSelectedInterview: (id) => {
         set({ selectedInterviewId: id });
+      },
+
+      setFilters: (filters) => {
+        set((state) => ({
+          filters: { ...state.filters, ...filters },
+        }));
       },
 
       clearError: () => {

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Calendar as CalendarIcon, MapPin, Video, Phone } from 'lucide-react';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
+import { InterviewFilters } from '@/components/features/interviews/InterviewFilters';
+import { SearchInput } from '@/components/ui/search-input';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { INTERVIEW_TYPES, INTERVIEW_STATUSES } from '@/lib/constants';
@@ -16,7 +18,7 @@ export const Route = createFileRoute('/interviews')({
 });
 
 function InterviewsPage() {
-  const { fetchInterviews, getUpcomingInterviews, getPastInterviews } = useInterviewsStore();
+  const { fetchInterviews, getUpcomingInterviews, getPastInterviews, filters, setFilters } = useInterviewsStore();
   const { applications } = useApplicationsStore();
 
   useEffect(() => {
@@ -25,6 +27,24 @@ function InterviewsPage() {
 
   const upcomingInterviews = getUpcomingInterviews();
   const pastInterviews = getPastInterviews();
+
+  // Filter interviews by search query (application name)
+  const filterBySearchQuery = (interviews: typeof upcomingInterviews) => {
+    if (!filters.searchQuery?.trim()) return interviews;
+    
+    const query = filters.searchQuery.toLowerCase();
+    return interviews.filter((interview) => {
+      const app = applications.find(a => a.id === interview.applicationId);
+      if (!app) return false;
+      
+      const matchesPosition = app.position.toLowerCase().includes(query);
+      const matchesCompany = app.companyName.toLowerCase().includes(query);
+      return matchesPosition || matchesCompany;
+    });
+  };
+
+  const filteredUpcoming = filterBySearchQuery(upcomingInterviews);
+  const filteredPast = filterBySearchQuery(pastInterviews);
 
   const getApplicationName = (applicationId: string) => {
     const app = applications.find(a => a.id === applicationId);
@@ -54,6 +74,17 @@ function InterviewsPage() {
       />
 
       <div className="space-y-6">
+        {/* Search and Filters */}
+        <div className="space-y-4">
+          <SearchInput
+            value={filters.searchQuery || ''}
+            onChange={(value) => setFilters({ searchQuery: value || undefined })}
+            placeholder="Search by position or company..."
+            className="max-w-md"
+          />
+          <InterviewFilters />
+        </div>
+
         {/* Actions Bar */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -81,23 +112,27 @@ function InterviewsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {upcomingInterviews.length === 0 ? (
+            {filteredUpcoming.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-sm text-muted-foreground mb-4">
-                  No interviews scheduled yet.
+                  {upcomingInterviews.length === 0 
+                    ? 'No interviews scheduled yet.'
+                    : 'No interviews match your filters.'}
                 </p>
-                <InterviewDialog
-                  trigger={
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Schedule Your First Interview
-                    </Button>
-                  }
-                />
+                {upcomingInterviews.length === 0 && (
+                  <InterviewDialog
+                    trigger={
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Schedule Your First Interview
+                      </Button>
+                    }
+                  />
+                )}
               </div>
             ) : (
               <div className="space-y-4">
-                {upcomingInterviews.map((interview) => (
+                {filteredUpcoming.map((interview) => (
                   <div
                     key={interview.id}
                     className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -160,13 +195,15 @@ function InterviewsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {pastInterviews.length === 0 ? (
+            {filteredPast.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                No past interviews to display.
+                {pastInterviews.length === 0 
+                  ? 'No past interviews to display.'
+                  : 'No past interviews match your filters.'}
               </p>
             ) : (
               <div className="space-y-4">
-                {pastInterviews.map((interview) => (
+                {filteredPast.map((interview) => (
                   <div
                     key={interview.id}
                     className="flex items-start justify-between p-4 border rounded-lg"
