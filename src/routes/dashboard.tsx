@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/layout';
 import { StatsOverview } from '@/components/analytics/StatsOverview';
+import { ApplicationFunnelChart } from '@/components/analytics/ApplicationFunnelChart';
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
@@ -19,6 +20,9 @@ function DashboardPage() {
       <div className="space-y-6">
         {/* Stats Overview */}
         <StatsOverview />
+
+        {/* Application Funnel Chart */}
+        <ApplicationFunnelChart />
 
         {/* Quick Actions */}
         <Card>
