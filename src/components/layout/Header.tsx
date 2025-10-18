@@ -67,6 +67,16 @@ export default function Header() {
               Analytics
             </Link>
             <Link
+              to="/interviewprep"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
+            >
+              Prep
+            </Link>
+            <Link
               to="/settings"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               activeProps={{
