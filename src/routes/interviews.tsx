@@ -8,10 +8,12 @@ import { Plus, Calendar as CalendarIcon, MapPin, Video, Phone } from 'lucide-rea
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
 import { InterviewFilters } from '@/components/features/interviews/InterviewFilters';
 import { SearchInput } from '@/components/ui/search-input';
+import { SavedFiltersDialog } from '@/components/features/filters/SavedFiltersDialog';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { INTERVIEW_TYPES, INTERVIEW_STATUSES } from '@/lib/constants';
 import { format } from 'date-fns';
+import type { InterviewFilters as InterviewFiltersType } from '@/types';
 
 export const Route = createFileRoute('/interviews')({
   component: InterviewsPage,
@@ -76,12 +78,19 @@ function InterviewsPage() {
       <div className="space-y-6">
         {/* Search and Filters */}
         <div className="space-y-4">
-          <SearchInput
-            value={filters.searchQuery || ''}
-            onChange={(value) => setFilters({ searchQuery: value || undefined })}
-            placeholder="Search by position or company..."
-            className="max-w-md"
-          />
+          <div className="flex items-center gap-2">
+            <SearchInput
+              value={filters.searchQuery || ''}
+              onChange={(value) => setFilters({ searchQuery: value || undefined })}
+              placeholder="Search by position or company..."
+              className="flex-1 max-w-md"
+            />
+            <SavedFiltersDialog
+              filterType="interviews"
+              currentFilters={filters}
+              onLoadFilter={(loadedFilters) => setFilters(loadedFilters as InterviewFiltersType)}
+            />
+          </div>
           <InterviewFilters />
         </div>
 
