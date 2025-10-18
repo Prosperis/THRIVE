@@ -50,6 +50,7 @@ export interface CompanyPrepNote {
     linkedin?: string;
     glassdoor?: string;
     careers?: string;
+    news?: string;
   };
   cultureNotes?: string;
   techStack?: string[];
@@ -59,6 +60,27 @@ export interface CompanyPrepNote {
     max?: number;
     currency?: string;
   };
+  // Enhanced ratings and reviews
+  ratings?: {
+    overall?: number; // 1-5
+    workLifeBalance?: number;
+    compensation?: number;
+    careerGrowth?: number;
+    management?: number;
+    culture?: number;
+  };
+  interviewDifficulty?: 'easy' | 'medium' | 'hard';
+  interviewExperience?: 'positive' | 'neutral' | 'negative';
+  pros?: string[];
+  cons?: string[];
+  employeeReviews?: string; // Summary of employee reviews
+  newsAndUpdates?: string; // Recent company news
+  competitorComparison?: string; // How they compare to competitors
+  remotePolicy?: 'full-remote' | 'hybrid' | 'on-site' | 'flexible';
+  companySize?: string; // e.g., "1000-5000 employees"
+  founded?: string; // Year or date
+  industry?: string[];
+  benefits?: string[];
   createdAt: Date;
   updatedAt: Date;
 }

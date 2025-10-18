@@ -57,6 +57,16 @@ export default function Header() {
               Documents
             </Link>
             <Link
+              to="/companies"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
+            >
+              Companies
+            </Link>
+            <Link
               to="/analytics"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               activeProps={{
