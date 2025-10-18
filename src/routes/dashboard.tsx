@@ -5,6 +5,8 @@ import { PageHeader } from '@/components/layout';
 import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { ApplicationFunnelChart } from '@/components/analytics/ApplicationFunnelChart';
 import { ApplicationsTimelineChart } from '@/components/analytics/ApplicationsTimelineChart';
+import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
+import { ResponseMetricsCard } from '@/components/analytics/ResponseMetricsCard';
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
@@ -29,6 +31,15 @@ function DashboardPage() {
 
           {/* Applications Timeline Chart */}
           <ApplicationsTimelineChart />
+        </div>
+
+        {/* Second Charts Row */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Status Distribution Chart */}
+          <StatusDistributionChart />
+
+          {/* Response Metrics */}
+          <ResponseMetricsCard />
         </div>
 
         {/* Quick Actions */}
