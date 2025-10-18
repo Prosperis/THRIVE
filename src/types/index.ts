@@ -111,12 +111,16 @@ export interface Interviewer {
 export interface Contact {
   id: string;
   name: string;
+  companyId?: string; // Link to company
+  companyName?: string; // Denormalized for display
   title?: string;
   email?: string;
   phone?: string;
   linkedIn?: string;
   notes?: string;
   relationship?: 'recruiter' | 'hiring-manager' | 'employee' | 'referral' | 'other';
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 /**
