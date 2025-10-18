@@ -6,3 +6,8 @@ export { useInterviewsStore } from './interviewsStore';
 export { useUIStore } from './uiStore';
 export { useBackupStore } from './backupStore';
 export { useSettingsStore } from './settingsStore';
+export { useSearchStore } from './searchStore';
+export { useTemplateStore } from './templateStore';
+export { useActivityStore } from './activityStore';
+export { useNoteStore } from './noteStore';
+export { useTagStore } from './tagStore';
