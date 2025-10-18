@@ -17,6 +17,7 @@ import { SortableHeader } from '@/components/ui/sortable-header';
 import { BulkActions } from './BulkActions';
 import { ApplicationDialog } from './ApplicationDialog';
 import { CSVImportDialog } from './CSVImportDialog';
+import { JSONImportDialog } from './JSONImportDialog';
 import { useApplicationsStore } from '@/stores';
 import type { Application } from '@/types';
 import { formatDate } from '@/lib/utils';
@@ -49,7 +50,8 @@ export function ApplicationsTable() {
   const applications = getFilteredApplications();
   const [editingApplication, setEditingApplication] = useState<Application | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isCSVImportDialogOpen, setIsCSVImportDialogOpen] = useState(false);
+  const [isJSONImportDialogOpen, setIsJSONImportDialogOpen] = useState(false);
 
   const handleEdit = useCallback((application: Application) => {
     setEditingApplication(application);
@@ -296,14 +298,27 @@ export function ApplicationsTable() {
         )}
         renderToolbarActions={() => (
           <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsImportDialogOpen(true)}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              Import
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Import Options</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsCSVImportDialogOpen(true)}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Import from CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsJSONImportDialogOpen(true)}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Import from JSON
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -335,8 +350,13 @@ export function ApplicationsTable() {
       />
       
       <CSVImportDialog
-        open={isImportDialogOpen}
-        onOpenChange={setIsImportDialogOpen}
+        open={isCSVImportDialogOpen}
+        onOpenChange={setIsCSVImportDialogOpen}
+      />
+      
+      <JSONImportDialog
+        open={isJSONImportDialogOpen}
+        onOpenChange={setIsJSONImportDialogOpen}
       />
     </>
   );

@@ -408,3 +408,167 @@ export function autoDetectMapping(headers: string[]): FieldMapping[] {
     };
   });
 }
+
+/**
+ * JSON Import validation result
+ */
+export interface JSONValidationResult {
+  valid: boolean;
+  version?: string;
+  totalRecords: number;
+  validRecords: Application[];
+  invalidRecords: Array<{ index: number; data: unknown; errors: string[] }>;
+  duplicates: Array<{ index: number; existingId: string; data: Application }>;
+  errors: string[];
+}
+
+/**
+ * Validate a single application record from JSON
+ */
+function validateJSONApplication(data: unknown): { valid: boolean; errors: string[]; app?: Application } {
+  const errors: string[] = [];
+
+  if (typeof data !== 'object' || data === null) {
+    errors.push('Record must be an object');
+    return { valid: false, errors };
+  }
+
+  const record = data as Record<string, unknown>;
+
+  // Required fields
+  if (!record.companyName || typeof record.companyName !== 'string') {
+    errors.push('companyName is required and must be a string');
+  }
+
+  if (!record.position || typeof record.position !== 'string') {
+    errors.push('position is required and must be a string');
+  }
+
+  if (!record.status || typeof record.status !== 'string') {
+    errors.push('status is required and must be a string');
+  } else if (!isValidStatus(record.status as string)) {
+    errors.push(`Invalid status: ${record.status}`);
+  }
+
+  // Validate dates if present
+  const dateFields = ['targetDate', 'appliedDate', 'firstInterviewDate', 'offerDate', 'responseDeadline', 'createdAt', 'updatedAt'];
+  for (const field of dateFields) {
+    if (record[field]) {
+      const date = new Date(record[field] as string);
+      if (Number.isNaN(date.getTime())) {
+        errors.push(`Invalid date format for ${field}`);
+      }
+    }
+  }
+
+  // Validate priority if present
+  if (record.priority && !isValidPriority(record.priority as string)) {
+    errors.push(`Invalid priority: ${record.priority}`);
+  }
+
+  // Validate workType if present
+  if (record.workType && !['remote', 'hybrid', 'onsite'].includes(record.workType as string)) {
+    errors.push(`Invalid workType: ${record.workType}`);
+  }
+
+  // Validate employmentType if present
+  if (record.employmentType && !['full-time', 'part-time', 'contract', 'internship'].includes(record.employmentType as string)) {
+    errors.push(`Invalid employmentType: ${record.employmentType}`);
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  // Convert dates
+  const app: Application = {
+    ...record,
+    id: record.id as string || crypto.randomUUID(),
+    companyName: record.companyName as string,
+    position: record.position as string,
+    status: record.status as ApplicationStatus,
+    targetDate: record.targetDate ? new Date(record.targetDate as string) : undefined,
+    appliedDate: record.appliedDate ? new Date(record.appliedDate as string) : undefined,
+    firstInterviewDate: record.firstInterviewDate ? new Date(record.firstInterviewDate as string) : undefined,
+    offerDate: record.offerDate ? new Date(record.offerDate as string) : undefined,
+    responseDeadline: record.responseDeadline ? new Date(record.responseDeadline as string) : undefined,
+    createdAt: record.createdAt ? new Date(record.createdAt as string) : new Date(),
+    updatedAt: record.updatedAt ? new Date(record.updatedAt as string) : new Date(),
+  } as Application;
+
+  return { valid: true, errors: [], app };
+}
+
+/**
+ * Parse and validate JSON import file
+ */
+export function validateJSONImport(
+  content: string,
+  existingApps: Application[]
+): JSONValidationResult {
+  const result: JSONValidationResult = {
+    valid: false,
+    totalRecords: 0,
+    validRecords: [],
+    invalidRecords: [],
+    duplicates: [],
+    errors: [],
+  };
+
+  try {
+    const parsed = JSON.parse(content);
+
+    // Check if it's an array
+    if (!Array.isArray(parsed)) {
+      result.errors.push('JSON must be an array of application records');
+      return result;
+    }
+
+    result.totalRecords = parsed.length;
+
+    if (parsed.length === 0) {
+      result.errors.push('JSON file contains no records');
+      return result;
+    }
+
+    // Validate each record
+    parsed.forEach((record, index) => {
+      const validation = validateJSONApplication(record);
+
+      if (!validation.valid) {
+        result.invalidRecords.push({
+          index: index + 1,
+          data: record,
+          errors: validation.errors,
+        });
+      } else if (validation.app) {
+        // Check for duplicates
+        const duplicate = checkDuplicate(validation.app, existingApps);
+        if (duplicate) {
+          result.duplicates.push({
+            index: index + 1,
+            existingId: duplicate.id,
+            data: validation.app,
+          });
+        } else {
+          result.validRecords.push(validation.app);
+        }
+      }
+    });
+
+    result.valid = result.validRecords.length > 0;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      result.errors.push(`Invalid JSON format: ${error.message}`);
+    } else {
+      result.errors.push('Failed to parse JSON file');
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Import mode options
+ */
+export type ImportMode = 'merge' | 'replace';

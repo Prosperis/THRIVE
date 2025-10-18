@@ -19,6 +19,7 @@ interface ApplicationsState {
   addApplication: (application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateApplication: (id: string, updates: Partial<Application>) => Promise<void>;
   deleteApplication: (id: string) => Promise<void>;
+  clearApplications: () => Promise<void>;
   setFilters: (filters: Partial<ApplicationFilters>) => void;
   setSelectedApplication: (id: string | null) => void;
   clearError: () => void;
@@ -168,6 +169,24 @@ export const useApplicationsStore = create<ApplicationsState>()(
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : 'Failed to delete application',
+              isLoading: false,
+            });
+            throw error;
+          }
+        },
+
+        clearApplications: async () => {
+          set({ isLoading: true, error: null });
+          try {
+            await db.applications.clear();
+            set({
+              applications: [],
+              selectedApplicationId: null,
+              isLoading: false,
+            });
+          } catch (error) {
+            set({
+              error: error instanceof Error ? error.message : 'Failed to clear applications',
               isLoading: false,
             });
             throw error;
