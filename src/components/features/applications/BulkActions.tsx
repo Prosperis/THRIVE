@@ -21,8 +21,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useApplicationsStore } from '@/stores';
 import type { Application, ApplicationStatus } from '@/types';
-import { APPLICATION_STATUSES } from '@/lib/constants';
-import { Trash2, Download, Edit, ChevronDown } from 'lucide-react';
+import { APPLICATION_STATUSES, PRIORITY_LEVELS } from '@/lib/constants';
+import { Trash2, Download, Edit, ChevronDown, Flag } from 'lucide-react';
 
 interface BulkActionsProps {
   selectedRows: Application[];
@@ -62,6 +62,21 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
       onClearSelection();
     } catch (error) {
       console.error('Error updating applications:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Bulk priority update handler
+  const handleBulkPriorityUpdate = async (priority: 'low' | 'medium' | 'high') => {
+    setIsProcessing(true);
+    try {
+      await Promise.all(
+        selectedRows.map((row) => updateApplication(row.id, { priority }))
+      );
+      onClearSelection();
+    } catch (error) {
+      console.error('Error updating priorities:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -160,6 +175,29 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
                   />
                   <span>{status.label}</span>
                 </div>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Bulk Priority Update */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" disabled={isProcessing}>
+              <Flag className="mr-2 h-4 w-4" />
+              Update Priority
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuLabel>Change priority to:</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {PRIORITY_LEVELS.map((priority) => (
+              <DropdownMenuItem
+                key={priority.value}
+                onClick={() => handleBulkPriorityUpdate(priority.value)}
+              >
+                <span className="capitalize">{priority.label}</span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
