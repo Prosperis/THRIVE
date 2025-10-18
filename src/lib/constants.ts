@@ -140,25 +140,25 @@ export const DOCUMENT_TYPES = [
  * Interview types
  */
 export const INTERVIEW_TYPES = [
-  'phone-screen',
-  'video',
-  'on-site',
-  'technical',
-  'behavioral',
-  'panel',
-  'final',
-  'other',
+  { value: 'phone-screen', label: 'Phone Screen' },
+  { value: 'video', label: 'Video Interview' },
+  { value: 'on-site', label: 'On-site Interview' },
+  { value: 'technical', label: 'Technical Interview' },
+  { value: 'behavioral', label: 'Behavioral Interview' },
+  { value: 'panel', label: 'Panel Interview' },
+  { value: 'final', label: 'Final Interview' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 /**
  * Interview statuses
  */
 export const INTERVIEW_STATUSES = [
-  'scheduled',
-  'completed',
-  'cancelled',
-  'rescheduled',
-  'no-show',
+  { value: 'scheduled', label: 'Scheduled' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'rescheduled', label: 'Rescheduled' },
+  { value: 'no-show', label: 'No Show' },
 ] as const;
 
 /**
