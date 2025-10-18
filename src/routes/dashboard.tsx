@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/layout';
 import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { ApplicationFunnelChart } from '@/components/analytics/ApplicationFunnelChart';
+import { ApplicationsTimelineChart } from '@/components/analytics/ApplicationsTimelineChart';
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
@@ -21,8 +22,14 @@ function DashboardPage() {
         {/* Stats Overview */}
         <StatsOverview />
 
-        {/* Application Funnel Chart */}
-        <ApplicationFunnelChart />
+        {/* Charts Row */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Application Funnel Chart */}
+          <ApplicationFunnelChart />
+
+          {/* Applications Timeline Chart */}
+          <ApplicationsTimelineChart />
+        </div>
 
         {/* Quick Actions */}
         <Card>
