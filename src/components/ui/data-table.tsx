@@ -36,6 +36,7 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string;
   searchPlaceholder?: string;
   storageKey?: string; // Key for localStorage persistence
+  initialPageSize?: number; // Initial page size from settings
   renderBulkActions?: (props: {
     selectedRows: TData[];
     table: ReturnType<typeof useReactTable<TData>>;
@@ -51,6 +52,7 @@ export function DataTable<TData, TValue>({
   searchKey,
   searchPlaceholder = 'Search...',
   storageKey,
+  initialPageSize = 10,
   renderBulkActions,
   renderToolbarActions,
 }: DataTableProps<TData, TValue>) {
@@ -91,6 +93,11 @@ export function DataTable<TData, TValue>({
     onRowSelectionChange: setRowSelection,
     enableMultiSort: true, // Enable multi-column sorting
     maxMultiSortColCount: 3, // Limit to 3 columns
+    initialState: {
+      pagination: {
+        pageSize: initialPageSize,
+      },
+    },
     state: {
       sorting,
       columnFilters,

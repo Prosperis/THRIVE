@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import {
   DndContext,
   type DragEndEvent,
@@ -14,6 +13,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import { useApplicationsStore } from '@/stores';
 import type { Application, ApplicationStatus } from '@/types';
 import { APPLICATION_STATUSES } from '@/lib/constants';
+import { notify } from '@/lib/notifications';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 
@@ -103,10 +103,8 @@ export function KanbanBoard() {
         // Find the new status label for the toast
         const statusLabel = APPLICATION_STATUSES.find((s) => s.value === newStatus)?.label || newStatus;
         
-        // Show success toast with application details
-        toast.success('Status Updated', {
-          description: `${draggedApp.position} moved to ${statusLabel}`,
-        });
+        // Show status change notification (respects user preferences)
+        notify.statusChange('Status Updated', `${draggedApp.position} moved to ${statusLabel}`);
       }
     } else {
       // Reordering within column - dropping on another card
@@ -128,9 +126,7 @@ export function KanbanBoard() {
             updateApplication(app.id, { sortOrder: index });
           });
           
-          toast.success('Reordered', {
-            description: `${draggedApp.position} position updated`,
-          });
+          notify.success('Reordered', `${draggedApp.position} position updated`);
         }
       }
     }

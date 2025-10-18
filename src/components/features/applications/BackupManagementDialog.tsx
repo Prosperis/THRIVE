@@ -24,6 +24,7 @@ import { useApplicationsStore } from '@/stores';
 import { useBackupStore, isBackupDue } from '@/stores/backupStore';
 import { exportBackup, formatBytes } from '@/lib/backup';
 import { formatDate } from '@/lib/utils';
+import { notify } from '@/lib/notifications';
 import {
   Download,
   Trash2,
@@ -101,10 +102,7 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
   // Check for due backups on mount
   useEffect(() => {
     if (open && backupDue && applications.length > 0) {
-      toast.info('Backup Due', {
-        description: 'Your scheduled backup is due. Consider creating a backup.',
-        duration: 5000,
-      });
+      notify.backupReminder('Backup Due', 'Your scheduled backup is due. Consider creating a backup.');
     }
   }, [open, backupDue, applications.length]);
 

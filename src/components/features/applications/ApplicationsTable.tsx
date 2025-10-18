@@ -19,7 +19,7 @@ import { ApplicationDialog } from './ApplicationDialog';
 import { CSVImportDialog } from './CSVImportDialog';
 import { JSONImportDialog } from './JSONImportDialog';
 import { BackupManagementDialog } from './BackupManagementDialog';
-import { useApplicationsStore } from '@/stores';
+import { useApplicationsStore, useSettingsStore } from '@/stores';
 import type { Application } from '@/types';
 import { formatDate } from '@/lib/utils';
 import {
@@ -27,6 +27,7 @@ import {
   exportAndDownloadApplicationsJSON,
 } from '@/lib/export';
 import { toast } from 'sonner';
+import { notify } from '@/lib/notifications';
 import { MoreHorizontal, Eye, Pencil, Trash2, Download, FileDown, Upload, Settings } from 'lucide-react';
 
 const statusColors: Record<Application['status'], string> = {
@@ -48,6 +49,7 @@ const priorityColors: Record<NonNullable<Application['priority']>, string> = {
 
 export function ApplicationsTable() {
   const { getFilteredApplications, deleteApplication } = useApplicationsStore();
+  const { data: dataSettings } = useSettingsStore();
   const applications = getFilteredApplications();
   const [editingApplication, setEditingApplication] = useState<Application | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -242,7 +244,12 @@ export function ApplicationsTable() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive"
-                  onClick={() => deleteApplication(application.id)}
+                  onClick={() => {
+                    if (!dataSettings.confirmDelete || confirm(`Are you sure you want to delete "${application.position}"?`)) {
+                      deleteApplication(application.id);
+                      notify.success('Application Deleted', `${application.position} has been deleted`);
+                    }
+                  }}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete
@@ -253,7 +260,7 @@ export function ApplicationsTable() {
         },
       },
     ],
-    [deleteApplication, handleEdit]
+    [deleteApplication, handleEdit, dataSettings.confirmDelete]
   );
 
   const handleExportCSV = useCallback(() => {
@@ -292,6 +299,7 @@ export function ApplicationsTable() {
         searchKey="position"
         searchPlaceholder="Search positions..."
         storageKey="thrive-applications-table"
+        initialPageSize={dataSettings.itemsPerPage}
         renderBulkActions={({ selectedRows, table }) => (
           <BulkActions
             selectedRows={selectedRows}

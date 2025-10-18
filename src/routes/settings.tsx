@@ -1,10 +1,13 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { ChangelogDialog } from '@/components/features/settings/ChangelogDialog';
+import { KeyboardShortcutsDialog } from '@/components/features/settings/KeyboardShortcutsDialog';
+import { HELP_RESOURCES, CREDITS } from '@/lib/about';
 import {
   Select,
   SelectContent,
@@ -30,6 +33,12 @@ import {
   Layout,
   Save,
   AlertTriangle,
+  BookOpen,
+  Keyboard,
+  History,
+  ExternalLink,
+  Github,
+  Heart,
 } from 'lucide-react';
 
 export const Route = createFileRoute('/settings')({
@@ -41,6 +50,9 @@ function SettingsPage() {
   const { setTheme } = useTheme();
   const { display, notifications, data, updateDisplay, updateNotifications, updateData, resetToDefaults } =
     useSettingsStore();
+  
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   const handleThemeChange = useCallback(
     (newTheme: 'light' | 'dark' | 'system') => {
@@ -506,23 +518,137 @@ function SettingsPage() {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" size="sm" asChild>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsChangelogOpen(true)}
+                className="justify-start"
+              >
+                <History className="mr-2 h-4 w-4" />
+                Changelog
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsShortcutsOpen(true)}
+                className="justify-start"
+              >
+                <Keyboard className="mr-2 h-4 w-4" />
+                Shortcuts
+              </Button>
+              <Button variant="outline" size="sm" asChild className="justify-start">
                 <a
                   href="https://github.com/adriandarian/thrive"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  View on GitHub
+                  <Github className="mr-2 h-4 w-4" />
+                  GitHub
+                  <ExternalLink className="ml-auto h-3 w-3" />
                 </a>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate({ to: '/' })}>
-                Back to Dashboard
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate({ to: '/' })}
+                className="justify-start"
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                Dashboard
               </Button>
+            </div>
+          </div>
+
+          {/* Help Resources */}
+          <div className="border rounded-lg p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Help & Resources</h2>
+                <p className="text-sm text-muted-foreground">
+                  Learn more and get support
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {HELP_RESOURCES.map((resource) => (
+                <a
+                  key={resource.title}
+                  href={resource.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <BookOpen className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium">{resource.title}</h3>
+                      <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {resource.description}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Credits */}
+          <div className="border rounded-lg p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center">
+                <Heart className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Credits & Attribution</h2>
+                <p className="text-sm text-muted-foreground">
+                  Built with amazing open source libraries
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {CREDITS.map((section) => (
+                <div key={section.category} className="space-y-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    {section.category}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {section.items.map((item) => (
+                      <a
+                        key={item.name}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group text-sm"
+                      >
+                        <div>
+                          <div className="font-medium">{item.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {item.description}
+                          </div>
+                        </div>
+                        <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <ChangelogDialog open={isChangelogOpen} onOpenChange={setIsChangelogOpen} />
+      <KeyboardShortcutsDialog open={isShortcutsOpen} onOpenChange={setIsShortcutsOpen} />
     </PageTransition>
   );
 }
