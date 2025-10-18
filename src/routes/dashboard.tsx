@@ -1,18 +1,73 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout';
 import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { ApplicationFunnelChart } from '@/components/analytics/ApplicationFunnelChart';
 import { ApplicationsTimelineChart } from '@/components/analytics/ApplicationsTimelineChart';
 import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
 import { ResponseMetricsCard } from '@/components/analytics/ResponseMetricsCard';
+import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
+import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
+import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useInterviewsStore } from '@/stores/interviewsStore';
+import { formatDistanceToNow } from 'date-fns';
+import { Plus, Calendar, FileText, TrendingUp, Clock } from 'lucide-react';
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
 });
 
 function DashboardPage() {
+  const { applications, fetchApplications } = useApplicationsStore();
+  const { interviews, fetchInterviews } = useInterviewsStore();
+
+  useEffect(() => {
+    fetchApplications();
+    fetchInterviews();
+  }, [fetchApplications, fetchInterviews]);
+
+  // Get recent activity (last 5 applications/interviews)
+  const recentActivity = useMemo(() => {
+    const items = [
+      ...applications.map(app => ({
+        id: app.id,
+        type: 'application' as const,
+        title: `Applied to ${app.position}`,
+        subtitle: app.companyName,
+        status: app.status,
+        date: app.appliedDate || app.createdAt,
+      })),
+      ...interviews.map(interview => {
+        const app = applications.find(a => a.id === interview.applicationId);
+        return {
+          id: interview.id,
+          type: 'interview' as const,
+          title: `Interview scheduled`,
+          subtitle: app ? `${app.position} at ${app.companyName}` : 'Unknown',
+          status: interview.status,
+          date: interview.scheduledAt || interview.createdAt,
+        };
+      }),
+    ];
+
+    return items
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5);
+  }, [applications, interviews]);
+
+  const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    if (['offer', 'accepted', 'completed'].includes(status)) return 'default';
+    if (['rejected', 'cancelled'].includes(status)) return 'destructive';
+    return 'secondary';
+  };
+
+  const getActivityIcon = (type: 'application' | 'interview') => {
+    return type === 'application' ? FileText : Calendar;
+  };
+
   return (
     <>
       <PageHeader
@@ -42,40 +97,97 @@ function DashboardPage() {
           <ResponseMetricsCard />
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Get started with tracking your applications</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              + Add Application
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              📅 Schedule Interview
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              📄 Upload Resume
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              🏢 Add Company
-            </Badge>
-          </CardContent>
-        </Card>
+        {/* Bottom Row */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Quick Actions
+              </CardTitle>
+              <CardDescription>Jump to common tasks</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <ApplicationDialog
+                trigger={
+                  <Button variant="outline" className="w-full justify-start">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Application
+                  </Button>
+                }
+              />
+              
+              <InterviewDialog
+                trigger={
+                  <Button variant="outline" className="w-full justify-start">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Schedule Interview
+                  </Button>
+                }
+              />
+              
+              <Link to="/analytics">
+                <Button variant="outline" className="w-full justify-start">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  View Analytics
+                </Button>
+              </Link>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest application updates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No activity yet. Start by adding your first application!
-            </p>
-          </CardContent>
-        </Card>
+              <Link to="/applications">
+                <Button variant="outline" className="w-full justify-start">
+                  <FileText className="h-4 w-4 mr-2" />
+                  View All Applications
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Recent Activity
+              </CardTitle>
+              <CardDescription>Your latest updates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {recentActivity.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No activity yet. Start by adding your first application!
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {recentActivity.map((item) => {
+                    const Icon = getActivityIcon(item.type);
+                    return (
+                      <div key={`${item.type}-${item.id}`} className="flex items-start gap-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary flex-shrink-0">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <p className="text-sm font-medium truncate">{item.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {item.subtitle}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={getStatusBadgeVariant(item.status)} className="text-xs">
+                              {item.status}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(item.date), { addSuffix: true })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </>
   );
