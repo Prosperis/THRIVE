@@ -66,6 +66,16 @@ export default function Header() {
             >
               Analytics
             </Link>
+            <Link
+              to="/settings"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              activeProps={{
+                className:
+                  'flex items-center text-sm font-medium text-foreground transition-colors',
+              }}
+            >
+              Settings
+            </Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">

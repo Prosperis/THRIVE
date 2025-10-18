@@ -5,3 +5,4 @@ export { useDocumentsStore } from './documentsStore';
 export { useInterviewsStore } from './interviewsStore';
 export { useUIStore } from './uiStore';
 export { useBackupStore } from './backupStore';
+export { useSettingsStore } from './settingsStore';
