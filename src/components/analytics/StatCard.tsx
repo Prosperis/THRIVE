@@ -1,4 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnimatedCard } from '@/components/ui/animated-card';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,7 @@ export interface StatCardProps {
     direction: 'up' | 'down' | 'neutral';
   };
   className?: string;
+  delay?: number;
 }
 
 export function StatCard({
@@ -23,6 +25,7 @@ export function StatCard({
   icon: Icon,
   trend,
   className,
+  delay = 0,
 }: StatCardProps) {
   const getTrendIcon = () => {
     if (!trend) return null;
@@ -39,7 +42,12 @@ export function StatCard({
   };
 
   return (
-    <Card className={className}>
+    <AnimatedCard 
+      hoverEffect="lift" 
+      animateOnMount 
+      delay={delay}
+      className={className}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
@@ -57,6 +65,6 @@ export function StatCard({
           </div>
         )}
       </CardContent>
-    </Card>
+    </AnimatedCard>
   );
 }

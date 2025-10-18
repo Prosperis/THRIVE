@@ -22,6 +22,7 @@ export function StatsOverview() {
         value={analytics.totals.applications}
         description={`${analytics.thisWeek.applications} this week`}
         icon={FileText}
+        delay={0}
         trend={
           analytics.thisWeek.applications > 0
             ? {
@@ -39,6 +40,7 @@ export function StatsOverview() {
         value={analytics.totals.interviews}
         description={`${analytics.breakdown.upcomingInterviews} upcoming`}
         icon={Calendar}
+        delay={0.1}
         trend={
           analytics.thisWeek.interviews > 0
             ? {
@@ -56,6 +58,7 @@ export function StatsOverview() {
         value={analytics.breakdown.active}
         description="In progress"
         icon={Target}
+        delay={0.2}
       />
 
       {/* Response Rate */}
@@ -64,6 +67,7 @@ export function StatsOverview() {
         value={`${analytics.metrics.responseRate}%`}
         description="Applications to interviews"
         icon={TrendingUp}
+        delay={0.3}
         trend={
           analytics.metrics.responseRate > 0
             ? {

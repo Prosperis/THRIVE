@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import PageHeader from '@/components/layout/PageHeader';
 import { PageTransition } from '@/components/layout';
+import { AnimatedButton } from '@/components/ui/animated-button';
 import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
@@ -55,10 +56,10 @@ function ApplicationsPage() {
             </div>
             <ApplicationDialog
               trigger={
-                <Button>
+                <AnimatedButton>
                   <Plus className="mr-2 h-4 w-4" />
                   New Application
-                </Button>
+                </AnimatedButton>
               }
             />
           </div>

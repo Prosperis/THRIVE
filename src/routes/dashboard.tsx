@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnimatedCard } from '@/components/ui/animated-card';
+import { AnimatedButton } from '@/components/ui/animated-button';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout';
 import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { ApplicationFunnelChart } from '@/components/analytics/ApplicationFunnelChart';
@@ -100,7 +101,7 @@ function DashboardPage() {
         {/* Bottom Row */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Quick Actions */}
-          <Card>
+          <AnimatedCard hoverEffect="lift" animateOnMount delay={0.1}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
@@ -111,40 +112,40 @@ function DashboardPage() {
             <CardContent className="grid gap-3">
               <ApplicationDialog
                 trigger={
-                  <Button variant="outline" className="w-full justify-start">
+                  <AnimatedButton variant="outline" className="w-full justify-start">
                     <Plus className="h-4 w-4 mr-2" />
                     Add New Application
-                  </Button>
+                  </AnimatedButton>
                 }
               />
               
               <InterviewDialog
                 trigger={
-                  <Button variant="outline" className="w-full justify-start">
+                  <AnimatedButton variant="outline" className="w-full justify-start">
                     <Calendar className="h-4 w-4 mr-2" />
                     Schedule Interview
-                  </Button>
+                  </AnimatedButton>
                 }
               />
               
               <Link to="/analytics">
-                <Button variant="outline" className="w-full justify-start">
+                <AnimatedButton variant="outline" className="w-full justify-start">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   View Analytics
-                </Button>
+                </AnimatedButton>
               </Link>
 
               <Link to="/applications">
-                <Button variant="outline" className="w-full justify-start">
+                <AnimatedButton variant="outline" className="w-full justify-start">
                   <FileText className="h-4 w-4 mr-2" />
                   View All Applications
-                </Button>
+                </AnimatedButton>
               </Link>
             </CardContent>
-          </Card>
+          </AnimatedCard>
 
           {/* Recent Activity */}
-          <Card>
+          <AnimatedCard hoverEffect="lift" animateOnMount delay={0.2}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
@@ -186,7 +187,7 @@ function DashboardPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AnimatedCard>
         </div>
       </div>
     </>
