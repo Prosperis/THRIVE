@@ -1,4 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Application, ApplicationStatus } from '@/types';
 import { KanbanCard } from './KanbanCard';
 import { Badge } from '@/components/ui/badge';
@@ -56,14 +57,33 @@ export function KanbanColumn({ status, applications, count }: KanbanColumnProps)
         )}
       >
         <div className="space-y-2">
-          {applications.map((application) => (
-            <KanbanCard key={application.id} application={application} />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {applications.map((application) => (
+              <motion.div
+                key={application.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9, y: -20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{
+                  layout: { type: 'spring', stiffness: 350, damping: 30 },
+                  opacity: { duration: 0.2 },
+                  scale: { duration: 0.2 },
+                }}
+              >
+                <KanbanCard application={application} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
           
           {applications.length === 0 && (
-            <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center h-32 text-sm text-muted-foreground"
+            >
               No applications
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

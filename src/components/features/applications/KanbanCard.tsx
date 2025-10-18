@@ -1,5 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { motion } from 'framer-motion';
 import type { Application } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,9 +66,14 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
   };
 
   const cardContent = (
-    <Card
-      ref={setNodeRef}
-      style={style}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+    >
+      <Card
+        ref={setNodeRef}
+        style={style}
       className={cn(
         'cursor-grab active:cursor-grabbing',
         isOverlay && 'rotate-3 shadow-lg',
@@ -201,6 +207,7 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
         )}
       </CardContent>
     </Card>
+    </motion.div>
   );
 
   return cardContent;

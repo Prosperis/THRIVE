@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import {
   DndContext,
   type DragEndEvent,
@@ -78,6 +79,14 @@ export function KanbanBoard() {
     const application = applications.find((app) => app.id === applicationId);
     if (application && application.status !== newStatus) {
       updateApplication(applicationId, { status: newStatus });
+      
+      // Find the new status label for the toast
+      const statusLabel = APPLICATION_STATUSES.find((s) => s.value === newStatus)?.label || newStatus;
+      
+      // Show success toast with application details
+      toast.success('Status Updated', {
+        description: `${application.position} moved to ${statusLabel}`,
+      });
     }
 
     setActiveCard(null);
