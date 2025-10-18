@@ -34,6 +34,10 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchKey?: string;
   searchPlaceholder?: string;
+  renderBulkActions?: (props: {
+    selectedRows: TData[];
+    table: ReturnType<typeof useReactTable<TData>>;
+  }) => React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -41,6 +45,7 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   searchPlaceholder = 'Search...',
+  renderBulkActions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -66,8 +71,18 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => row.original);
+
   return (
     <div className="space-y-4">
+      {/* Bulk Actions */}
+      {renderBulkActions && selectedRows.length > 0 && (
+        renderBulkActions({
+          selectedRows,
+          table,
+        })
+      )}
+
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center space-x-2">
