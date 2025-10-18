@@ -16,10 +16,16 @@ import { DataTable } from '@/components/ui/data-table';
 import { SortableHeader } from '@/components/ui/sortable-header';
 import { BulkActions } from './BulkActions';
 import { ApplicationDialog } from './ApplicationDialog';
+import { CSVImportDialog } from './CSVImportDialog';
 import { useApplicationsStore } from '@/stores';
 import type { Application } from '@/types';
 import { formatDate } from '@/lib/utils';
-import { MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
+import {
+  exportAndDownloadApplicationsCSV,
+  exportAndDownloadApplicationsJSON,
+} from '@/lib/export';
+import { toast } from 'sonner';
+import { MoreHorizontal, Eye, Pencil, Trash2, Download, FileDown, Upload } from 'lucide-react';
 
 const statusColors: Record<Application['status'], string> = {
   target: 'bg-gray-500',
@@ -43,6 +49,7 @@ export function ApplicationsTable() {
   const applications = getFilteredApplications();
   const [editingApplication, setEditingApplication] = useState<Application | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   const handleEdit = useCallback((application: Application) => {
     setEditingApplication(application);
@@ -245,6 +252,34 @@ export function ApplicationsTable() {
     [deleteApplication, handleEdit]
   );
 
+  const handleExportCSV = useCallback(() => {
+    try {
+      exportAndDownloadApplicationsCSV(applications);
+      toast.success('Export Successful', {
+        description: `Exported ${applications.length} applications to CSV`,
+      });
+    } catch (error) {
+      toast.error('Export Failed', {
+        description: 'Failed to export applications to CSV',
+      });
+      console.error('Export error:', error);
+    }
+  }, [applications]);
+
+  const handleExportJSON = useCallback(() => {
+    try {
+      exportAndDownloadApplicationsJSON(applications);
+      toast.success('Export Successful', {
+        description: `Exported ${applications.length} applications to JSON`,
+      });
+    } catch (error) {
+      toast.error('Export Failed', {
+        description: 'Failed to export applications to JSON',
+      });
+      console.error('Export error:', error);
+    }
+  }, [applications]);
+
   return (
     <>
       <DataTable
@@ -259,12 +294,49 @@ export function ApplicationsTable() {
             onClearSelection={() => table.resetRowSelection()}
           />
         )}
+        renderToolbarActions={() => (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsImportDialogOpen(true)}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Import
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleExportCSV}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportJSON}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Export as JSON
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
       />
       
       <ApplicationDialog
         application={editingApplication}
         open={isEditDialogOpen}
         onOpenChange={handleEditDialogClose}
+      />
+      
+      <CSVImportDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
       />
     </>
   );

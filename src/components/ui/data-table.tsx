@@ -40,6 +40,9 @@ interface DataTableProps<TData, TValue> {
     selectedRows: TData[];
     table: ReturnType<typeof useReactTable<TData>>;
   }) => React.ReactNode;
+  renderToolbarActions?: (props: {
+    table: ReturnType<typeof useReactTable<TData>>;
+  }) => React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -49,6 +52,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = 'Search...',
   storageKey,
   renderBulkActions,
+  renderToolbarActions,
 }: DataTableProps<TData, TValue>) {
   // Load initial sorting from localStorage if available
   const [sorting, setSorting] = useState<SortingState>(() => {
@@ -152,13 +156,15 @@ export function DataTable<TData, TValue>({
             </Button>
           )}
         </div>
-        <TableHelpDialog />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
+        <div className="flex items-center gap-2">
+          {renderToolbarActions?.({ table })}
+          <TableHelpDialog />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="ml-auto">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {table
               .getAllColumns()
