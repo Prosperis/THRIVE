@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DataTable } from '@/components/ui/data-table';
 import { BulkActions } from './BulkActions';
+import { ApplicationDialog } from './ApplicationDialog';
 import { useApplicationsStore } from '@/stores';
 import type { Application } from '@/types';
 import { formatDate } from '@/lib/utils';
@@ -38,6 +39,19 @@ const priorityColors: Record<NonNullable<Application['priority']>, string> = {
 export function ApplicationsTable() {
   const { getFilteredApplications, deleteApplication } = useApplicationsStore();
   const applications = getFilteredApplications();
+  const [editingApplication, setEditingApplication] = useState<Application | undefined>(undefined);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleEdit = useCallback((application: Application) => {
+    setEditingApplication(application);
+    setIsEditDialogOpen(true);
+  }, []);
+
+  const handleEditDialogClose = useCallback(() => {
+    setIsEditDialogOpen(false);
+    // Small delay before clearing to avoid visual glitches
+    setTimeout(() => setEditingApplication(undefined), 200);
+  }, []);
 
   const columns = useMemo<ColumnDef<Application>[]>(
     () => [
@@ -234,7 +248,7 @@ export function ApplicationsTable() {
                   <Eye className="mr-2 h-4 w-4" />
                   View details
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleEdit(application)}>
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit
                 </DropdownMenuItem>
@@ -251,21 +265,29 @@ export function ApplicationsTable() {
         },
       },
     ],
-    [deleteApplication]
+    [deleteApplication, handleEdit]
   );
 
   return (
-    <DataTable
-      columns={columns}
-      data={applications}
-      searchKey="position"
-      searchPlaceholder="Search positions..."
-      renderBulkActions={({ selectedRows, table }) => (
-        <BulkActions
-          selectedRows={selectedRows}
-          onClearSelection={() => table.resetRowSelection()}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={applications}
+        searchKey="position"
+        searchPlaceholder="Search positions..."
+        renderBulkActions={({ selectedRows, table }) => (
+          <BulkActions
+            selectedRows={selectedRows}
+            onClearSelection={() => table.resetRowSelection()}
+          />
+        )}
+      />
+      
+      <ApplicationDialog
+        application={editingApplication}
+        open={isEditDialogOpen}
+        onOpenChange={handleEditDialogClose}
+      />
+    </>
   );
 }

@@ -4,6 +4,7 @@ import PageHeader from '@/components/layout/PageHeader';
 import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
+import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
 import { useApplicationsStore } from '@/stores';
 import { Button } from '@/components/ui/button';
 import { Plus, Table as TableIcon, LayoutGrid } from 'lucide-react';
@@ -48,10 +49,14 @@ function ApplicationsPage() {
                 <LayoutGrid className="h-4 w-4" />
               </Button>
             </div>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Application
-            </Button>
+            <ApplicationDialog
+              trigger={
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Application
+                </Button>
+              }
+            />
           </div>
         }
       />
