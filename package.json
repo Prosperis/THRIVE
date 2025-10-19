@@ -11,9 +11,12 @@
     "format": "biome format --write .",
     "check": "biome check --write .",
     "type-check": "tsc --noEmit",
-    "predeploy": "bun run build",
+    "predeploy": "bun run build && bun run docs:build",
     "deploy": "gh-pages -d dist",
-    "setup:monitoring": "bun run scripts/setup-monitoring.ts"
+    "setup:monitoring": "bun run scripts/setup-monitoring.ts",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -61,6 +64,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.6",
     "@eslint/js": "^9.36.0",
+    "@nolebase/vitepress-plugin-enhanced-readabilities": "^2.18.2",
     "@tailwindcss/postcss": "^4.1.14",
     "@tanstack/devtools-vite": "^0.3.7",
     "@tanstack/react-devtools": "^0.7.7",
@@ -77,10 +81,13 @@
     "eslint-plugin-react-refresh": "^0.4.22",
     "gh-pages": "^6.3.0",
     "globals": "^16.4.0",
+    "markdown-it-mathjax3": "^5.2.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17"
   }
 }
