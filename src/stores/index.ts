@@ -3,6 +3,7 @@ export { useApplicationsStore } from './applicationsStore';
 export { useBackupStore } from './backupStore';
 export { useCompaniesStore } from './companiesStore';
 export { useContactsStore } from './contactsStore';
+export { useCustomWidgetsStore } from './customWidgetsStore';
 export { useDashboardStore } from './dashboardStore';
 export { useDocumentsStore } from './documentsStore';
 export { useInterviewsStore } from './interviewsStore';

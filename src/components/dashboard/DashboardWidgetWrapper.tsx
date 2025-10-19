@@ -3,10 +3,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import type { DashboardWidgetType } from '@/stores/dashboardStore';
 
 interface DashboardWidgetWrapperProps {
-  id: DashboardWidgetType;
+  id: string;
   children: ReactNode;
 }
 

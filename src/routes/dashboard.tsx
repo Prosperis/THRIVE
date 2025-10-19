@@ -11,6 +11,7 @@ import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
 import { DashboardCustomizer } from '@/components/dashboard/DashboardCustomizer';
 import { DashboardWidgetWrapper } from '@/components/dashboard/DashboardWidgetWrapper';
+import { CustomWidgetRenderer } from '@/components/dashboard/CustomWidgetRenderer';
 import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
 import { PageHeader } from '@/components/layout';
@@ -19,6 +20,7 @@ import { AnimatedCard } from '@/components/ui/animated-card';
 import { Badge } from '@/components/ui/badge';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useCustomWidgetsStore } from '@/stores/customWidgetsStore';
 import { useDashboardStore, type DashboardWidgetType } from '@/stores/dashboardStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 
@@ -78,7 +80,8 @@ function DashboardPage() {
 
   // Dashboard customization
   const { widgets, reorderWidgets } = useDashboardStore();
-  const [activeId, setActiveId] = useState<DashboardWidgetType | null>(null);
+  const { widgets: customWidgets } = useCustomWidgetsStore();
+  const [activeId, setActiveId] = useState<string | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -89,31 +92,48 @@ function DashboardPage() {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as DashboardWidgetType);
+    setActiveId(event.active.id as string);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
+      // Check if dragging built-in widgets
       const oldIndex = widgets.findIndex((w) => w.id === active.id);
       const newIndex = widgets.findIndex((w) => w.id === over.id);
 
-      const newWidgets = arrayMove(widgets, oldIndex, newIndex);
-      reorderWidgets(newWidgets);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newWidgets = arrayMove(widgets, oldIndex, newIndex);
+        reorderWidgets(newWidgets);
+      }
     }
     
     setActiveId(null);
   };
 
-  const visibleWidgets = useMemo(() => {
-    return widgets
+  // Combine built-in and custom widgets
+  const allVisibleWidgets = useMemo(() => {
+    const builtInWidgets = widgets
       .filter((w) => w.visible)
       .sort((a, b) => a.order - b.order);
-  }, [widgets]);
+    
+    const visibleCustomWidgets = customWidgets
+      .filter((w) => w.visible)
+      .sort((a, b) => a.order - b.order);
+    
+    return [...builtInWidgets, ...visibleCustomWidgets];
+  }, [widgets, customWidgets]);
 
-  const renderWidget = (widgetId: DashboardWidgetType) => {
-    switch (widgetId) {
+  const renderWidget = (widgetId: string) => {
+    // Check if it's a custom widget
+    const customWidget = customWidgets.find(w => w.id === widgetId);
+    if (customWidget) {
+      return <CustomWidgetRenderer widget={customWidget} />;
+    }
+
+    // Otherwise render built-in widget
+    switch (widgetId as DashboardWidgetType) {
       case 'stats':
         return <StatsOverview />;
       
@@ -534,7 +554,16 @@ function DashboardPage() {
     }
   };
 
-  const getGridClass = (widgetId: DashboardWidgetType) => {
+  const getGridClass = (widgetId: string) => {
+    // Check if it's a custom widget
+    const customWidget = customWidgets.find(w => w.id === widgetId);
+    if (customWidget) {
+      // Use size property for custom widgets
+      if (customWidget.size === 'large') return 'col-span-full';
+      if (customWidget.size === 'medium') return 'col-span-full md:col-span-1';
+      return 'col-span-full md:col-span-1'; // small also takes half width
+    }
+    
     // Full width widgets
     if (widgetId === 'stats') return 'col-span-full';
     
@@ -557,11 +586,11 @@ function DashboardPage() {
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={visibleWidgets.map((w) => w.id)}
+          items={allVisibleWidgets.map((w) => w.id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-            {visibleWidgets.map((widget) => (
+            {allVisibleWidgets.map((widget) => (
               <div key={widget.id} className={getGridClass(widget.id)}>
                 <DashboardWidgetWrapper id={widget.id}>
                   {renderWidget(widget.id)}
