@@ -27,6 +27,7 @@ function RootComponent() {
         <CommandPalette />
         {import.meta.env.DEV && (
           <TanStackDevtools
+            config={{ hideUntilHover: true }}
             plugins={[
               {
                 name: 'TanStack Query',
