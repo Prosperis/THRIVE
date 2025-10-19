@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import {
   Sheet,
   SheetContent,
@@ -204,14 +203,7 @@ export function DashboardCustomizer() {
           </div>
 
           {/* Actions - Fixed at bottom */}
-          <div className="space-y-3 pt-4 border-t mt-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Visible Widgets</Label>
-              <Badge variant="outline">
-                {visibleCount} of {widgets.length}
-              </Badge>
-            </div>
-
+          <div className="pt-4 border-t mt-4">
             <Button
               variant="outline"
               size="sm"
