@@ -216,8 +216,8 @@ export function mapRowToApplication(
 
   if (salaryMinIndex !== -1 || salaryMaxIndex !== -1) {
     app.salary = {
-      min: salaryMinIndex !== -1 ? parseInt(row[salaryMinIndex]) : undefined,
-      max: salaryMaxIndex !== -1 ? parseInt(row[salaryMaxIndex]) : undefined,
+      min: salaryMinIndex !== -1 ? Number.parseInt(row[salaryMinIndex], 10) : undefined,
+      max: salaryMaxIndex !== -1 ? Number.parseInt(row[salaryMaxIndex], 10) : undefined,
       currency: 'USD', // Default currency
     };
   }

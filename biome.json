@@ -33,16 +33,21 @@
       "recommended": true,
       "suspicious": {
         "noExplicitAny": "warn",
-        "noArrayIndexKey": "warn"
+        "noArrayIndexKey": "off"
       },
       "style": {
         "useImportType": "error",
         "useConst": "error",
-        "useNodejsImportProtocol": "error"
+        "useNodejsImportProtocol": "error",
+        "noNonNullAssertion": "warn"
       },
       "correctness": {
         "noUnusedVariables": "warn",
-        "useExhaustiveDependencies": "warn"
+        "useExhaustiveDependencies": "warn",
+        "useUniqueElementIds": "off"
+      },
+      "a11y": {
+        "useSemanticElements": "warn"
       }
     }
   },

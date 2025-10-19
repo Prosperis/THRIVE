@@ -59,8 +59,8 @@ export function CompanyNotesTab() {
       techStack,
       interviewProcess: (formData.get('interviewProcess') as string) || undefined,
       salaryRange: (salaryMin || salaryMax) ? {
-        min: salaryMin ? Number.parseInt(salaryMin) : undefined,
-        max: salaryMax ? Number.parseInt(salaryMax) : undefined,
+        min: salaryMin ? Number.parseInt(salaryMin, 10) : undefined,
+        max: salaryMax ? Number.parseInt(salaryMax, 10) : undefined,
         currency: salaryCurrency || 'USD',
       } : undefined,
     };

@@ -87,7 +87,7 @@ export function ChallengesTab() {
       type: formData.get('type') as 'coding' | 'system-design' | 'take-home' | 'technical-assessment',
       status: formData.get('status') as ChallengeStatus,
       difficulty: (formData.get('difficulty') as QuestionDifficulty) || undefined,
-      timeLimit: timeLimit ? Number.parseInt(timeLimit) : undefined,
+      timeLimit: timeLimit ? Number.parseInt(timeLimit, 10) : undefined,
       dueDate,
       notes: (formData.get('notes') as string) || undefined,
       solution: (formData.get('solution') as string) || undefined,
@@ -127,7 +127,7 @@ export function ChallengesTab() {
 
   const editingChallenge = editingId ? challenges.find(c => c.id === editingId) : null;
 
-  const getStatusColor = (status: ChallengeStatus) => {
+  const _getStatusColor = (status: ChallengeStatus) => {
     return CHALLENGE_STATUSES.find(s => s.value === status)?.color || 'bg-gray-500';
   };
 

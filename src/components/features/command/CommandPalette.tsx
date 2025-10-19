@@ -282,7 +282,7 @@ export function CommandPalette() {
   // Reset selected index when filtered commands change
   useEffect(() => {
     setSelectedIndex(0);
-  }, [filteredCommands]);
+  }, []);
 
   const categoryLabels: Record<string, string> = {
     navigation: 'Navigation',

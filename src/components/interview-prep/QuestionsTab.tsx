@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, BookOpen, Edit, Trash2, Play, Star } from 'lucide-react';
+import { Plus, BookOpen, Edit, Trash2, Play } from 'lucide-react';
 import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
 import { COMMON_INTERVIEW_QUESTIONS, QUESTION_CATEGORIES, DIFFICULTY_LEVELS } from '@/data/commonQuestions';
 import type { QuestionCategory, QuestionDifficulty } from '@/types/interviewPrep';
@@ -35,7 +35,7 @@ export function QuestionsTab() {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
 
   const questions = useInterviewPrepStore((state) => state.questions);
-  const answers = useInterviewPrepStore((state) => state.answers);
+  const _answers = useInterviewPrepStore((state) => state.answers);
   const addQuestion = useInterviewPrepStore((state) => state.addQuestion);
   const deleteQuestion = useInterviewPrepStore((state) => state.deleteQuestion);
   const addAnswer = useInterviewPrepStore((state) => state.addAnswer);

@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSearchStore } from '@/stores/searchStore';
 import { fuzzyMatch, scoreMatch } from '@/lib/search';
@@ -147,7 +146,7 @@ export function AdvancedSearch({
   // Reset selected index when dropdown items change
   useEffect(() => {
     setSelectedIndex(0);
-  }, [dropdownItems.length]);
+  }, []);
 
   return (
     <div className={cn('relative', className)}>
@@ -241,7 +240,9 @@ export function AdvancedSearch({
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  relevantHistory.forEach((h) => removeSearch(h.query));
+                  for (const h of relevantHistory) {
+                    removeSearch(h.query);
+                  }
                   setIsFocused(false);
                 }}
                 className="w-full text-xs text-muted-foreground hover:text-foreground"

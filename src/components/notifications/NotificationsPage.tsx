@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, BellOff, CheckCheck, Clock, Calendar, Settings, Sparkles } from 'lucide-react';
+import { Bell, Clock, Calendar, Settings, Sparkles } from 'lucide-react';
 import { useNotificationsStore } from '@/stores/notificationsStore';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';

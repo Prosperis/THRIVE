@@ -354,7 +354,7 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
                             >
                               <p className="text-sm font-medium">Row {item.row}</p>
                               <p className="text-xs text-yellow-700 dark:text-yellow-400">
-                                {item.data['Company Name']} - {item.data['Position']}
+                                {item.data['Company Name']} - {item.data.Position}
                               </p>
                             </div>
                           ))}

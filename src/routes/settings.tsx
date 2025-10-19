@@ -427,7 +427,7 @@ function SettingsPage() {
                 <Select
                   value={String(data.itemsPerPage)}
                   onValueChange={(value) => {
-                    updateData({ itemsPerPage: parseInt(value) as 10 | 25 | 50 | 100 });
+                    updateData({ itemsPerPage: Number.parseInt(value, 10) as 10 | 25 | 50 | 100 });
                     toast.success('Items Per Page Updated');
                   }}
                 >

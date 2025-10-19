@@ -157,7 +157,7 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
                   <Label className="min-w-[100px]">Max Backups</Label>
                   <Select
                     value={String(settings.maxBackups)}
-                    onValueChange={(value) => updateSettings({ maxBackups: parseInt(value) })}
+                    onValueChange={(value) => updateSettings({ maxBackups: Number.parseInt(value, 10) })}
                   >
                     <SelectTrigger className="w-[200px]">
                       <SelectValue />

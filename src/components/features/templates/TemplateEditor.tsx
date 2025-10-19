@@ -78,7 +78,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
 
     // Remove variables that are no longer in the content
     setVariables((prev) => prev.filter((v) => detectedVars.includes(v.key)));
-  }, [content, extractVariables]);
+  }, [content, extractVariables, variables]);
 
   const handleAddTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {

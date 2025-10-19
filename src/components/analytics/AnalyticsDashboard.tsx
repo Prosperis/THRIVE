@@ -50,11 +50,11 @@ export function AnalyticsDashboard() {
   // Calculate period dates
   const period = useMemo(() => {
     const periodConfig = ANALYTICS_PERIODS.find((p) => p.value === selectedPeriod);
-    if (!periodConfig || selectedPeriod === 'all') {
+    if (!periodConfig || selectedPeriod === 'all' || !periodConfig.days) {
       return undefined;
     }
     return {
-      start: subDays(new Date(), periodConfig.days!),
+      start: subDays(new Date(), periodConfig.days),
       end: new Date(),
     };
   }, [selectedPeriod]);
@@ -241,8 +241,8 @@ export function AnalyticsDashboard() {
                       outerRadius={100}
                       label={(entry) => `${entry.status}: ${entry.count}`}
                     >
-                      {statusDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      {statusDistribution.map((entry) => (
+                        <Cell key={entry.status} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip />
