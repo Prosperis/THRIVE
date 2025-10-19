@@ -16,7 +16,7 @@ export function LiveRegion({
   politeness = 'polite',
   clearOnUnmount = true 
 }: LiveRegionProps) {
-  const regionRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLOutputElement>(null);
 
   useEffect(() => {
     if (regionRef.current && message) {
@@ -37,9 +37,8 @@ export function LiveRegion({
   }, [message, clearOnUnmount]);
 
   return (
-    <div
+    <output
       ref={regionRef}
-      role="status"
       aria-live={politeness}
       aria-atomic="true"
       className="sr-only"
@@ -74,9 +73,8 @@ export function useAnnouncer() {
  */
 export function GlobalAnnouncer() {
   return (
-    <div
+    <output
       id="global-announcer"
-      role="status"
       aria-live="polite"
       aria-atomic="true"
       className="sr-only"
