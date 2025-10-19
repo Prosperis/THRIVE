@@ -65,6 +65,12 @@ export function AnalyticsDashboard() {
     };
   }, [selectedPeriod]);
 
+  // Calculate the number of days for the selected period
+  const periodDays = useMemo(() => {
+    const periodConfig = ANALYTICS_PERIODS.find((p) => p.value === selectedPeriod);
+    return periodConfig?.days || 365; // Default to 365 for 'all time'
+  }, [selectedPeriod]);
+
   // Calculate analytics
   const metrics = useMemo(
     () => calculateAnalytics(applications, interviews, period),
@@ -72,23 +78,23 @@ export function AnalyticsDashboard() {
   );
 
   const timeSeriesData = useMemo(
-    () => generateTimeSeriesData(applications, interviews, 30),
-    [applications, interviews]
+    () => generateTimeSeriesData(applications, interviews, periodDays, period),
+    [applications, interviews, periodDays, period]
   );
 
   const statusDistribution = useMemo(
-    () => calculateStatusDistribution(applications),
-    [applications]
+    () => calculateStatusDistribution(applications, period),
+    [applications, period]
   );
 
   const companyStats = useMemo(
-    () => calculateCompanyStats(applications, interviews),
-    [applications, interviews]
+    () => calculateCompanyStats(applications, interviews, period),
+    [applications, interviews, period]
   );
 
   const monthlyTrends = useMemo(
-    () => calculateMonthlyTrends(applications, interviews, 6),
-    [applications, interviews]
+    () => calculateMonthlyTrends(applications, interviews, 6, period),
+    [applications, interviews, period]
   );
 
   return (
@@ -181,7 +187,10 @@ export function AnalyticsDashboard() {
         <TabsContent value="timeline" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Application Activity (Last 30 Days)</CardTitle>
+              <CardTitle>
+                Application Activity (
+                {ANALYTICS_PERIODS.find((p) => p.value === selectedPeriod)?.label || 'All Time'})
+              </CardTitle>
               <CardDescription>
                 Track your daily applications, interviews, offers, and rejections
               </CardDescription>

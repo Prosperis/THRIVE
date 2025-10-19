@@ -171,10 +171,11 @@ export function calculateAnalytics(
 export function generateTimeSeriesData(
   applications: Application[],
   interviews: Interview[],
-  days: number = 30
+  days: number = 30,
+  period?: { start: Date; end: Date }
 ): TimeSeriesData[] {
-  const endDate = new Date();
-  const startDate = subDays(endDate, days - 1);
+  const endDate = period ? period.end : new Date();
+  const startDate = period ? period.start : subDays(endDate, days - 1);
 
   const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
 
@@ -213,7 +214,19 @@ export function generateTimeSeriesData(
 /**
  * Calculate status distribution
  */
-export function calculateStatusDistribution(applications: Application[]): StatusDistribution[] {
+export function calculateStatusDistribution(
+  applications: Application[],
+  period?: { start: Date; end: Date }
+): StatusDistribution[] {
+  // Filter by period if specified
+  const filteredApps = period
+    ? applications.filter((app) => {
+        if (!app.appliedDate) return false;
+        const date = new Date(app.appliedDate);
+        return date >= period.start && date <= period.end;
+      })
+    : applications;
+
   const statusColors: Record<string, string> = {
     applied: '#3b82f6',
     'in-review': '#8b5cf6',
@@ -227,7 +240,7 @@ export function calculateStatusDistribution(applications: Application[]): Status
     withdrawn: '#9ca3af',
   };
 
-  const statusCounts = applications.reduce(
+  const statusCounts = filteredApps.reduce(
     (acc, app) => {
       acc[app.status] = (acc[app.status] || 0) + 1;
       return acc;
@@ -235,7 +248,7 @@ export function calculateStatusDistribution(applications: Application[]): Status
     {} as Record<string, number>
   );
 
-  const total = applications.length;
+  const total = filteredApps.length;
 
   return Object.entries(statusCounts)
     .map(([status, count]) => ({
@@ -252,11 +265,29 @@ export function calculateStatusDistribution(applications: Application[]): Status
  */
 export function calculateCompanyStats(
   applications: Application[],
-  interviews: Interview[]
+  interviews: Interview[],
+  period?: { start: Date; end: Date }
 ): CompanyStats[] {
+  // Filter by period if specified
+  const filteredApps = period
+    ? applications.filter((app) => {
+        if (!app.appliedDate) return false;
+        const date = new Date(app.appliedDate);
+        return date >= period.start && date <= period.end;
+      })
+    : applications;
+
+  const filteredInterviews = period
+    ? interviews.filter((interview) => {
+        if (!interview.scheduledAt) return false;
+        const date = new Date(interview.scheduledAt);
+        return date >= period.start && date <= period.end;
+      })
+    : interviews;
+
   const companyMap = new Map<string, CompanyStats>();
 
-  for (const app of applications) {
+  for (const app of filteredApps) {
     const companyKey = app.companyName;
     const existing = companyMap.get(companyKey);
 
@@ -278,8 +309,8 @@ export function calculateCompanyStats(
   }
 
   // Add interview counts
-  for (const interview of interviews) {
-    const app = applications.find((a) => a.id === interview.applicationId);
+  for (const interview of filteredInterviews) {
+    const app = filteredApps.find((a) => a.id === interview.applicationId);
     if (app) {
       const stats = companyMap.get(app.companyName);
       if (stats) {
@@ -305,12 +336,18 @@ export function calculateCompanyStats(
 export function calculateMonthlyTrends(
   applications: Application[],
   interviews: Interview[],
-  months: number = 6
+  months: number = 6,
+  period?: { start: Date; end: Date }
 ): MonthlyTrend[] {
-  const endDate = new Date();
-  const startDate = new Date(endDate);
-  startDate.setMonth(startDate.getMonth() - months + 1);
-  startDate.setDate(1);
+  const endDate = period ? period.end : new Date();
+  const startDate = period
+    ? period.start
+    : (() => {
+        const date = new Date(endDate);
+        date.setMonth(date.getMonth() - months + 1);
+        date.setDate(1);
+        return date;
+      })();
 
   const monthRange = eachMonthOfInterval({ start: startDate, end: endDate });
 
