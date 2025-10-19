@@ -93,7 +93,7 @@ bun run deploy
 git push origin main
 ```
 
-See [Deployment Guide](./docs/deployment.md) for detailed instructions.
+See the [Wiki](https://github.com/adriandarian/thrive/wiki) for detailed instructions.
 
 ## 📋 Project Status
 
@@ -108,22 +108,21 @@ All phases complete:
 
 ## 📚 Documentation
 
-### User Documentation
-- **[User Guide](./docs/USER_GUIDE.md)** - Complete user manual with screenshots
-- **[Keyboard Shortcuts](./docs/USER_GUIDE.md#keyboard-shortcuts)** - All shortcuts
-- **[Troubleshooting](./docs/USER_GUIDE.md#troubleshooting)** - Common issues & fixes
+📖 **[Visit the Wiki](https://github.com/adriandarian/thrive/wiki)** for complete documentation:
 
-### Developer Documentation
-- **[Developer Guide](./docs/DEVELOPER_GUIDE.md)** - Technical documentation
-- **[API Reference](./docs/API_REFERENCE.md)** - Complete API docs
-- **[Deployment Guide](./docs/deployment.md)** - Deploy to production
-- **[Monitoring & Analytics](./docs/monitoring-analytics.md)** - Setup tracking
-- **[Project Plan](./docs/PROJECT_PLAN.md)** - Full development roadmap
+### For Users
+- **[User Guide](https://github.com/adriandarian/thrive/wiki/User-Guide)** - Complete guide to using Thrive
+- **[Quick Start](https://github.com/adriandarian/thrive/wiki/Quick-Start)** - Get started immediately
 
-### Technical Documentation
-- **[Accessibility Checklist](./docs/accessibility-checklist.md)** - 300+ WCAG points
-- **[Cross-Browser Testing](./docs/cross-browser-testing-checklist.md)** - 400+ test points
-- **[Phase Summaries](./docs/)** - Individual phase documentation
+### For Developers
+- **[Developer Guide](https://github.com/adriandarian/thrive/wiki/Developer-Guide)** - Technical documentation
+- **[API Reference](https://github.com/adriandarian/thrive/wiki/API-Reference)** - Complete API docs
+- **[Deployment Guide](https://github.com/adriandarian/thrive/wiki/Deployment-Guide)** - Deploy to production
+- **[Monitoring & Analytics](https://github.com/adriandarian/thrive/wiki/Monitoring-and-Analytics)** - Setup tracking
+
+### Reference
+- **[Troubleshooting](https://github.com/adriandarian/thrive/wiki/Troubleshooting)** - Common issues & fixes
+- **[Development History](https://github.com/adriandarian/thrive/wiki/Development-History)** - Project evolution
 
 ## 🎯 Key Features Detail
 
