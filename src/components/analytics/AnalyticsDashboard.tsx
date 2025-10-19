@@ -196,43 +196,51 @@ export function AnalyticsDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={timeSeriesData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="applications"
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    name="Applications"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="interviews"
-                    stroke="#8b5cf6"
-                    strokeWidth={2}
-                    name="Interviews"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="offers"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    name="Offers"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="rejections"
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                    name="Rejections"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {timeSeriesData.length > 0 && timeSeriesData.some((d) => d.applications > 0 || d.interviews > 0 || d.offers > 0 || d.rejections > 0) ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={timeSeriesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="applications"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      name="Applications"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="interviews"
+                      stroke="#8b5cf6"
+                      strokeWidth={2}
+                      name="Interviews"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="offers"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      name="Offers"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="rejections"
+                      stroke="#ef4444"
+                      strokeWidth={2}
+                      name="Rejections"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground">
+                  <Calendar className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="text-sm">No activity data for this period</p>
+                  <p className="text-xs mt-1">Applications will appear here as you add them</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -246,25 +254,33 @@ export function AnalyticsDashboard() {
                 <CardDescription>Breakdown by application status</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={statusDistribution}
-                      dataKey="count"
-                      nameKey="status"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label={(entry) => `${entry.status}: ${entry.count}`}
-                    >
-                      {statusDistribution.map((entry) => (
-                        <Cell key={entry.status} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                {statusDistribution.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={statusDistribution}
+                        dataKey="count"
+                        nameKey="status"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        label={(entry) => `${entry.status}: ${entry.count}`}
+                      >
+                        {statusDistribution.map((entry) => (
+                          <Cell key={entry.status} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+                    <Target className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm">No application data available</p>
+                    <p className="text-xs mt-1">Start adding applications to see the distribution</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -274,27 +290,34 @@ export function AnalyticsDashboard() {
                 <CardDescription>Count and percentage by status</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {statusDistribution.map((status) => (
-                    <div key={status.status} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: status.color }}
-                        />
-                        <span className="text-sm font-medium capitalize">
-                          {status.status.replace(/-/g, ' ')}
-                        </span>
+                {statusDistribution.length > 0 ? (
+                  <div className="space-y-3">
+                    {statusDistribution.map((status) => (
+                      <div key={status.status} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: status.color }}
+                          />
+                          <span className="text-sm font-medium capitalize">
+                            {status.status.replace(/-/g, ' ')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-bold">{status.count}</span>
+                          <span className="text-xs text-muted-foreground w-12 text-right">
+                            {formatPercentage(status.percentage, 0)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold">{status.count}</span>
-                        <span className="text-xs text-muted-foreground w-12 text-right">
-                          {formatPercentage(status.percentage, 0)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[280px] text-muted-foreground">
+                    <BarChart3 className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm">No status data to display</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -308,18 +331,26 @@ export function AnalyticsDashboard() {
               <CardDescription>Most applied companies with success rates</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={companyStats}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="companyName" angle={-45} textAnchor="end" height={100} />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="applicationsCount" fill="#3b82f6" name="Applications" />
-                  <Bar dataKey="interviewsCount" fill="#8b5cf6" name="Interviews" />
-                  <Bar dataKey="offersCount" fill="#10b981" name="Offers" />
-                </BarChart>
-              </ResponsiveContainer>
+              {companyStats.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={companyStats}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="companyName" angle={-45} textAnchor="end" height={100} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="applicationsCount" fill="#3b82f6" name="Applications" />
+                    <Bar dataKey="interviewsCount" fill="#8b5cf6" name="Interviews" />
+                    <Bar dataKey="offersCount" fill="#10b981" name="Offers" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground">
+                  <Building2 className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="text-sm">No company data available</p>
+                  <p className="text-xs mt-1">Add applications to track companies</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -332,19 +363,27 @@ export function AnalyticsDashboard() {
               <CardDescription>Track your progress over the last 6 months</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={monthlyTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="applications" fill="#3b82f6" name="Applications" />
-                  <Bar dataKey="interviews" fill="#8b5cf6" name="Interviews" />
-                  <Bar dataKey="offers" fill="#10b981" name="Offers" />
-                  <Bar dataKey="rejections" fill="#ef4444" name="Rejections" />
-                </BarChart>
-              </ResponsiveContainer>
+              {monthlyTrends.length > 0 && monthlyTrends.some((m) => m.applications > 0 || m.interviews > 0) ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={monthlyTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="applications" fill="#3b82f6" name="Applications" />
+                    <Bar dataKey="interviews" fill="#8b5cf6" name="Interviews" />
+                    <Bar dataKey="offers" fill="#10b981" name="Offers" />
+                    <Bar dataKey="rejections" fill="#ef4444" name="Rejections" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground">
+                  <TrendingUp className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="text-sm">No monthly trend data available</p>
+                  <p className="text-xs mt-1">Add applications to see trends over time</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -354,21 +393,29 @@ export function AnalyticsDashboard() {
               <CardDescription>Monthly response rate over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={monthlyTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
-                  <Line
-                    type="monotone"
-                    dataKey="responseRate"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    name="Response Rate"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {monthlyTrends.length > 0 && monthlyTrends.some((m) => m.responseRate > 0) ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={monthlyTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
+                    <Line
+                      type="monotone"
+                      dataKey="responseRate"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      name="Response Rate"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[250px] text-muted-foreground">
+                  <Percent className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="text-sm">No response rate data available</p>
+                  <p className="text-xs mt-1">Response rates will appear as applications progress</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
