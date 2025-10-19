@@ -161,6 +161,9 @@ export interface Document {
   tags?: string[];
   notes?: string;
 
+  // Soft delete
+  deletedAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }

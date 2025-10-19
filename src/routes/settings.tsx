@@ -7,6 +7,7 @@ import {
   Clock,
   Database,
   ExternalLink,
+  FileText,
   Github,
   Globe,
   Heart,
@@ -19,6 +20,7 @@ import {
   Palette,
   RotateCcw,
   Save,
+  Scale,
   Sun,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
@@ -52,9 +54,11 @@ function SettingsPage() {
     display,
     notifications,
     data,
+    documents,
     updateDisplay,
     updateNotifications,
     updateData,
+    updateDocuments,
     resetToDefaults,
   } = useSettingsStore();
 
@@ -488,6 +492,95 @@ function SettingsPage() {
             </div>
           </div>
 
+          {/* Documents Section */}
+          <div className="border rounded-lg p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Documents</h2>
+                <p className="text-sm text-muted-foreground">
+                  Manage document deletion and recovery settings
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 pl-[52px]">
+              {/* Auto Delete Days */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Auto Delete After (Days)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently delete documents after this many days
+                  </p>
+                </div>
+                <Select
+                  value={String(documents.autoDeleteDays)}
+                  onValueChange={(value) => {
+                    const days = Number.parseInt(value, 10);
+                    updateDocuments({ autoDeleteDays: days });
+                    toast.success('Auto Delete Setting Updated', {
+                      description: `Documents will be permanently deleted after ${days} days`,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 day</SelectItem>
+                    <SelectItem value="3">3 days</SelectItem>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="14">14 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                    <SelectItem value="60">60 days</SelectItem>
+                    <SelectItem value="90">90 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Recently Deleted Days */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Show Recently Deleted (Days)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display deleted documents within this timeframe
+                  </p>
+                </div>
+                <Select
+                  value={String(documents.recentlyDeletedDays)}
+                  onValueChange={(value) => {
+                    const days = Number.parseInt(value, 10);
+                    updateDocuments({ recentlyDeletedDays: days });
+                    toast.success('Recently Deleted Display Updated', {
+                      description: `Showing deleted documents from the last ${days} days`,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 day</SelectItem>
+                    <SelectItem value="3">3 days</SelectItem>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="14">14 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="rounded-lg bg-muted p-4">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Note:</strong> Documents are soft-deleted when you click the trash icon. 
+                  They remain recoverable in the "Recently Deleted" tab until the auto-delete period expires. 
+                  After that, they are permanently removed from the database.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* About Section */}
           <div className="border rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-3">
@@ -643,7 +736,7 @@ function SettingsPage() {
                           >
                             <Scale className="w-3 h-3 text-muted-foreground hover:text-foreground" />
                           </a>
-                        <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </a>
                     ))}

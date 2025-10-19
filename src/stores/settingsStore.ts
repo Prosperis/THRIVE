@@ -30,15 +30,22 @@ export interface DataSettings {
   confirmDelete: boolean;
 }
 
+export interface DocumentSettings {
+  autoDeleteDays: number; // Days before permanently deleting soft-deleted documents
+  recentlyDeletedDays: number; // Days to show documents in "Recently Deleted" tab
+}
+
 interface SettingsState {
   display: DisplaySettings;
   notifications: NotificationSettings;
   data: DataSettings;
+  documents: DocumentSettings;
 
   // Actions
   updateDisplay: (settings: Partial<DisplaySettings>) => void;
   updateNotifications: (settings: Partial<NotificationSettings>) => void;
   updateData: (settings: Partial<DataSettings>) => void;
+  updateDocuments: (settings: Partial<DocumentSettings>) => void;
   resetToDefaults: () => void;
 }
 
@@ -66,12 +73,18 @@ const DEFAULT_DATA: DataSettings = {
   confirmDelete: true,
 };
 
+const DEFAULT_DOCUMENTS: DocumentSettings = {
+  autoDeleteDays: 7,
+  recentlyDeletedDays: 7,
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       display: DEFAULT_DISPLAY,
       notifications: DEFAULT_NOTIFICATIONS,
       data: DEFAULT_DATA,
+      documents: DEFAULT_DOCUMENTS,
 
       updateDisplay: (settings) => {
         set((state) => ({
@@ -91,11 +104,18 @@ export const useSettingsStore = create<SettingsState>()(
         }));
       },
 
+      updateDocuments: (settings) => {
+        set((state) => ({
+          documents: { ...state.documents, ...settings },
+        }));
+      },
+
       resetToDefaults: () => {
         set({
           display: DEFAULT_DISPLAY,
           notifications: DEFAULT_NOTIFICATIONS,
           data: DEFAULT_DATA,
+          documents: DEFAULT_DOCUMENTS,
         });
       },
     }),
