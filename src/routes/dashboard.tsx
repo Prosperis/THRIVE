@@ -77,7 +77,7 @@ function DashboardPage() {
   };
 
   // Dashboard customization
-  const { widgets, layoutMode, reorderWidgets } = useDashboardStore();
+  const { widgets, reorderWidgets } = useDashboardStore();
   const [activeId, setActiveId] = useState<DashboardWidgetType | null>(null);
   
   const sensors = useSensors(
@@ -254,7 +254,7 @@ function DashboardPage() {
           <div className="grid gap-4 md:gap-6 md:grid-cols-2">
             {visibleWidgets.map((widget) => (
               <div key={widget.id} className={getGridClass(widget.id)}>
-                <DashboardWidgetWrapper id={widget.id} isEditMode={layoutMode === 'edit'}>
+                <DashboardWidgetWrapper id={widget.id}>
                   {renderWidget(widget.id)}
                 </DashboardWidgetWrapper>
               </div>

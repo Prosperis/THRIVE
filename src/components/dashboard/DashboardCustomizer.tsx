@@ -1,5 +1,4 @@
-import { Eye, EyeOff, LayoutGrid, Settings2, X } from 'lucide-react';
-import { AnimatedButton } from '@/components/ui/animated-button';
+import { Eye, EyeOff, Settings2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,34 +15,22 @@ import { Switch } from '@/components/ui/switch';
 import { useDashboardStore } from '@/stores/dashboardStore';
 
 export function DashboardCustomizer() {
-  const { widgets, layoutMode, setLayoutMode, toggleWidget, resetToDefault } = useDashboardStore();
+  const { widgets, toggleWidget, resetToDefault } = useDashboardStore();
 
   const visibleCount = widgets.filter((w) => w.visible).length;
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Edit Mode Toggle */}
-      <AnimatedButton
-        variant={layoutMode === 'edit' ? 'default' : 'outline'}
-        size="sm"
-        onClick={() => setLayoutMode(layoutMode === 'view' ? 'edit' : 'view')}
-      >
-        <LayoutGrid className="h-4 w-4 mr-2" />
-        {layoutMode === 'edit' ? 'Done Editing' : 'Customize Layout'}
-      </AnimatedButton>
-
-      {/* Settings Sheet */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Settings2 className="h-4 w-4 mr-2" />
-            Widgets
-            <Badge variant="secondary" className="ml-2">
-              {visibleCount}
-            </Badge>
-          </Button>
-        </SheetTrigger>
-        <SheetContent>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Settings2 className="h-4 w-4 mr-2" />
+          Widgets
+          <Badge variant="secondary" className="ml-2">
+            {visibleCount}
+          </Badge>
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
           <SheetHeader>
             <SheetTitle>Dashboard Widgets</SheetTitle>
             <SheetDescription>
@@ -105,6 +92,5 @@ export function DashboardCustomizer() {
           </div>
         </SheetContent>
       </Sheet>
-    </div>
   );
 }

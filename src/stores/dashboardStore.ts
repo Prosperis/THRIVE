@@ -20,8 +20,6 @@ export interface DashboardWidget {
 
 interface DashboardState {
   widgets: DashboardWidget[];
-  layoutMode: 'view' | 'edit';
-  setLayoutMode: (mode: 'view' | 'edit') => void;
   toggleWidget: (id: DashboardWidgetType) => void;
   reorderWidgets: (widgets: DashboardWidget[]) => void;
   resetToDefault: () => void;
@@ -83,9 +81,6 @@ export const useDashboardStore = create<DashboardState>()(
   persist(
     (set) => ({
       widgets: defaultWidgets,
-      layoutMode: 'view',
-
-      setLayoutMode: (mode) => set({ layoutMode: mode }),
 
       toggleWidget: (id) =>
         set((state) => ({
@@ -105,7 +100,6 @@ export const useDashboardStore = create<DashboardState>()(
       resetToDefault: () =>
         set({
           widgets: defaultWidgets,
-          layoutMode: 'view',
         }),
     }),
     {
