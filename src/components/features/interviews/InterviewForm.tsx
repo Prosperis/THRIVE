@@ -1,7 +1,7 @@
 import { useForm } from '@tanstack/react-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -9,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { INTERVIEW_TYPES, INTERVIEW_STATUSES } from '@/lib/constants';
+import { Textarea } from '@/components/ui/textarea';
+import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import type { Interview } from '@/types';
 
@@ -47,8 +47,8 @@ export function InterviewForm({
     defaultValues: {
       applicationId: interview?.applicationId || defaultApplicationId || '',
       round: interview?.round || 1,
-      type: interview?.type || 'phone-screen' as const,
-      status: interview?.status || 'scheduled' as const,
+      type: interview?.type || ('phone-screen' as const),
+      status: interview?.status || ('scheduled' as const),
       scheduledDate: getDateValue(),
       scheduledTime: getTimeValue(),
       duration: interview?.duration || 60,
@@ -93,7 +93,7 @@ export function InterviewForm({
       {/* Basic Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Basic Information</h3>
-        
+
         <form.Field name="applicationId">
           {(field) => (
             <div className="space-y-2">
@@ -204,7 +204,7 @@ export function InterviewForm({
       {/* Scheduling */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Scheduling</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <form.Field name="scheduledDate">
             {(field) => (
@@ -278,7 +278,7 @@ export function InterviewForm({
       {/* Notes */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Notes</h3>
-        
+
         <form.Subscribe selector={(state) => state.values.status}>
           {(status) => (
             <>

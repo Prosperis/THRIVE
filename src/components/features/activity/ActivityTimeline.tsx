@@ -1,21 +1,21 @@
 import { formatDistanceToNow } from 'date-fns';
 import {
-  FileText,
+  Activity as ActivityIcon,
   Calendar,
   CheckCircle,
+  Clock,
+  FileText,
   StickyNote,
+  Tag,
   Upload,
   Users,
-  Clock,
-  Tag,
   XCircle,
-  Activity as ActivityIcon,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { useActivityStore } from '@/stores/activityStore';
 import type { Activity, ActivityType } from '@/types/activity';
 import { ACTIVITY_LABELS } from '@/types/activity';
-import { cn } from '@/lib/utils';
 
 interface ActivityTimelineProps {
   entityId?: string;
@@ -85,12 +85,15 @@ export function ActivityTimeline({
         return (
           <div key={activity.id} className="relative flex gap-3 pb-2">
             {/* Timeline line */}
-            {!isLast && (
-              <div className="absolute left-[13px] top-8 bottom-0 w-px bg-border" />
-            )}
+            {!isLast && <div className="absolute left-[13px] top-8 bottom-0 w-px bg-border" />}
 
             {/* Icon */}
-            <div className={cn('relative z-10 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center', ACTIVITY_COLORS[activity.type])}>
+            <div
+              className={cn(
+                'relative z-10 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center',
+                ACTIVITY_COLORS[activity.type]
+              )}
+            >
               <Icon className="h-3.5 w-3.5 text-white" />
             </div>
 

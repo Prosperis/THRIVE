@@ -1,7 +1,7 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
 
 interface AnimatedStatusBadgeProps {
   status: string;
@@ -13,20 +13,20 @@ interface AnimatedStatusBadgeProps {
 
 /**
  * AnimatedStatusBadge - Status badge with smooth color transitions and optional pulse effect
- * 
+ *
  * Automatically animates when status changes with smooth color transitions.
  * Optional pulse effect for emphasis on status changes.
- * 
+ *
  * @example
  * ```tsx
- * <AnimatedStatusBadge 
+ * <AnimatedStatusBadge
  *   status={application.status}
  *   className={statusColors[application.status]}
  * >
  *   {application.status}
  * </AnimatedStatusBadge>
- * 
- * <AnimatedStatusBadge 
+ *
+ * <AnimatedStatusBadge
  *   status={application.status}
  *   className={statusColors[application.status]}
  *   showPulse
@@ -47,8 +47,8 @@ export function AnimatedStatusBadge({
       <motion.div
         key={status}
         initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ 
-          scale: 1, 
+        animate={{
+          scale: 1,
           opacity: 1,
         }}
         exit={{ scale: 0.8, opacity: 0 }}
@@ -59,20 +59,21 @@ export function AnimatedStatusBadge({
         className="inline-flex"
       >
         <motion.div
-          animate={showPulse ? {
-            scale: [1, 1.05, 1],
-          } : {}}
+          animate={
+            showPulse
+              ? {
+                  scale: [1, 1.05, 1],
+                }
+              : {}
+          }
           transition={{
             duration: 0.6,
             ease: 'easeInOut',
           }}
         >
-          <Badge 
+          <Badge
             variant={variant}
-            className={cn(
-              'transition-all duration-300 ease-in-out',
-              className
-            )}
+            className={cn('transition-all duration-300 ease-in-out', className)}
           >
             {children}
           </Badge>

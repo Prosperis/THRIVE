@@ -35,9 +35,9 @@ export function FocusTrap({ children, active = true, restoreFocus = true }: Focu
         '[tabindex]:not([tabindex="-1"])',
       ].join(',');
 
-      return Array.from(
-        container.querySelectorAll<HTMLElement>(selectors)
-      ).filter(el => !el.hasAttribute('disabled'));
+      return Array.from(container.querySelectorAll<HTMLElement>(selectors)).filter(
+        (el) => !el.hasAttribute('disabled')
+      );
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {

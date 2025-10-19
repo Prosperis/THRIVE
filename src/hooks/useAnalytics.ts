@@ -1,9 +1,9 @@
+import { isAfter, startOfMonth, startOfWeek } from 'date-fns';
 import { useMemo } from 'react';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { useInterviewsStore } from '@/stores/interviewsStore';
-import { useContactsStore } from '@/stores/contactsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
-import { startOfWeek, startOfMonth, isAfter } from 'date-fns';
+import { useContactsStore } from '@/stores/contactsStore';
+import { useInterviewsStore } from '@/stores/interviewsStore';
 
 export function useAnalytics() {
   const { applications } = useApplicationsStore();
@@ -24,51 +24,45 @@ export function useAnalytics() {
 
     // Applications this week/month
     const applicationsThisWeek = applications.filter(
-      app => app.appliedDate && isAfter(new Date(app.appliedDate), weekStart)
+      (app) => app.appliedDate && isAfter(new Date(app.appliedDate), weekStart)
     ).length;
-    
+
     const applicationsThisMonth = applications.filter(
-      app => app.appliedDate && isAfter(new Date(app.appliedDate), monthStart)
+      (app) => app.appliedDate && isAfter(new Date(app.appliedDate), monthStart)
     ).length;
 
     // Interviews this week/month
     const interviewsThisWeek = interviews.filter(
-      interview => interview.scheduledAt && isAfter(new Date(interview.scheduledAt), weekStart)
+      (interview) => interview.scheduledAt && isAfter(new Date(interview.scheduledAt), weekStart)
     ).length;
 
     const interviewsThisMonth = interviews.filter(
-      interview => interview.scheduledAt && isAfter(new Date(interview.scheduledAt), monthStart)
+      (interview) => interview.scheduledAt && isAfter(new Date(interview.scheduledAt), monthStart)
     ).length;
 
     // Status breakdown
-    const activeApplications = applications.filter(app => 
+    const activeApplications = applications.filter((app) =>
       ['applied', 'screening', 'interviewing'].includes(app.status)
     ).length;
 
-    const offersReceived = applications.filter(app => 
-      app.status === 'offer'
-    ).length;
+    const offersReceived = applications.filter((app) => app.status === 'offer').length;
 
-    const rejections = applications.filter(app => 
-      app.status === 'rejected'
-    ).length;
+    const rejections = applications.filter((app) => app.status === 'rejected').length;
 
     // Interview success metrics
-    const completedInterviews = interviews.filter(i => i.status === 'completed').length;
-    const scheduledInterviews = interviews.filter(i => i.status === 'scheduled').length;
-    const upcomingInterviews = interviews.filter(i => 
-      i.status === 'scheduled' && i.scheduledAt && isAfter(new Date(i.scheduledAt), now)
+    const completedInterviews = interviews.filter((i) => i.status === 'completed').length;
+    const scheduledInterviews = interviews.filter((i) => i.status === 'scheduled').length;
+    const upcomingInterviews = interviews.filter(
+      (i) => i.status === 'scheduled' && i.scheduledAt && isAfter(new Date(i.scheduledAt), now)
     ).length;
 
     // Response rate (applications with interviews / total applications)
-    const responseRate = totalApplications > 0 
-      ? Math.round((totalInterviews / totalApplications) * 100) 
-      : 0;
+    const responseRate =
+      totalApplications > 0 ? Math.round((totalInterviews / totalApplications) * 100) : 0;
 
     // Interview to offer conversion
-    const interviewToOfferRate = completedInterviews > 0
-      ? Math.round((offersReceived / completedInterviews) * 100)
-      : 0;
+    const interviewToOfferRate =
+      completedInterviews > 0 ? Math.round((offersReceived / completedInterviews) * 100) : 0;
 
     // Average time to response (simplified - would need more data tracking)
     const avgDaysToResponse = 7; // Placeholder

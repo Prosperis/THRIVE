@@ -11,9 +11,5 @@ interface VisuallyHiddenProps {
  * Use for providing additional context to assistive technologies
  */
 export function VisuallyHidden({ children, className }: VisuallyHiddenProps) {
-  return (
-    <span className={cn('sr-only', className)}>
-      {children}
-    </span>
-  );
+  return <span className={cn('sr-only', className)}>{children}</span>;
 }

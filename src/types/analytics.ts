@@ -8,26 +8,26 @@ export interface AnalyticsMetrics {
   activeApplications: number;
   rejectedApplications: number;
   successfulApplications: number;
-  
+
   // Response metrics
   responseRate: number; // percentage
   averageResponseTime: number; // days
   noResponseCount: number;
-  
+
   // Interview metrics
   totalInterviews: number;
   interviewConversionRate: number; // applications → interviews (percentage)
   completedInterviews: number;
   scheduledInterviews: number;
-  
+
   // Success metrics
   offerRate: number; // applications → offers (percentage)
   interviewToOfferRate: number; // interviews → offers (percentage)
-  
+
   // Time metrics
   averageTimeToInterview: number; // days from application to first interview
   averageTimeToOffer: number; // days from application to offer
-  
+
   // Activity metrics
   applicationsThisWeek: number;
   applicationsThisMonth: number;

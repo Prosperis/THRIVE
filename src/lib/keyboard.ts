@@ -29,13 +29,8 @@ export function isActionKey(event: React.KeyboardEvent): boolean {
  * Check if key is an arrow key
  */
 export function isArrowKey(event: React.KeyboardEvent): boolean {
-  const arrowKeys = [
-    Keys.ARROW_UP,
-    Keys.ARROW_DOWN,
-    Keys.ARROW_LEFT,
-    Keys.ARROW_RIGHT,
-  ];
-  return arrowKeys.includes(event.key as typeof arrowKeys[number]);
+  const arrowKeys = [Keys.ARROW_UP, Keys.ARROW_DOWN, Keys.ARROW_LEFT, Keys.ARROW_RIGHT];
+  return arrowKeys.includes(event.key as (typeof arrowKeys)[number]);
 }
 
 /**

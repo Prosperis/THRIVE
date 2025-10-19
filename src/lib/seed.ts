@@ -1,9 +1,10 @@
 /**
  * Seed data for testing and development
  */
+
+import type { Application } from '@/types';
 import { db } from './db';
 import { generateId } from './utils';
-import type { Application } from '@/types';
 
 export async function seedDatabase() {
   // Check if already seeded

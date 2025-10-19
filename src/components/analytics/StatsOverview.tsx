@@ -1,15 +1,15 @@
-import { StatCard } from './StatCard';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { 
-  FileText, 
-  Calendar, 
-  Users, 
-  Building2, 
+import {
+  Building2,
+  Calendar,
+  CheckCircle,
+  FileText,
   Target,
   TrendingUp,
-  CheckCircle,
+  Users,
   XCircle,
 } from 'lucide-react';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { StatCard } from './StatCard';
 
 export function StatsOverview() {
   const analytics = useAnalytics();

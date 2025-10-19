@@ -1,4 +1,6 @@
+import { HelpCircle } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,8 +9,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { HelpCircle } from 'lucide-react';
 
 export function TableHelpDialog() {
   const [open, setOpen] = useState(false);
@@ -35,7 +35,13 @@ export function TableHelpDialog() {
               <li>• Click any column header to sort ascending (A→Z, 0→9)</li>
               <li>• Click again to sort descending (Z→A, 9→0)</li>
               <li>• Click once more to clear the sort</li>
-              <li>• Hold <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">Shift</kbd> while clicking to add multi-column sorts</li>
+              <li>
+                • Hold{' '}
+                <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">
+                  Shift
+                </kbd>{' '}
+                while clicking to add multi-column sorts
+              </li>
               <li>• Sort preferences are saved automatically</li>
             </ul>
           </div>
@@ -66,9 +72,27 @@ export function TableHelpDialog() {
           <div>
             <h4 className="font-medium text-sm mb-2">⌨️ Keyboard Shortcuts</h4>
             <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>• <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">Shift</kbd> + Click: Multi-column sort</li>
-              <li>• <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">Enter</kbd>: Save filter name in dialogs</li>
-              <li>• <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">Esc</kbd>: Close dialogs</li>
+              <li>
+                •{' '}
+                <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">
+                  Shift
+                </kbd>{' '}
+                + Click: Multi-column sort
+              </li>
+              <li>
+                •{' '}
+                <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">
+                  Enter
+                </kbd>
+                : Save filter name in dialogs
+              </li>
+              <li>
+                •{' '}
+                <kbd className="px-1.5 py-0.5 border rounded bg-muted text-foreground text-xs">
+                  Esc
+                </kbd>
+                : Close dialogs
+              </li>
             </ul>
           </div>
 

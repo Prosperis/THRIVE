@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Contact } from '@/types';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
+import type { Contact } from '@/types';
 
 interface ContactsState {
   contacts: Contact[];

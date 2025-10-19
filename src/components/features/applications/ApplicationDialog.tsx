@@ -7,9 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ApplicationForm } from './ApplicationForm';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import type { Application } from '@/types';
+import { ApplicationForm } from './ApplicationForm';
 
 interface ApplicationDialogProps {
   application?: Application;
@@ -26,7 +26,7 @@ export function ApplicationDialog({
 }: ApplicationDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { addApplication, updateApplication } = useApplicationsStore();
 
   // Use controlled or uncontrolled state
@@ -35,7 +35,7 @@ export function ApplicationDialog({
 
   const handleSubmit = async (data: Partial<Application>) => {
     setIsLoading(true);
-    
+
     try {
       if (application) {
         // Update existing application
@@ -44,7 +44,7 @@ export function ApplicationDialog({
         // Create new application
         await addApplication(data as Omit<Application, 'id' | 'createdAt' | 'updatedAt'>);
       }
-      
+
       setOpen(false);
     } catch (error) {
       console.error('Failed to save application:', error);
@@ -60,12 +60,10 @@ export function ApplicationDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      
+
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {application ? 'Edit Application' : 'Create New Application'}
-          </DialogTitle>
+          <DialogTitle>{application ? 'Edit Application' : 'Create New Application'}</DialogTitle>
           <DialogDescription>
             {application
               ? 'Update the details of this job application.'

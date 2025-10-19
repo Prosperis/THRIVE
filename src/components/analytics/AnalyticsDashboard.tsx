@@ -1,46 +1,52 @@
-import { useState, useMemo } from 'react';
+import { subDays } from 'date-fns';
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useApplicationsStore } from '@/stores/applicationsStore';
-import { useInterviewsStore } from '@/stores/interviewsStore';
-import {
-  calculateAnalytics,
-  generateTimeSeriesData,
-  calculateStatusDistribution,
-  calculateCompanyStats,
-  calculateMonthlyTrends,
-  formatPercentage,
-  formatNumber,
-} from '@/lib/analytics';
-import { ANALYTICS_PERIODS, type AnalyticsPeriod } from '@/types/analytics';
-import { StatCard, MetricGrid } from './StatCard';
-import {
-  TrendingUp,
-  Target,
+  BarChart3,
+  Building2,
   Calendar,
   CheckCircle,
   Clock,
-  BarChart3,
-  Building2,
   Percent,
+  Target,
+  TrendingUp,
 } from 'lucide-react';
-import { subDays } from 'date-fns';
+import { useMemo, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  calculateAnalytics,
+  calculateCompanyStats,
+  calculateMonthlyTrends,
+  calculateStatusDistribution,
+  formatNumber,
+  formatPercentage,
+  generateTimeSeriesData,
+} from '@/lib/analytics';
+import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useInterviewsStore } from '@/stores/interviewsStore';
+import { ANALYTICS_PERIODS, type AnalyticsPeriod } from '@/types/analytics';
+import { MetricGrid, StatCard } from './StatCard';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
@@ -91,11 +97,12 @@ export function AnalyticsDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
-          <p className="text-muted-foreground">
-            Track your job search progress and insights
-          </p>
+          <p className="text-muted-foreground">Track your job search progress and insights</p>
         </div>
-        <Select value={selectedPeriod} onValueChange={(value) => setSelectedPeriod(value as AnalyticsPeriod['value'])}>
+        <Select
+          value={selectedPeriod}
+          onValueChange={(value) => setSelectedPeriod(value as AnalyticsPeriod['value'])}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue />
           </SelectTrigger>
@@ -289,9 +296,7 @@ export function AnalyticsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Top Companies</CardTitle>
-              <CardDescription>
-                Most applied companies with success rates
-              </CardDescription>
+              <CardDescription>Most applied companies with success rates</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -315,9 +320,7 @@ export function AnalyticsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Monthly Trends</CardTitle>
-              <CardDescription>
-                Track your progress over the last 6 months
-              </CardDescription>
+              <CardDescription>Track your progress over the last 6 months</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={350}>

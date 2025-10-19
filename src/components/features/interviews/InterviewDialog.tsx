@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,9 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { InterviewForm } from './InterviewForm';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 import type { Interview } from '@/types';
+import { InterviewForm } from './InterviewForm';
 
 interface InterviewDialogProps {
   interview?: Interview;

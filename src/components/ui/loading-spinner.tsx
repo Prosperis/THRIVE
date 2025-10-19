@@ -18,7 +18,7 @@ const sizeClasses = {
 
 /**
  * LoadingSpinner - Animated loading spinner with optional text
- * 
+ *
  * @example
  * ```tsx
  * <LoadingSpinner />
@@ -26,9 +26,9 @@ const sizeClasses = {
  * <LoadingSpinner fullScreen text="Please wait..." />
  * ```
  */
-export function LoadingSpinner({ 
-  size = 'md', 
-  text, 
+export function LoadingSpinner({
+  size = 'md',
+  text,
   className,
   fullScreen = false,
 }: LoadingSpinnerProps) {
@@ -68,9 +68,7 @@ export function LoadingSpinner({
 
   if (fullScreen) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-screen">
-        {spinner}
-      </div>
+      <div className="flex items-center justify-center w-full h-full min-h-screen">{spinner}</div>
     );
   }
 

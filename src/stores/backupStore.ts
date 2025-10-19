@@ -49,7 +49,7 @@ export const useBackupStore = create<BackupState>()(
 
         set((state) => {
           const history = [newRecord, ...state.backupHistory];
-          
+
           // Trim history to maxBackups
           const trimmed = history.slice(0, state.settings.maxBackups);
 

@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Application, ApplicationFilters } from '@/types';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
+import type { Application, ApplicationFilters } from '@/types';
 
 interface ApplicationsState {
   applications: Application[];
@@ -16,7 +16,9 @@ interface ApplicationsState {
 
   // Actions
   fetchApplications: () => Promise<void>;
-  addApplication: (application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addApplication: (
+    application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<void>;
   updateApplication: (id: string, updates: Partial<Application>) => Promise<void>;
   deleteApplication: (id: string) => Promise<void>;
   clearApplications: () => Promise<void>;
@@ -37,7 +39,7 @@ export const useApplicationsStore = create<ApplicationsState>()(
 
         getFilteredApplications: () => {
           const { applications, filters } = get();
-          
+
           return applications.filter((app) => {
             // Filter by search query
             if (filters.searchQuery?.trim()) {
@@ -45,7 +47,7 @@ export const useApplicationsStore = create<ApplicationsState>()(
               const matchesPosition = app.position.toLowerCase().includes(query);
               const matchesCompany = app.companyName.toLowerCase().includes(query);
               const matchesLocation = app.location?.toLowerCase().includes(query);
-              
+
               if (!matchesPosition && !matchesCompany && !matchesLocation) {
                 return false;
               }

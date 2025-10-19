@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { Input } from '@/components/ui/input';
+import { ArrowRight, Clock, Search, TrendingUp, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSearchStore } from '@/stores/searchStore';
 import { fuzzyMatch, scoreMatch } from '@/lib/search';
-import { Search, X, Clock, TrendingUp, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSearchStore } from '@/stores/searchStore';
 
 interface AdvancedSearchProps {
   value: string;
@@ -74,20 +74,24 @@ export function AdvancedSearch({
 
     // Add history if no current search
     if (!value && showHistory) {
-      items.push(...relevantHistory.map((h) => ({
-        type: 'history' as const,
-        text: h.query,
-        timestamp: h.timestamp,
-        resultCount: h.resultCount,
-      })));
+      items.push(
+        ...relevantHistory.map((h) => ({
+          type: 'history' as const,
+          text: h.query,
+          timestamp: h.timestamp,
+          resultCount: h.resultCount,
+        }))
+      );
 
       // Add popular searches
       if (items.length < 3) {
-        items.push(...popularSearches.map((p) => ({
-          type: 'popular' as const,
-          text: p.query,
-          resultCount: p.resultCount,
-        })));
+        items.push(
+          ...popularSearches.map((p) => ({
+            type: 'popular' as const,
+            text: p.query,
+            resultCount: p.resultCount,
+          }))
+        );
       }
     }
 

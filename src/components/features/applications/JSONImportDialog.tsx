@@ -1,5 +1,9 @@
-import { useState, useCallback } from 'react';
+import { AlertCircle, CheckCircle2, FileJson, RefreshCw, Upload, X } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,20 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { AnimatedButton } from '@/components/ui/animated-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  validateJSONImport,
-  type JSONValidationResult,
-  type ImportMode,
-} from '@/lib/import';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { type ImportMode, type JSONValidationResult, validateJSONImport } from '@/lib/import';
 import { useApplicationsStore } from '@/stores';
-import { Upload, FileJson, CheckCircle2, AlertCircle, X, RefreshCw } from 'lucide-react';
 
 interface JSONImportDialogProps {
   open: boolean;
@@ -41,53 +37,56 @@ export function JSONImportDialog({ open, onOpenChange }: JSONImportDialogProps) 
   const [importing, setImporting] = useState(false);
   const [importedCount, setImportedCount] = useState(0);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFileUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    if (!file.name.endsWith('.json')) {
-      toast.error('Invalid File', {
-        description: 'Please upload a JSON file',
-      });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        const result = validateJSONImport(content, applications);
-
-        if (result.errors.length > 0) {
-          toast.error('Invalid JSON', {
-            description: result.errors[0],
-          });
-          return;
-        }
-
-        if (result.totalRecords === 0) {
-          toast.error('Empty File', {
-            description: 'The JSON file contains no records',
-          });
-          return;
-        }
-
-        setValidation(result);
-        setStep('mode');
-
-        toast.success('File Loaded', {
-          description: `Found ${result.totalRecords} records`,
+      if (!file.name.endsWith('.json')) {
+        toast.error('Invalid File', {
+          description: 'Please upload a JSON file',
         });
-      } catch (error) {
-        toast.error('Parse Error', {
-          description: 'Failed to parse JSON file',
-        });
-        console.error('JSON parse error:', error);
+        return;
       }
-    };
 
-    reader.readAsText(file);
-  }, [applications]);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const result = validateJSONImport(content, applications);
+
+          if (result.errors.length > 0) {
+            toast.error('Invalid JSON', {
+              description: result.errors[0],
+            });
+            return;
+          }
+
+          if (result.totalRecords === 0) {
+            toast.error('Empty File', {
+              description: 'The JSON file contains no records',
+            });
+            return;
+          }
+
+          setValidation(result);
+          setStep('mode');
+
+          toast.success('File Loaded', {
+            description: `Found ${result.totalRecords} records`,
+          });
+        } catch (error) {
+          toast.error('Parse Error', {
+            description: 'Failed to parse JSON file',
+          });
+          console.error('JSON parse error:', error);
+        }
+      };
+
+      reader.readAsText(file);
+    },
+    [applications]
+  );
 
   const handleModeSelect = useCallback(() => {
     setStep('preview');
@@ -110,7 +109,7 @@ export function JSONImportDialog({ open, onOpenChange }: JSONImportDialogProps) 
 
       setImportedCount(validation.validRecords.length);
       setStep('complete');
-      
+
       toast.success('Import Complete', {
         description: `Successfully imported ${validation.validRecords.length} applications`,
       });
@@ -182,7 +181,10 @@ export function JSONImportDialog({ open, onOpenChange }: JSONImportDialogProps) 
                 </p>
               </div>
 
-              <RadioGroup value={importMode} onValueChange={(value: string) => setImportMode(value as ImportMode)}>
+              <RadioGroup
+                value={importMode}
+                onValueChange={(value: string) => setImportMode(value as ImportMode)}
+              >
                 <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-accent/50 cursor-pointer">
                   <RadioGroupItem value="merge" id={mergeRadioId} />
                   <Label htmlFor={mergeRadioId} className="flex-1 cursor-pointer">
@@ -228,7 +230,8 @@ export function JSONImportDialog({ open, onOpenChange }: JSONImportDialogProps) 
               <div>
                 <h3 className="text-lg font-semibold">Import Preview</h3>
                 <p className="text-sm text-muted-foreground">
-                  Review the import results - {importMode === 'replace' ? 'Replace mode' : 'Merge mode'}
+                  Review the import results -{' '}
+                  {importMode === 'replace' ? 'Replace mode' : 'Merge mode'}
                 </p>
               </div>
 
@@ -359,9 +362,7 @@ export function JSONImportDialog({ open, onOpenChange }: JSONImportDialogProps) 
               <Button variant="outline" onClick={() => setStep('upload')}>
                 Back
               </Button>
-              <AnimatedButton onClick={handleModeSelect}>
-                Next: Preview
-              </AnimatedButton>
+              <AnimatedButton onClick={handleModeSelect}>Next: Preview</AnimatedButton>
             </>
           )}
 
@@ -383,11 +384,7 @@ export function JSONImportDialog({ open, onOpenChange }: JSONImportDialogProps) 
             </>
           )}
 
-          {step === 'complete' && (
-            <Button onClick={handleClose}>
-              Done
-            </Button>
-          )}
+          {step === 'complete' && <Button onClick={handleClose}>Done</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

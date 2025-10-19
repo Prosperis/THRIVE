@@ -1,4 +1,7 @@
+import { Bookmark, BookmarkPlus, Check, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,11 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { BookmarkPlus, Bookmark, Trash2, Check } from 'lucide-react';
 import { useSavedFilters } from '@/hooks/useSavedFilters';
 import type { ApplicationFilters, InterviewFilters } from '@/types';
 
@@ -31,12 +31,12 @@ export function SavedFiltersDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [filterName, setFilterName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const { savedFilters, saveFilter, deleteFilter, getFilterLabel } = useSavedFilters(filterType);
 
   const handleSaveFilter = () => {
     if (!filterName.trim()) return;
-    
+
     setIsSaving(true);
     saveFilter(filterName.trim(), currentFilters);
     setFilterName('');
@@ -95,10 +95,7 @@ export function SavedFiltersDialog({
                     }}
                   />
                 </div>
-                <Button
-                  onClick={handleSaveFilter}
-                  disabled={!filterName.trim() || isSaving}
-                >
+                <Button onClick={handleSaveFilter} disabled={!filterName.trim() || isSaving}>
                   <BookmarkPlus className="h-4 w-4 mr-2" />
                   Save
                 </Button>
@@ -111,10 +108,8 @@ export function SavedFiltersDialog({
 
           {/* Saved Filters List */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium">
-              Saved Filters ({savedFilters.length})
-            </h3>
-            
+            <h3 className="text-sm font-medium">Saved Filters ({savedFilters.length})</h3>
+
             {savedFilters.length === 0 ? (
               <div className="text-center py-8 text-sm text-muted-foreground">
                 {hasActiveFilters ? (
@@ -138,9 +133,7 @@ export function SavedFiltersDialog({
                   >
                     <div className="flex-1 min-w-0 mr-2">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-sm truncate">
-                          {savedFilter.name}
-                        </h4>
+                        <h4 className="font-medium text-sm truncate">{savedFilter.name}</h4>
                         <Badge variant="outline" className="text-xs shrink-0">
                           {new Date(savedFilter.createdAt).toLocaleDateString()}
                         </Badge>

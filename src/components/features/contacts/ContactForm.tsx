@@ -1,5 +1,5 @@
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { CONTACT_RELATIONSHIPS } from '@/lib/constants';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import type { Contact } from '@/types';
@@ -46,14 +46,9 @@ interface ContactFormProps {
   isLoading?: boolean;
 }
 
-export function ContactForm({
-  contact,
-  onSubmit,
-  onCancel,
-  isLoading = false,
-}: ContactFormProps) {
+export function ContactForm({ contact, onSubmit, onCancel, isLoading = false }: ContactFormProps) {
   const { companies } = useCompaniesStore();
-  
+
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -101,7 +96,7 @@ export function ContactForm({
         {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Basic Information</h3>
-          
+
           <FormField
             control={form.control}
             name="name"
@@ -138,9 +133,7 @@ export function ContactForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Link this contact to a company
-                  </FormDescription>
+                  <FormDescription>Link this contact to a company</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -156,9 +149,7 @@ export function ContactForm({
                     <FormControl>
                       <Input placeholder="e.g., TechCorp Inc" {...field} />
                     </FormControl>
-                    <FormDescription>
-                      Or enter a company name manually
-                    </FormDescription>
+                    <FormDescription>Or enter a company name manually</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -200,9 +191,7 @@ export function ContactForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  How do you know this contact?
-                </FormDescription>
+                <FormDescription>How do you know this contact?</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -212,7 +201,7 @@ export function ContactForm({
         {/* Contact Details */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Contact Details</h3>
-          
+
           <FormField
             control={form.control}
             name="email"
@@ -261,7 +250,7 @@ export function ContactForm({
         {/* Notes */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Notes</h3>
-          
+
           <FormField
             control={form.control}
             name="notes"

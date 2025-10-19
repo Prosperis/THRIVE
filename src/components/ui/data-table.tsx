@@ -1,16 +1,25 @@
-import { useState, useEffect } from 'react';
 import {
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
   type SortingState,
+  useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table';
+import { ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -19,16 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { TableHelpDialog } from '@/components/ui/table-help-dialog';
-import { ChevronDown } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -111,23 +111,27 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {/* Bulk Actions */}
-      {renderBulkActions && selectedRows.length > 0 && (
+      {renderBulkActions &&
+        selectedRows.length > 0 &&
         renderBulkActions({
           selectedRows,
           table,
-        })
-      )}
+        })}
 
       {/* Active Filters/Sort Summary */}
       {(columnFilters.length > 0 || sorting.length > 0) && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
           <span className="font-medium">Active:</span>
           {columnFilters.length > 0 && (
-            <span>{columnFilters.length} filter{columnFilters.length > 1 ? 's' : ''}</span>
+            <span>
+              {columnFilters.length} filter{columnFilters.length > 1 ? 's' : ''}
+            </span>
           )}
           {columnFilters.length > 0 && sorting.length > 0 && <span>•</span>}
           {sorting.length > 0 && (
-            <span>{sorting.length} sort{sorting.length > 1 ? 's' : ''}</span>
+            <span>
+              {sorting.length} sort{sorting.length > 1 ? 's' : ''}
+            </span>
           )}
           <span className="ml-auto">
             {table.getFilteredRowModel().rows.length} of {data.length} rows shown
@@ -287,7 +291,8 @@ export function DataTable<TData, TValue>({
         {/* Helpful Tips */}
         {table.getRowModel().rows?.length > 0 && (
           <div className="text-xs text-muted-foreground text-center mt-2">
-            💡 Tip: Hold <kbd className="px-1.5 py-0.5 text-xs border rounded bg-muted">Shift</kbd> while clicking column headers to sort by multiple columns
+            💡 Tip: Hold <kbd className="px-1.5 py-0.5 text-xs border rounded bg-muted">Shift</kbd>{' '}
+            while clicking column headers to sort by multiple columns
           </div>
         )}
       </div>

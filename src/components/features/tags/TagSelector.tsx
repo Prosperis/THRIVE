@@ -1,15 +1,11 @@
+import { Plus, Search, Tag as TagIcon, X } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Plus, X, Tag as TagIcon, Search } from 'lucide-react';
-import { useTagStore } from '@/stores/tagStore';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { useTagStore } from '@/stores/tagStore';
 
 interface TagSelectorProps {
   entityId: string;
@@ -20,7 +16,7 @@ interface TagSelectorProps {
 export function TagSelector({ entityId, className, showLabel = true }: TagSelectorProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const tags = useTagStore((state) => state.tags);
   const entityTags = useTagStore((state) => state.getEntityTags(entityId));
   const tagEntity = useTagStore((state) => state.tagEntity);
@@ -29,7 +25,7 @@ export function TagSelector({ entityId, className, showLabel = true }: TagSelect
   const searchTags = useTagStore((state) => state.searchTags);
 
   const selectedTagIds = new Set(entityTags.map((tag) => tag.id));
-  
+
   // Filter tags based on search
   const filteredTags = searchQuery ? searchTags(searchQuery) : tags;
   const availableTags = filteredTags.filter((tag) => !selectedTagIds.has(tag.id));
@@ -61,7 +57,7 @@ export function TagSelector({ entityId, className, showLabel = true }: TagSelect
           Tags
         </div>
       )}
-      
+
       <div className="flex flex-wrap gap-2 items-center">
         {/* Display selected tags */}
         {entityTags.map((tag) => (
@@ -108,7 +104,7 @@ export function TagSelector({ entityId, className, showLabel = true }: TagSelect
                 />
               </div>
             </div>
-            
+
             <div className="max-h-[300px] overflow-y-auto p-2">
               {availableTags.length === 0 && (
                 <div className="py-6 text-center text-sm text-muted-foreground">
@@ -125,7 +121,7 @@ export function TagSelector({ entityId, className, showLabel = true }: TagSelect
                   )}
                 </div>
               )}
-              
+
               {availableTags.map((tag) => (
                 <button
                   key={tag.id}
@@ -146,9 +142,7 @@ export function TagSelector({ entityId, className, showLabel = true }: TagSelect
                     <span className="text-sm font-medium">{tag.name}</span>
                   </div>
                   {tag.usageCount > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      {tag.usageCount}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{tag.usageCount}</span>
                   )}
                 </button>
               ))}

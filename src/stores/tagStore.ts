@@ -7,7 +7,7 @@ interface TagStore {
   tags: Tag[];
   entityTags: Record<string, string[]>; // entityId -> tagIds[]
   initialized: boolean;
-  
+
   // Actions
   initializeTags: () => void;
   addTag: (tag: Omit<Tag, 'id' | 'usageCount' | 'createdAt'>) => Tag;
@@ -15,13 +15,13 @@ interface TagStore {
   deleteTag: (id: string) => void;
   getTag: (id: string) => Tag | undefined;
   searchTags: (query: string) => Tag[];
-  
+
   // Entity-Tag associations
   tagEntity: (entityId: string, tagId: string) => void;
   untagEntity: (entityId: string, tagId: string) => void;
   getEntityTags: (entityId: string) => Tag[];
   getEntitiesByTag: (tagId: string) => string[];
-  
+
   // Popular tags
   getPopularTags: (limit?: number) => Tag[];
 }
@@ -35,7 +35,7 @@ export const useTagStore = create<TagStore>()(
 
       initializeTags: () => {
         const { initialized, tags } = get();
-        
+
         // Only initialize once and only if no tags exist
         if (!initialized && tags.length === 0) {
           const now = new Date();
@@ -73,9 +73,7 @@ export const useTagStore = create<TagStore>()(
 
       updateTag: (id, updates) => {
         set((state) => ({
-          tags: state.tags.map((tag) =>
-            tag.id === id ? { ...tag, ...updates } : tag
-          ),
+          tags: state.tags.map((tag) => (tag.id === id ? { ...tag, ...updates } : tag)),
         }));
       },
 
@@ -113,7 +111,7 @@ export const useTagStore = create<TagStore>()(
       tagEntity: (entityId, tagId) => {
         set((state) => {
           const currentTags = state.entityTags[entityId] || [];
-          
+
           // Don't add duplicate tags
           if (currentTags.includes(tagId)) {
             return state;
@@ -125,9 +123,7 @@ export const useTagStore = create<TagStore>()(
               [entityId]: [...currentTags, tagId],
             },
             tags: state.tags.map((tag) =>
-              tag.id === tagId
-                ? { ...tag, usageCount: tag.usageCount + 1 }
-                : tag
+              tag.id === tagId ? { ...tag, usageCount: tag.usageCount + 1 } : tag
             ),
           };
         });
@@ -172,9 +168,7 @@ export const useTagStore = create<TagStore>()(
       },
 
       getPopularTags: (limit = 10) => {
-        return [...get().tags]
-          .sort((a, b) => b.usageCount - a.usageCount)
-          .slice(0, limit);
+        return [...get().tags].sort((a, b) => b.usageCount - a.usageCount).slice(0, limit);
       },
     }),
     {

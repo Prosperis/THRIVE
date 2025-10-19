@@ -1,17 +1,8 @@
+import { Calendar, CheckCircle2, Clock, Code, Edit, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -21,10 +12,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Code, Edit, Trash2, CheckCircle2, Clock, Calendar } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { formatRelativeTime } from '@/lib/utils';
 import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
 import type { ChallengeStatus, QuestionDifficulty } from '@/types/interviewPrep';
-import { formatRelativeTime } from '@/lib/utils';
 
 const CHALLENGE_TYPES = [
   { value: 'coding', label: 'Coding Challenge', icon: '💻' },
@@ -71,20 +71,29 @@ export function ChallengesTab() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const tagsStr = formData.get('tags') as string;
-    const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : undefined;
-    
+    const tags = tagsStr
+      ? tagsStr
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : undefined;
+
     const dueDateStr = formData.get('dueDate') as string;
     const dueDate = dueDateStr ? new Date(dueDateStr) : undefined;
-    
+
     const timeLimit = formData.get('timeLimit') as string;
 
     const challengeData = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       companyName: (formData.get('companyName') as string) || undefined,
-      type: formData.get('type') as 'coding' | 'system-design' | 'take-home' | 'technical-assessment',
+      type: formData.get('type') as
+        | 'coding'
+        | 'system-design'
+        | 'take-home'
+        | 'technical-assessment',
       status: formData.get('status') as ChallengeStatus,
       difficulty: (formData.get('difficulty') as QuestionDifficulty) || undefined,
       timeLimit: timeLimit ? Number.parseInt(timeLimit, 10) : undefined,
@@ -101,7 +110,7 @@ export function ChallengesTab() {
     } else {
       addChallenge(challengeData);
     }
-    
+
     setShowAddDialog(false);
     e.currentTarget.reset();
   };
@@ -113,19 +122,19 @@ export function ChallengesTab() {
 
   const handleStatusChange = (id: string, status: ChallengeStatus) => {
     const updates: Record<string, unknown> = { status };
-    if (status === 'in-progress' && !challenges.find(c => c.id === id)?.startedAt) {
+    if (status === 'in-progress' && !challenges.find((c) => c.id === id)?.startedAt) {
       updates.startedAt = new Date();
     }
-    if (status === 'completed' && !challenges.find(c => c.id === id)?.completedAt) {
+    if (status === 'completed' && !challenges.find((c) => c.id === id)?.completedAt) {
       updates.completedAt = new Date();
     }
-    if (status === 'submitted' && !challenges.find(c => c.id === id)?.submittedAt) {
+    if (status === 'submitted' && !challenges.find((c) => c.id === id)?.submittedAt) {
       updates.submittedAt = new Date();
     }
     updateChallenge(id, updates);
   };
 
-  const editingChallenge = editingId ? challenges.find(c => c.id === editingId) : null;
+  const editingChallenge = editingId ? challenges.find((c) => c.id === editingId) : null;
 
   return (
     <div className="space-y-6">
@@ -133,7 +142,9 @@ export function ChallengesTab() {
       <Card>
         <CardHeader>
           <CardTitle>Technical Challenges</CardTitle>
-          <CardDescription>Track coding challenges, take-home projects, and assessments</CardDescription>
+          <CardDescription>
+            Track coding challenges, take-home projects, and assessments
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -144,7 +155,10 @@ export function ChallengesTab() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as ChallengeStatus | 'all')}>
+            <Select
+              value={filterStatus}
+              onValueChange={(v) => setFilterStatus(v as ChallengeStatus | 'all')}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -157,10 +171,13 @@ export function ChallengesTab() {
                 ))}
               </SelectContent>
             </Select>
-            <Dialog open={showAddDialog} onOpenChange={(open) => {
-              setShowAddDialog(open);
-              if (!open) setEditingId(null);
-            }}>
+            <Dialog
+              open={showAddDialog}
+              onOpenChange={(open) => {
+                setShowAddDialog(open);
+                if (!open) setEditingId(null);
+              }}
+            >
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -171,26 +188,21 @@ export function ChallengesTab() {
                 <form onSubmit={handleSubmit}>
                   <DialogHeader>
                     <DialogTitle>{editingId ? 'Edit' : 'Add'} Technical Challenge</DialogTitle>
-                    <DialogDescription>Track a new coding challenge or assessment</DialogDescription>
+                    <DialogDescription>
+                      Track a new coding challenge or assessment
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     {/* Title */}
                     <div className="space-y-2">
                       <Label htmlFor="title">Challenge Title</Label>
-                      <Input 
-                        name="title" 
-                        required 
-                        defaultValue={editingChallenge?.title}
-                      />
+                      <Input name="title" required defaultValue={editingChallenge?.title} />
                     </div>
 
                     {/* Company Name */}
                     <div className="space-y-2">
                       <Label htmlFor="companyName">Company Name (Optional)</Label>
-                      <Input 
-                        name="companyName"
-                        defaultValue={editingChallenge?.companyName}
-                      />
+                      <Input name="companyName" defaultValue={editingChallenge?.companyName} />
                     </div>
 
                     {/* Type and Status */}
@@ -212,7 +224,11 @@ export function ChallengesTab() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select name="status" required defaultValue={editingChallenge?.status || 'not-started'}>
+                        <Select
+                          name="status"
+                          required
+                          defaultValue={editingChallenge?.status || 'not-started'}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
@@ -230,9 +246,9 @@ export function ChallengesTab() {
                     {/* Description */}
                     <div className="space-y-2">
                       <Label htmlFor="description">Description</Label>
-                      <Textarea 
-                        name="description" 
-                        required 
+                      <Textarea
+                        name="description"
+                        required
                         rows={4}
                         defaultValue={editingChallenge?.description}
                       />
@@ -257,8 +273,8 @@ export function ChallengesTab() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
-                        <Input 
-                          name="timeLimit" 
+                        <Input
+                          name="timeLimit"
                           type="number"
                           placeholder="60"
                           defaultValue={editingChallenge?.timeLimit}
@@ -269,18 +285,22 @@ export function ChallengesTab() {
                     {/* Due Date */}
                     <div className="space-y-2">
                       <Label htmlFor="dueDate">Due Date (Optional)</Label>
-                      <Input 
-                        name="dueDate" 
+                      <Input
+                        name="dueDate"
                         type="datetime-local"
-                        defaultValue={editingChallenge?.dueDate ? new Date(editingChallenge.dueDate).toISOString().slice(0, 16) : ''}
+                        defaultValue={
+                          editingChallenge?.dueDate
+                            ? new Date(editingChallenge.dueDate).toISOString().slice(0, 16)
+                            : ''
+                        }
                       />
                     </div>
 
                     {/* Notes */}
                     <div className="space-y-2">
                       <Label htmlFor="notes">Notes (Optional)</Label>
-                      <Textarea 
-                        name="notes" 
+                      <Textarea
+                        name="notes"
                         rows={3}
                         placeholder="Approach, key points, requirements..."
                         defaultValue={editingChallenge?.notes}
@@ -290,8 +310,8 @@ export function ChallengesTab() {
                     {/* Solution */}
                     <div className="space-y-2">
                       <Label htmlFor="solution">Your Solution (Optional)</Label>
-                      <Textarea 
-                        name="solution" 
+                      <Textarea
+                        name="solution"
                         rows={5}
                         placeholder="Your code or design solution..."
                         defaultValue={editingChallenge?.solution}
@@ -301,8 +321,8 @@ export function ChallengesTab() {
                     {/* Feedback */}
                     <div className="space-y-2">
                       <Label htmlFor="feedbackReceived">Feedback Received (Optional)</Label>
-                      <Textarea 
-                        name="feedbackReceived" 
+                      <Textarea
+                        name="feedbackReceived"
                         rows={3}
                         placeholder="Feedback from reviewers..."
                         defaultValue={editingChallenge?.feedbackReceived}
@@ -312,8 +332,8 @@ export function ChallengesTab() {
                     {/* Tags */}
                     <div className="space-y-2">
                       <Label htmlFor="tags">Tags (comma-separated)</Label>
-                      <Input 
-                        name="tags" 
+                      <Input
+                        name="tags"
                         placeholder="algorithms, data-structures, react..."
                         defaultValue={editingChallenge?.tags?.join(', ')}
                       />
@@ -341,8 +361,8 @@ export function ChallengesTab() {
                       <Code className="h-5 w-5" />
                       <CardTitle className="text-lg">{challenge.title}</CardTitle>
                       <Badge variant="outline">
-                        {CHALLENGE_TYPES.find(t => t.value === challenge.type)?.icon}{' '}
-                        {CHALLENGE_TYPES.find(t => t.value === challenge.type)?.label}
+                        {CHALLENGE_TYPES.find((t) => t.value === challenge.type)?.icon}{' '}
+                        {CHALLENGE_TYPES.find((t) => t.value === challenge.type)?.label}
                       </Badge>
                     </div>
                     {challenge.companyName && (
@@ -354,7 +374,9 @@ export function ChallengesTab() {
                   <div className="flex gap-2">
                     <Select
                       value={challenge.status}
-                      onValueChange={(value) => handleStatusChange(challenge.id, value as ChallengeStatus)}
+                      onValueChange={(value) =>
+                        handleStatusChange(challenge.id, value as ChallengeStatus)
+                      }
                     >
                       <SelectTrigger className="w-[140px]">
                         <SelectValue />
@@ -373,7 +395,11 @@ export function ChallengesTab() {
                     <Button size="sm" variant="outline" onClick={() => handleEdit(challenge.id)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => deleteChallenge(challenge.id)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => deleteChallenge(challenge.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -387,7 +413,12 @@ export function ChallengesTab() {
                 <div className="flex gap-4 flex-wrap text-sm">
                   {challenge.difficulty && (
                     <div className="flex items-center gap-1">
-                      <Badge variant="outline" className={DIFFICULTY_LEVELS.find(d => d.value === challenge.difficulty)?.color}>
+                      <Badge
+                        variant="outline"
+                        className={
+                          DIFFICULTY_LEVELS.find((d) => d.value === challenge.difficulty)?.color
+                        }
+                      >
                         {challenge.difficulty}
                       </Badge>
                     </div>
@@ -427,7 +458,9 @@ export function ChallengesTab() {
                 {challenge.notes && (
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium">Notes</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{challenge.notes}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {challenge.notes}
+                    </p>
                   </div>
                 )}
 
@@ -445,7 +478,9 @@ export function ChallengesTab() {
                 {challenge.feedbackReceived && (
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium">Feedback</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{challenge.feedbackReceived}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {challenge.feedbackReceived}
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -458,8 +493,8 @@ export function ChallengesTab() {
             <Code className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No challenges yet</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {searchQuery || filterStatus !== 'all' 
-                ? 'No challenges match your filters' 
+              {searchQuery || filterStatus !== 'all'
+                ? 'No challenges match your filters'
                 : 'Start tracking your technical challenges and assessments'}
             </p>
             {!searchQuery && filterStatus === 'all' && (

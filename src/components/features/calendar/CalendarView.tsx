@@ -1,21 +1,21 @@
-import { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
 import {
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
-  format,
-  isSameMonth,
-  isSameDay,
-  isToday,
   addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  isToday,
+  startOfMonth,
+  startOfWeek,
   subMonths,
 } from 'date-fns';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
-import type { Interview } from '@/types';
+import { useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import type { Interview } from '@/types';
 
 interface CalendarEvent {
   id: string;
@@ -196,10 +196,7 @@ export function CalendarView({
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 bg-muted">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div
-              key={day}
-              className="p-2 text-center text-sm font-medium border-r last:border-r-0"
-            >
+            <div key={day} className="p-2 text-center text-sm font-medium border-r last:border-r-0">
               {day}
             </div>
           ))}

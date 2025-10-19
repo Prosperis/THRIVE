@@ -1,3 +1,4 @@
+import { Keyboard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,6 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { KEYBOARD_SHORTCUTS } from '@/lib/about';
-import { Keyboard } from 'lucide-react';
 
 interface KeyboardShortcutsDialogProps {
   open: boolean;

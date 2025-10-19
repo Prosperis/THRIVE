@@ -1,42 +1,34 @@
-import { useState, useId } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+import { Calendar, Database, Download, FileJson, FileText, Filter, Upload } from 'lucide-react';
+import { useId, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Download,
-  FileText,
-  FileJson,
-  Database,
-  Calendar,
-  Filter,
-  Upload,
-} from 'lucide-react';
-import { useApplicationsStore } from '@/stores/applicationsStore';
-import { useInterviewsStore } from '@/stores/interviewsStore';
-import { useDocumentsStore } from '@/stores/documentsStore';
-import {
+  type BackupData,
+  type DateRangeFilter,
   exportAndDownloadApplicationsCSV,
   exportAndDownloadApplicationsJSON,
-  exportAndDownloadInterviewsCSV,
   exportAndDownloadDocumentsCSV,
+  exportAndDownloadInterviewsCSV,
   exportBackup,
-  parseBackupFile,
-  validateBackupData,
   filterApplicationsByDateRange,
   filterInterviewsByDateRange,
-  type DateRangeFilter,
-  type BackupData,
+  parseBackupFile,
+  validateBackupData,
 } from '@/lib/export';
-import { format } from 'date-fns';
+import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useDocumentsStore } from '@/stores/documentsStore';
+import { useInterviewsStore } from '@/stores/interviewsStore';
 
 export function ExportPage() {
   const startDateId = useId();
   const endDateId = useId();
   const fileUploadId = useId();
-  
+
   const [dateRange, setDateRange] = useState<DateRangeFilter>({});
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>('');
@@ -56,16 +48,18 @@ export function ExportPage() {
 
   // Handle exports with date range
   const handleExportApplicationsCSV = () => {
-    const filtered = dateRange.startDate || dateRange.endDate
-      ? filterApplicationsByDateRange(applications, dateRange)
-      : applications;
+    const filtered =
+      dateRange.startDate || dateRange.endDate
+        ? filterApplicationsByDateRange(applications, dateRange)
+        : applications;
     exportAndDownloadApplicationsCSV(filtered);
   };
 
   const handleExportInterviewsCSV = () => {
-    const filtered = dateRange.startDate || dateRange.endDate
-      ? filterInterviewsByDateRange(interviews, dateRange)
-      : interviews;
+    const filtered =
+      dateRange.startDate || dateRange.endDate
+        ? filterInterviewsByDateRange(interviews, dateRange)
+        : interviews;
     exportAndDownloadInterviewsCSV(filtered, applications);
   };
 
@@ -74,9 +68,10 @@ export function ExportPage() {
   };
 
   const handleExportApplicationsJSON = () => {
-    const filtered = dateRange.startDate || dateRange.endDate
-      ? filterApplicationsByDateRange(applications, dateRange)
-      : applications;
+    const filtered =
+      dateRange.startDate || dateRange.endDate
+        ? filterApplicationsByDateRange(applications, dateRange)
+        : applications;
     exportAndDownloadApplicationsJSON(filtered);
   };
 
@@ -108,10 +103,10 @@ export function ExportPage() {
       // Ask for confirmation
       const confirmed = window.confirm(
         `This will restore:\n` +
-        `- ${backupData.applications.length} applications\n` +
-        `- ${backupData.interviews.length} interviews\n` +
-        `- ${backupData.documents.length} documents\n\n` +
-        `Current data will be replaced. Continue?`
+          `- ${backupData.applications.length} applications\n` +
+          `- ${backupData.interviews.length} interviews\n` +
+          `- ${backupData.documents.length} documents\n\n` +
+          `Current data will be replaced. Continue?`
       );
 
       if (!confirmed) {
@@ -121,17 +116,17 @@ export function ExportPage() {
 
       // Restore data
       // Note: This is a simplified approach. In production, you'd want more sophisticated merging
-      backupData.applications.forEach(app => {
+      backupData.applications.forEach((app) => {
         addApplication(app);
       });
-      backupData.interviews.forEach(interview => {
+      backupData.interviews.forEach((interview) => {
         addInterview(interview);
       });
       // Documents would need similar handling
 
       setImportSuccess(
         `Successfully restored ${backupData.applications.length} applications, ` +
-        `${backupData.interviews.length} interviews, and ${backupData.documents.length} documents`
+          `${backupData.interviews.length} interviews, and ${backupData.documents.length} documents`
       );
     } catch (error) {
       setImportError(`Failed to restore backup: ${error}`);
@@ -221,10 +216,12 @@ export function ExportPage() {
                     id={startDateId}
                     type="date"
                     value={dateRange.startDate ? format(dateRange.startDate, 'yyyy-MM-dd') : ''}
-                    onChange={(e) => setDateRange(prev => ({
-                      ...prev,
-                      startDate: e.target.value ? new Date(e.target.value) : undefined,
-                    }))}
+                    onChange={(e) =>
+                      setDateRange((prev) => ({
+                        ...prev,
+                        startDate: e.target.value ? new Date(e.target.value) : undefined,
+                      }))
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -233,20 +230,18 @@ export function ExportPage() {
                     id={endDateId}
                     type="date"
                     value={dateRange.endDate ? format(dateRange.endDate, 'yyyy-MM-dd') : ''}
-                    onChange={(e) => setDateRange(prev => ({
-                      ...prev,
-                      endDate: e.target.value ? new Date(e.target.value) : undefined,
-                    }))}
+                    onChange={(e) =>
+                      setDateRange((prev) => ({
+                        ...prev,
+                        endDate: e.target.value ? new Date(e.target.value) : undefined,
+                      }))
+                    }
                   />
                 </div>
               </div>
               {(dateRange.startDate || dateRange.endDate) && (
                 <div className="mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDateRange({})}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setDateRange({})}>
                     Clear Filters
                   </Button>
                 </div>
@@ -266,9 +261,7 @@ export function ExportPage() {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Applications</p>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.applications} applications
-                  </p>
+                  <p className="text-sm text-muted-foreground">{stats.applications} applications</p>
                 </div>
                 <Button onClick={handleExportApplicationsCSV}>
                   <Download className="h-4 w-4 mr-2" />
@@ -278,9 +271,7 @@ export function ExportPage() {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Interviews</p>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.interviews} interviews
-                  </p>
+                  <p className="text-sm text-muted-foreground">{stats.interviews} interviews</p>
                 </div>
                 <Button onClick={handleExportInterviewsCSV}>
                   <Download className="h-4 w-4 mr-2" />
@@ -290,9 +281,7 @@ export function ExportPage() {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Documents</p>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.documents} documents
-                  </p>
+                  <p className="text-sm text-muted-foreground">{stats.documents} documents</p>
                 </div>
                 <Button onClick={handleExportDocumentsCSV}>
                   <Download className="h-4 w-4 mr-2" />
@@ -336,8 +325,8 @@ export function ExportPage() {
                 Full Backup
               </CardTitle>
               <CardDescription>
-                Create a complete backup of all your data. This includes applications,
-                interviews, documents, and all settings.
+                Create a complete backup of all your data. This includes applications, interviews,
+                documents, and all settings.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -395,15 +384,13 @@ export function ExportPage() {
                   <span className="text-sm font-medium">
                     {importing ? 'Restoring...' : 'Click to upload backup file'}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    JSON files only
-                  </span>
+                  <span className="text-xs text-muted-foreground">JSON files only</span>
                 </Label>
               </div>
               <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-950">
                 <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                  ⚠️ Warning: Restoring from backup will replace your current data.
-                  Make sure to create a backup first if you want to keep your current data.
+                  ⚠️ Warning: Restoring from backup will replace your current data. Make sure to
+                  create a backup first if you want to keep your current data.
                 </p>
               </div>
             </CardContent>
@@ -424,8 +411,8 @@ export function ExportPage() {
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Custom report builder feature is coming soon.</p>
                 <p className="text-sm mt-2">
-                  You'll be able to select specific fields, apply filters, and generate
-                  custom reports tailored to your needs.
+                  You'll be able to select specific fields, apply filters, and generate custom
+                  reports tailored to your needs.
                 </p>
               </div>
             </CardContent>

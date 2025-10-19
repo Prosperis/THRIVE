@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bell, Calendar, Clock, Settings, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { NotificationsList } from '@/components/notifications/NotificationsList';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, Clock, Calendar, Settings, Sparkles } from 'lucide-react';
-import { useNotificationsStore } from '@/stores/notificationsStore';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
-import { NotificationsList } from '@/components/notifications/NotificationsList';
+import { useNotificationsStore } from '@/stores/notificationsStore';
 
 export function NotificationsPage() {
   const [activeTab, setActiveTab] = useState('notifications');
-  
+
   const stats = useNotificationsStore((state) => state.getStats());
   const checkAndTriggerReminders = useNotificationsStore((state) => state.checkAndTriggerReminders);
   const generateSmartSuggestions = useNotificationsStore((state) => state.generateSmartSuggestions);
@@ -31,14 +31,14 @@ export function NotificationsPage() {
   // Generate smart suggestions when data changes
   useEffect(() => {
     generateSmartSuggestions(
-      applications.map(app => ({
+      applications.map((app) => ({
         id: app.id,
         status: app.status,
         appliedDate: app.appliedDate,
         companyName: app.companyName,
         lastContactDate: app.appliedDate, // Use appliedDate as fallback for lastContactDate
       })),
-      interviews.map(interview => ({
+      interviews.map((interview) => ({
         id: interview.id,
         scheduledAt: interview.scheduledAt,
         status: interview.status,
@@ -54,9 +54,7 @@ export function NotificationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Notifications & Reminders</h1>
-          <p className="text-muted-foreground mt-1">
-            Stay on top of your job search activities
-          </p>
+          <p className="text-muted-foreground mt-1">Stay on top of your job search activities</p>
         </div>
       </div>
 
@@ -69,9 +67,7 @@ export function NotificationsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.unreadCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalNotifications} total
-            </p>
+            <p className="text-xs text-muted-foreground">{stats.totalNotifications} total</p>
           </CardContent>
         </Card>
 

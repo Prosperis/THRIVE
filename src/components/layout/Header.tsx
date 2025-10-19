@@ -1,5 +1,5 @@
-import { Menu } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from './ThemeToggle';
 
@@ -8,7 +8,12 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <div className="mr-4 flex md:mr-6">
-          <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-label="Open navigation menu"
+          >
             <Menu className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Toggle menu</span>
           </Button>

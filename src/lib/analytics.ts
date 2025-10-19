@@ -1,12 +1,21 @@
-import { differenceInDays, startOfWeek, startOfMonth, format, subDays, eachDayOfInterval, eachMonthOfInterval, startOfDay } from 'date-fns';
+import {
+  differenceInDays,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+} from 'date-fns';
 import type { Application, Interview } from '@/types';
 import type {
   AnalyticsMetrics,
-  TimeSeriesData,
-  StatusDistribution,
   CompanyStats,
   MonthlyTrend,
   ResponseTimeDistribution,
+  StatusDistribution,
+  TimeSeriesData,
 } from '@/types/analytics';
 
 /**
@@ -39,15 +48,14 @@ export function calculateAnalytics(
     (app) => !['rejected', 'withdrawn', 'accepted'].includes(app.status)
   ).length;
   const rejectedApplications = filteredApps.filter((app) => app.status === 'rejected').length;
-  const successfulApplications = filteredApps.filter(
-    (app) => app.status === 'accepted'
-  ).length;
+  const successfulApplications = filteredApps.filter((app) => app.status === 'accepted').length;
 
   // Response metrics (considering target and hunting as no response yet)
   const appsWithResponse = filteredApps.filter(
     (app) => app.status !== 'target' && app.status !== 'hunting' && app.status !== 'applied'
   );
-  const responseRate = totalApplications > 0 ? (appsWithResponse.length / totalApplications) * 100 : 0;
+  const responseRate =
+    totalApplications > 0 ? (appsWithResponse.length / totalApplications) * 100 : 0;
   const noResponseCount = totalApplications - appsWithResponse.length;
 
   // Calculate average response time
@@ -88,11 +96,17 @@ export function calculateAnalytics(
       return appInterviews.length > 0 && appInterviews[0].scheduledAt;
     })
     .map((app) => {
-      const appInterviews = filteredInterviews.filter((i) => i.applicationId === app.id && i.scheduledAt);
+      const appInterviews = filteredInterviews.filter(
+        (i) => i.applicationId === app.id && i.scheduledAt
+      );
       const firstInterview = appInterviews.sort(
-        (a, b) => new Date(a.scheduledAt as Date).getTime() - new Date(b.scheduledAt as Date).getTime()
+        (a, b) =>
+          new Date(a.scheduledAt as Date).getTime() - new Date(b.scheduledAt as Date).getTime()
       )[0];
-      return differenceInDays(new Date(firstInterview.scheduledAt as Date), new Date(app.appliedDate as Date));
+      return differenceInDays(
+        new Date(firstInterview.scheduledAt as Date),
+        new Date(app.appliedDate as Date)
+      );
     });
   const averageTimeToInterview =
     timeToInterviews.length > 0
@@ -161,9 +175,9 @@ export function generateTimeSeriesData(
 ): TimeSeriesData[] {
   const endDate = new Date();
   const startDate = subDays(endDate, days - 1);
-  
+
   const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
-  
+
   return dateRange.map((date) => {
     const dayStart = startOfDay(date);
     const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
@@ -180,8 +194,8 @@ export function generateTimeSeriesData(
       return interviewDate >= dayStart && interviewDate < dayEnd;
     });
 
-    const dayOffers = dayApplications.filter((app) =>
-      app.status === 'accepted' || app.status === 'offer'
+    const dayOffers = dayApplications.filter(
+      (app) => app.status === 'accepted' || app.status === 'offer'
     );
 
     const dayRejections = dayApplications.filter((app) => app.status === 'rejected');
@@ -245,7 +259,7 @@ export function calculateCompanyStats(
   for (const app of applications) {
     const companyKey = app.companyName;
     const existing = companyMap.get(companyKey);
-    
+
     if (existing) {
       existing.applicationsCount++;
       if (app.status === 'accepted' || app.status === 'offer') {
@@ -257,7 +271,7 @@ export function calculateCompanyStats(
         companyName: app.companyName,
         applicationsCount: 1,
         interviewsCount: 0,
-        offersCount: (app.status === 'accepted' || app.status === 'offer') ? 1 : 0,
+        offersCount: app.status === 'accepted' || app.status === 'offer' ? 1 : 0,
         successRate: 0,
       });
     }
@@ -277,9 +291,7 @@ export function calculateCompanyStats(
   // Calculate success rates
   for (const stats of companyMap.values()) {
     stats.successRate =
-      stats.applicationsCount > 0
-        ? (stats.offersCount / stats.applicationsCount) * 100
-        : 0;
+      stats.applicationsCount > 0 ? (stats.offersCount / stats.applicationsCount) * 100 : 0;
   }
 
   return Array.from(companyMap.values())
@@ -318,8 +330,8 @@ export function calculateMonthlyTrends(
       return date >= monthStart && date < monthEnd;
     });
 
-    const monthOffers = monthApps.filter((app) =>
-      app.status === 'accepted' || app.status === 'offer'
+    const monthOffers = monthApps.filter(
+      (app) => app.status === 'accepted' || app.status === 'offer'
     );
 
     const monthRejections = monthApps.filter((app) => app.status === 'rejected');
@@ -356,7 +368,11 @@ export function calculateResponseTimeDistribution(
   ];
 
   const appsWithResponse = applications.filter(
-    (app) => app.status !== 'target' && app.status !== 'hunting' && app.status !== 'applied' && app.appliedDate
+    (app) =>
+      app.status !== 'target' &&
+      app.status !== 'hunting' &&
+      app.status !== 'applied' &&
+      app.appliedDate
   );
 
   const distribution = ranges.map((range) => {
@@ -393,13 +409,16 @@ export function formatNumber(value: number): string {
 /**
  * Get trend direction and color
  */
-export function getTrend(current: number, previous: number): { direction: 'up' | 'down' | 'neutral'; color: string; percentage: number } {
+export function getTrend(
+  current: number,
+  previous: number
+): { direction: 'up' | 'down' | 'neutral'; color: string; percentage: number } {
   if (previous === 0) {
     return { direction: 'neutral', color: 'text-muted-foreground', percentage: 0 };
   }
 
   const change = ((current - previous) / previous) * 100;
-  
+
   if (Math.abs(change) < 1) {
     return { direction: 'neutral', color: 'text-muted-foreground', percentage: change };
   }

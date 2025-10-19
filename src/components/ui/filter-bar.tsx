@@ -1,4 +1,7 @@
+import { Filter, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -6,9 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { X, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FilterOption {
@@ -32,7 +32,7 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ filters, onClearAll, className, children }: FilterBarProps) {
-  const activeFiltersCount = filters.filter(f => f.value && f.value !== 'all').length;
+  const activeFiltersCount = filters.filter((f) => f.value && f.value !== 'all').length;
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -43,11 +43,7 @@ export function FilterBar({ filters, onClearAll, className, children }: FilterBa
         </div>
 
         {filters.map((filter) => (
-          <Select
-            key={filter.id}
-            value={filter.value}
-            onValueChange={filter.onChange}
-          >
+          <Select key={filter.id} value={filter.value} onValueChange={filter.onChange}>
             <SelectTrigger className="w-[180px] h-9">
               <SelectValue placeholder={filter.label} />
             </SelectTrigger>
@@ -65,12 +61,7 @@ export function FilterBar({ filters, onClearAll, className, children }: FilterBa
         {children}
 
         {activeFiltersCount > 0 && onClearAll && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearAll}
-            className="h-9 px-3"
-          >
+          <Button variant="ghost" size="sm" onClick={onClearAll} className="h-9 px-3">
             <X className="h-4 w-4 mr-1" />
             Clear all ({activeFiltersCount})
           </Button>
@@ -82,15 +73,11 @@ export function FilterBar({ filters, onClearAll, className, children }: FilterBa
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">Active filters:</span>
           {filters
-            .filter(f => f.value && f.value !== 'all')
+            .filter((f) => f.value && f.value !== 'all')
             .map((filter) => {
-              const option = filter.options.find(o => o.value === filter.value);
+              const option = filter.options.find((o) => o.value === filter.value);
               return (
-                <Badge
-                  key={filter.id}
-                  variant="secondary"
-                  className="gap-1 pr-1"
-                >
+                <Badge key={filter.id} variant="secondary" className="gap-1 pr-1">
                   <span className="text-xs">
                     {filter.label}: {option?.label || filter.value}
                   </span>

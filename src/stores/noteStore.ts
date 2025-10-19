@@ -4,7 +4,7 @@ import type { Note } from '@/types/activity';
 
 interface NoteStore {
   notes: Note[];
-  
+
   // Actions
   addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => Note;
   updateNote: (id: string, updates: Partial<Omit<Note, 'id' | 'createdAt'>>) => void;
@@ -84,9 +84,7 @@ export const useNoteStore = create<NoteStore>()(
 
       searchNotes: (query) => {
         const lowerQuery = query.toLowerCase();
-        return get().notes.filter((note) =>
-          note.content.toLowerCase().includes(lowerQuery)
-        );
+        return get().notes.filter((note) => note.content.toLowerCase().includes(lowerQuery));
       },
     }),
     {

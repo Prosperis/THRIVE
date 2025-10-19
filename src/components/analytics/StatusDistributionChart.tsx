@@ -1,8 +1,8 @@
+import { useMemo, useState } from 'react';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 type ChartType = 'status' | 'priority';
 
@@ -53,7 +53,7 @@ interface TooltipPayload {
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    
+
     return (
       <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
         <p className="font-medium">{data.name}</p>
@@ -72,13 +72,16 @@ export function StatusDistributionChart() {
 
   const chartData = useMemo(() => {
     const total = applications.length;
-    
+
     if (chartType === 'status') {
       // Group by status
-      const statusCounts = applications.reduce((acc, app) => {
-        acc[app.status] = (acc[app.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const statusCounts = applications.reduce(
+        (acc, app) => {
+          acc[app.status] = (acc[app.status] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
 
       return Object.entries(statusCounts).map(([status, count]) => ({
         name: STATUS_LABELS[status] || status,
@@ -88,11 +91,14 @@ export function StatusDistributionChart() {
       }));
     } else {
       // Group by priority
-      const priorityCounts = applications.reduce((acc, app) => {
-        const priority = app.priority || 'medium';
-        acc[priority] = (acc[priority] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const priorityCounts = applications.reduce(
+        (acc, app) => {
+          const priority = app.priority || 'medium';
+          acc[priority] = (acc[priority] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
 
       return Object.entries(priorityCounts).map(([priority, count]) => ({
         name: PRIORITY_LABELS[priority] || priority,
@@ -126,7 +132,7 @@ export function StatusDistributionChart() {
   // biome-ignore lint/suspicious/noExplicitAny: Recharts label props are complex
   const renderCustomLabel = (props: any) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
-    
+
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -197,8 +203,8 @@ export function StatusDistributionChart() {
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              verticalAlign="bottom" 
+            <Legend
+              verticalAlign="bottom"
               height={36}
               iconType="circle"
               wrapperStyle={{ fontSize: '14px' }}
@@ -211,8 +217,8 @@ export function StatusDistributionChart() {
           <div className="grid grid-cols-2 gap-4">
             {chartData.slice(0, 4).map((item) => (
               <div key={item.name} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full flex-shrink-0" 
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
                 <div className="flex-1 min-w-0">

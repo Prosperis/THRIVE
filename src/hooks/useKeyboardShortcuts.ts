@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useCallback, useEffect } from 'react';
 
 interface KeyboardShortcut {
   key: string;
@@ -34,7 +34,9 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
 
       for (const shortcut of shortcuts) {
         const keyMatches = event.key.toLowerCase() === shortcut.key.toLowerCase();
-        const ctrlMatches = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
+        const ctrlMatches = shortcut.ctrl
+          ? event.ctrlKey || event.metaKey
+          : !event.ctrlKey && !event.metaKey;
         const altMatches = shortcut.alt ? event.altKey : !event.altKey;
         const shiftMatches = shortcut.shift ? event.shiftKey : !event.shiftKey;
         const metaMatches = shortcut.meta ? event.metaKey : !event.metaKey;
@@ -108,16 +110,18 @@ export function useNavigationShortcuts() {
 /**
  * Format shortcut keys for display
  */
-export function formatShortcutKeys(shortcut: Pick<KeyboardShortcut, 'key' | 'ctrl' | 'alt' | 'shift' | 'meta'>): string {
+export function formatShortcutKeys(
+  shortcut: Pick<KeyboardShortcut, 'key' | 'ctrl' | 'alt' | 'shift' | 'meta'>
+): string {
   const keys: string[] = [];
-  
+
   if (shortcut.ctrl) keys.push('Ctrl');
   if (shortcut.alt) keys.push('Alt');
   if (shortcut.shift) keys.push('Shift');
   if (shortcut.meta) keys.push('⌘');
-  
+
   keys.push(shortcut.key.toUpperCase());
-  
+
   return keys.join('+');
 }
 

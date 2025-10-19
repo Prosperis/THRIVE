@@ -2,10 +2,10 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
   Notification,
-  Reminder,
   NotificationSettings,
   NotificationStats,
   NotificationStatus,
+  Reminder,
   SmartReminderSuggestion,
 } from '@/types/notifications';
 
@@ -19,28 +19,43 @@ interface NotificationsState {
   markAllAsRead: () => void;
   dismissNotification: (id: string) => void;
   snoozeNotification: (id: string, minutes: number) => void;
-  
+
   // Reminders
   reminders: Reminder[];
   addReminder: (reminder: Omit<Reminder, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateReminder: (id: string, updates: Partial<Reminder>) => void;
   deleteReminder: (id: string) => void;
   toggleReminder: (id: string) => void;
-  
+
   // Settings
   settings: NotificationSettings;
   updateSettings: (settings: Partial<NotificationSettings>) => void;
-  
+
   // Utility
   getUnreadNotifications: () => Notification[];
   getPendingNotifications: () => Notification[];
   getUpcomingReminders: () => Reminder[];
   getStats: () => NotificationStats;
   checkAndTriggerReminders: () => void;
-  
+
   // Smart suggestions
   smartSuggestions: SmartReminderSuggestion[];
-  generateSmartSuggestions: (applications: Array<{ id: string; status: string; appliedDate?: Date; companyName: string; lastContactDate?: Date }>, interviews: Array<{ id: string; scheduledAt?: Date; status: string; type: string; applicationId?: string }>) => void;
+  generateSmartSuggestions: (
+    applications: Array<{
+      id: string;
+      status: string;
+      appliedDate?: Date;
+      companyName: string;
+      lastContactDate?: Date;
+    }>,
+    interviews: Array<{
+      id: string;
+      scheduledAt?: Date;
+      status: string;
+      type: string;
+      applicationId?: string;
+    }>
+  ) => void;
   dismissSuggestion: (id: string) => void;
   acceptSuggestion: (suggestion: SmartReminderSuggestion) => void;
 }
@@ -99,7 +114,12 @@ export const useNotificationsStore = create<NotificationsState>()(
         set((state) => ({
           notifications: state.notifications.map((n) =>
             n.id === id
-              ? { ...n, status: 'read' as NotificationStatus, readAt: new Date(), updatedAt: new Date() }
+              ? {
+                  ...n,
+                  status: 'read' as NotificationStatus,
+                  readAt: new Date(),
+                  updatedAt: new Date(),
+                }
               : n
           ),
         })),
@@ -108,7 +128,12 @@ export const useNotificationsStore = create<NotificationsState>()(
         set((state) => ({
           notifications: state.notifications.map((n) =>
             n.status === 'sent' || n.status === 'pending'
-              ? { ...n, status: 'read' as NotificationStatus, readAt: new Date(), updatedAt: new Date() }
+              ? {
+                  ...n,
+                  status: 'read' as NotificationStatus,
+                  readAt: new Date(),
+                  updatedAt: new Date(),
+                }
               : n
           ),
         })),
@@ -188,9 +213,7 @@ export const useNotificationsStore = create<NotificationsState>()(
 
       // Utility functions
       getUnreadNotifications: () => {
-        return get().notifications.filter(
-          (n) => n.status === 'sent' || n.status === 'pending'
-        );
+        return get().notifications.filter((n) => n.status === 'sent' || n.status === 'pending');
       },
 
       getPendingNotifications: () => {
@@ -257,11 +280,7 @@ export const useNotificationsStore = create<NotificationsState>()(
         const now = new Date();
 
         reminders.forEach((reminder) => {
-          if (
-            !reminder.isActive ||
-            !reminder.nextTrigger ||
-            new Date(reminder.nextTrigger) > now
-          ) {
+          if (!reminder.isActive || !reminder.nextTrigger || new Date(reminder.nextTrigger) > now) {
             return;
           }
 
@@ -435,7 +454,12 @@ export const useNotificationsStore = create<NotificationsState>()(
         addReminder({
           title: suggestion.title,
           description: suggestion.description,
-          type: suggestion.type === 'interview-prep' ? 'interview' : suggestion.type === 'check-status' ? 'follow-up' : suggestion.type,
+          type:
+            suggestion.type === 'interview-prep'
+              ? 'interview'
+              : suggestion.type === 'check-status'
+                ? 'follow-up'
+                : suggestion.type,
           priority: suggestion.priority,
           reminderDate: suggestion.suggestedDate,
           isRecurring: false,

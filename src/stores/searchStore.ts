@@ -11,7 +11,7 @@ export interface SearchSuggestion {
 interface SearchState {
   recentSearches: SearchSuggestion[];
   popularSearches: SearchSuggestion[];
-  
+
   // Actions
   addSearch: (query: string, resultCount: number, category?: SearchSuggestion['category']) => void;
   clearRecentSearches: () => void;
@@ -26,17 +26,17 @@ export const useSearchStore = create<SearchState>()(
     (set, get) => ({
       recentSearches: [],
       popularSearches: [],
-      
+
       addSearch: (query, resultCount, category) => {
         const trimmedQuery = query.trim();
         if (!trimmedQuery) return;
-        
+
         set((state) => {
           // Remove duplicate if exists
           const filtered = state.recentSearches.filter(
             (s) => s.query.toLowerCase() !== trimmedQuery.toLowerCase()
           );
-          
+
           // Add to front
           const newSearch: SearchSuggestion = {
             query: trimmedQuery,
@@ -44,38 +44,36 @@ export const useSearchStore = create<SearchState>()(
             resultCount,
             category,
           };
-          
+
           const updated = [newSearch, ...filtered].slice(0, MAX_RECENT_SEARCHES);
-          
+
           return { recentSearches: updated };
         });
       },
-      
+
       clearRecentSearches: () => set({ recentSearches: [] }),
-      
+
       removeSearch: (query) => {
         set((state) => ({
-          recentSearches: state.recentSearches.filter(
-            (s) => s.query !== query
-          ),
+          recentSearches: state.recentSearches.filter((s) => s.query !== query),
         }));
       },
-      
+
       getTopSearches: (limit = 5) => {
         const { recentSearches } = get();
-        
+
         // Count frequency of searches
         const frequency = new Map<string, number>();
         for (const search of recentSearches) {
           const count = frequency.get(search.query) || 0;
           frequency.set(search.query, count + 1);
         }
-        
+
         // Get unique searches with their frequency
-        const uniqueSearches = recentSearches.filter((search, index, self) =>
-          index === self.findIndex((s) => s.query === search.query)
+        const uniqueSearches = recentSearches.filter(
+          (search, index, self) => index === self.findIndex((s) => s.query === search.query)
         );
-        
+
         // Sort by frequency
         return uniqueSearches
           .sort((a, b) => {

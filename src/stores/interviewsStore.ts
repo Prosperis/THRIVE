@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Interview, InterviewFilters } from '@/types';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
+import type { Interview, InterviewFilters } from '@/types';
 
 interface InterviewsState {
   interviews: Interview[];
@@ -38,7 +38,7 @@ export const useInterviewsStore = create<InterviewsState>()(
 
       getFilteredInterviews: () => {
         const { interviews, filters } = get();
-        
+
         return interviews.filter((interview) => {
           // Filter by type
           if (filters.type && filters.type.length > 0) {

@@ -6,7 +6,7 @@ export const COMMON_INTERVIEW_QUESTIONS: CommonQuestion[] = [
     question: 'Tell me about yourself.',
     category: 'behavioral',
     difficulty: 'easy',
-    tips: 'Use the present-past-future framework. Start with your current role, briefly mention how you got there, and finish with why you\'re excited about this opportunity.',
+    tips: "Use the present-past-future framework. Start with your current role, briefly mention how you got there, and finish with why you're excited about this opportunity.",
     tags: ['introduction', 'overview'],
   },
   {
@@ -20,11 +20,12 @@ export const COMMON_INTERVIEW_QUESTIONS: CommonQuestion[] = [
     question: 'What is your greatest weakness?',
     category: 'behavioral',
     difficulty: 'medium',
-    tips: 'Be honest but strategic. Mention a real weakness and explain how you\'re working to improve it.',
+    tips: "Be honest but strategic. Mention a real weakness and explain how you're working to improve it.",
     tags: ['weaknesses', 'self-awareness'],
   },
   {
-    question: 'Tell me about a time when you faced a conflict with a coworker and how you resolved it.',
+    question:
+      'Tell me about a time when you faced a conflict with a coworker and how you resolved it.',
     category: 'behavioral',
     difficulty: 'medium',
     tips: 'Use the STAR method (Situation, Task, Action, Result). Focus on your conflict resolution skills and positive outcome.',
@@ -69,7 +70,7 @@ export const COMMON_INTERVIEW_QUESTIONS: CommonQuestion[] = [
     question: 'Why are you leaving your current job?',
     category: 'behavioral',
     difficulty: 'medium',
-    tips: 'Stay positive. Focus on what you\'re looking for (growth, new challenges) rather than what you\'re running from.',
+    tips: "Stay positive. Focus on what you're looking for (growth, new challenges) rather than what you're running from.",
     tags: ['job-change', 'motivation'],
   },
 
@@ -186,7 +187,7 @@ export const COMMON_INTERVIEW_QUESTIONS: CommonQuestion[] = [
 
   // Problem Solving
   {
-    question: 'How do you approach debugging a problem you\'ve never seen before?',
+    question: "How do you approach debugging a problem you've never seen before?",
     category: 'problem-solving',
     difficulty: 'medium',
     tips: 'Discuss systematic approaches: reproducing the issue, isolating variables, using debugging tools, researching.',

@@ -6,7 +6,7 @@ interface UIState {
   mobileMenuOpen: boolean;
   commandMenuOpen: boolean;
   activeView: 'table' | 'kanban' | 'calendar';
-  
+
   // Actions
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;

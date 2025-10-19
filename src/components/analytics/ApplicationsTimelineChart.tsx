@@ -1,18 +1,18 @@
+import { eachMonthOfInterval, eachWeekOfInterval, format, subMonths } from 'date-fns';
+import { useId, useMemo, useState } from 'react';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-import { useMemo, useState, useId } from 'react';
-import { format, eachWeekOfInterval, eachMonthOfInterval, subMonths } from 'date-fns';
-import { Button } from '@/components/ui/button';
 
 type TimeRange = 'week' | 'month';
 
@@ -27,7 +27,7 @@ interface TooltipPayload {
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    
+
     return (
       <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
         <p className="font-medium mb-2">{data.period}</p>
@@ -60,19 +60,19 @@ export function ApplicationsTimelineChart() {
     if (timeRange === 'week') {
       // Group by week
       const weeks = eachWeekOfInterval({ start: threeMonthsAgo, end: now });
-      
-      return weeks.map(weekStart => {
+
+      return weeks.map((weekStart) => {
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
-        
-        const weekApplications = applications.filter(app => {
+
+        const weekApplications = applications.filter((app) => {
           if (!app.appliedDate) return false;
           const appDate = new Date(app.appliedDate);
           return appDate >= weekStart && appDate < weekEnd;
         });
 
         // Count interviews scheduled in this week
-        const weekInterviews = weekApplications.filter(app => {
+        const weekInterviews = weekApplications.filter((app) => {
           return ['screening', 'interviewing'].includes(app.status);
         }).length;
 
@@ -85,18 +85,18 @@ export function ApplicationsTimelineChart() {
     } else {
       // Group by month
       const months = eachMonthOfInterval({ start: threeMonthsAgo, end: now });
-      
-      return months.map(monthStart => {
+
+      return months.map((monthStart) => {
         const monthEnd = new Date(monthStart);
         monthEnd.setMonth(monthEnd.getMonth() + 1);
-        
-        const monthApplications = applications.filter(app => {
+
+        const monthApplications = applications.filter((app) => {
           if (!app.appliedDate) return false;
           const appDate = new Date(app.appliedDate);
           return appDate >= monthStart && appDate < monthEnd;
         });
 
-        const monthInterviews = monthApplications.filter(app => {
+        const monthInterviews = monthApplications.filter((app) => {
           return ['screening', 'interviewing'].includes(app.status);
         }).length;
 
@@ -135,9 +135,7 @@ export function ApplicationsTimelineChart() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Application Trends</CardTitle>
-            <CardDescription>
-              Your application activity over the last 3 months
-            </CardDescription>
+            <CardDescription>Your application activity over the last 3 months</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button
@@ -159,10 +157,7 @@ export function ApplicationsTimelineChart() {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart
-            data={chartData}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          >
+          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={gradientId1} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -174,21 +169,10 @@ export function ApplicationsTimelineChart() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis 
-              dataKey="period" 
-              className="text-xs"
-              tick={{ fontSize: 12 }}
-            />
-            <YAxis 
-              className="text-xs"
-              tick={{ fontSize: 12 }}
-              allowDecimals={false}
-            />
+            <XAxis dataKey="period" className="text-xs" tick={{ fontSize: 12 }} />
+            <YAxis className="text-xs" tick={{ fontSize: 12 }} allowDecimals={false} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              wrapperStyle={{ fontSize: '14px' }}
-              iconType="circle"
-            />
+            <Legend wrapperStyle={{ fontSize: '14px' }} iconType="circle" />
             <Area
               type="monotone"
               dataKey="applications"

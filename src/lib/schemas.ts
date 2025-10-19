@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import {
   APPLICATION_STATUSES,
+  DOCUMENT_TYPES,
+  EMPLOYMENT_TYPES,
+  INTERVIEW_STATUSES,
+  INTERVIEW_TYPES,
   PRIORITY_LEVELS,
   WORK_TYPES,
-  EMPLOYMENT_TYPES,
-  DOCUMENT_TYPES,
-  INTERVIEW_TYPES,
-  INTERVIEW_STATUSES,
 } from '@/lib/constants';
 
 // Salary Range Schema
@@ -73,8 +73,10 @@ export const contactSchema = z.object({
 export const interviewSchema = z.object({
   id: z.string().optional(),
   applicationId: z.string().min(1, 'Application is required'),
-  type: z.enum(INTERVIEW_TYPES.map(t => t.value) as [string, ...string[]]),
-  status: z.enum(INTERVIEW_STATUSES.map(s => s.value) as [string, ...string[]]).default('scheduled'),
+  type: z.enum(INTERVIEW_TYPES.map((t) => t.value) as [string, ...string[]]),
+  status: z
+    .enum(INTERVIEW_STATUSES.map((s) => s.value) as [string, ...string[]])
+    .default('scheduled'),
   scheduledAt: z.date(),
   duration: z.number().min(15).max(480).optional(),
   location: z.string().optional(),

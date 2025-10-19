@@ -69,7 +69,15 @@ export interface Interview {
   id: string;
   applicationId: string;
   round: number; // 1st interview, 2nd interview, etc.
-  type: 'phone-screen' | 'video' | 'on-site' | 'technical' | 'behavioral' | 'panel' | 'final' | 'other';
+  type:
+    | 'phone-screen'
+    | 'video'
+    | 'on-site'
+    | 'technical'
+    | 'behavioral'
+    | 'panel'
+    | 'final'
+    | 'other';
   status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show';
 
   scheduledAt?: Date; // Renamed from scheduledDate
@@ -229,7 +237,16 @@ export interface ApplicationFilters {
  * Interview filter and search criteria
  */
 export interface InterviewFilters {
-  type?: ('phone-screen' | 'video' | 'on-site' | 'technical' | 'behavioral' | 'panel' | 'final' | 'other')[];
+  type?: (
+    | 'phone-screen'
+    | 'video'
+    | 'on-site'
+    | 'technical'
+    | 'behavioral'
+    | 'panel'
+    | 'final'
+    | 'other'
+  )[];
   status?: ('scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show')[];
   dateRange?: {
     start?: Date;

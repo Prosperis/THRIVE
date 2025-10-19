@@ -28,10 +28,10 @@ const pageTransition = {
 
 /**
  * PageTransition component
- * 
+ *
  * Wraps page content with smooth fade and slide animations.
  * Use this component to wrap route components for consistent page transitions.
- * 
+ *
  * @example
  * ```tsx
  * export default function MyPage() {

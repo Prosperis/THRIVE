@@ -1,7 +1,16 @@
+import { useMemo } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { useMemo } from 'react';
 
 const STAGE_COLORS: Record<string, string> = {
   applied: '#3b82f6', // blue
@@ -16,7 +25,7 @@ const STAGE_COLORS: Record<string, string> = {
 
 const STAGE_ORDER = [
   'applied',
-  'screening', 
+  'screening',
   'interviewing',
   'offer',
   'accepted',
@@ -49,10 +58,8 @@ interface TooltipPayload {
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const percentage = data.total > 0 
-      ? ((data.count / data.total) * 100).toFixed(1)
-      : '0';
-    
+    const percentage = data.total > 0 ? ((data.count / data.total) * 100).toFixed(1) : '0';
+
     return (
       <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
         <p className="font-medium">{data.label}</p>
@@ -72,19 +79,22 @@ export function ApplicationFunnelChart() {
 
   const funnelData = useMemo(() => {
     // Count applications by status
-    const statusCounts = applications.reduce((acc, app) => {
-      acc[app.status] = (acc[app.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const statusCounts = applications.reduce(
+      (acc, app) => {
+        acc[app.status] = (acc[app.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Create data in funnel order
-    return STAGE_ORDER.map(status => ({
+    return STAGE_ORDER.map((status) => ({
       status,
       label: STAGE_LABELS[status],
       count: statusCounts[status] || 0,
       color: STAGE_COLORS[status],
       total: totalApplications,
-    })).filter(item => item.count > 0); // Only show stages with data
+    })).filter((item) => item.count > 0); // Only show stages with data
   }, [applications, totalApplications]);
 
   if (applications.length === 0) {
@@ -110,7 +120,8 @@ export function ApplicationFunnelChart() {
       <CardHeader>
         <CardTitle>Application Funnel</CardTitle>
         <CardDescription>
-          Progression of {totalApplications} application{totalApplications !== 1 ? 's' : ''} through stages
+          Progression of {totalApplications} application{totalApplications !== 1 ? 's' : ''} through
+          stages
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -122,12 +133,7 @@ export function ApplicationFunnelChart() {
           >
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis type="number" className="text-xs" />
-            <YAxis 
-              dataKey="label" 
-              type="category" 
-              className="text-xs"
-              width={100}
-            />
+            <YAxis dataKey="label" type="category" className="text-xs" width={100} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }} />
             <Bar dataKey="count" radius={[0, 4, 4, 0]}>
               {funnelData.map((entry) => (
@@ -136,15 +142,12 @@ export function ApplicationFunnelChart() {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-        
+
         {/* Legend */}
         <div className="flex flex-wrap gap-4 mt-4 justify-center">
           {funnelData.map((item) => (
             <div key={item.status} className="flex items-center gap-2">
-              <div 
-                className="w-3 h-3 rounded-sm" 
-                style={{ backgroundColor: item.color }}
-              />
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }} />
               <span className="text-xs text-muted-foreground">
                 {item.label} ({item.count})
               </span>

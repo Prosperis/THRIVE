@@ -19,28 +19,28 @@ export interface Notification {
   message: string;
   priority: NotificationPriority;
   status: NotificationStatus;
-  
+
   // Scheduling
   scheduledFor: Date;
   sentAt?: Date;
   readAt?: Date;
   dismissedAt?: Date;
   snoozedUntil?: Date;
-  
+
   // Related entities
   applicationId?: string;
   interviewId?: string;
   documentId?: string;
-  
+
   // Action
   actionLabel?: string;
   actionUrl?: string;
-  
+
   // Metadata
   isRecurring: boolean;
   frequency?: ReminderFrequency;
   parentReminderId?: string; // For recurring reminders
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,28 +51,28 @@ export interface Reminder {
   description?: string;
   type: NotificationType;
   priority: NotificationPriority;
-  
+
   // Scheduling
   reminderDate: Date;
   isRecurring: boolean;
   frequency?: ReminderFrequency;
   endDate?: Date; // For recurring reminders
-  
+
   // Related entities
   applicationId?: string;
   interviewId?: string;
   companyName?: string;
-  
+
   // Notifications
   notifyBefore?: number; // Minutes before to notify
   notifyVia: ('app' | 'browser')[];
-  
+
   // Status
   isActive: boolean;
   lastTriggered?: Date;
   nextTrigger?: Date;
   completedAt?: Date;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -80,23 +80,23 @@ export interface Reminder {
 export interface NotificationSettings {
   // Browser notifications
   browserNotificationsEnabled: boolean;
-  
+
   // Notification types
   deadlineReminders: boolean;
   followUpReminders: boolean;
   interviewReminders: boolean;
   applicationUpdates: boolean;
-  
+
   // Timing
   defaultReminderTime: string; // e.g., "09:00"
   interviewReminderMinutes: number; // Minutes before interview
   followUpReminderDays: number; // Days after application
-  
+
   // Quiet hours
   quietHoursEnabled: boolean;
   quietHoursStart: string; // e.g., "22:00"
   quietHoursEnd: string; // e.g., "08:00"
-  
+
   // Snooze
   defaultSnoozeMinutes: number;
 }

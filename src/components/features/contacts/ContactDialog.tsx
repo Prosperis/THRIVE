@@ -7,9 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ContactForm } from './ContactForm';
 import { useContactsStore } from '@/stores/contactsStore';
 import type { Contact } from '@/types';
+import { ContactForm } from './ContactForm';
 
 interface ContactDialogProps {
   contact?: Contact;
@@ -26,7 +26,7 @@ export function ContactDialog({
 }: ContactDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { addContact, updateContact } = useContactsStore();
 
   // Use controlled or uncontrolled state
@@ -35,7 +35,7 @@ export function ContactDialog({
 
   const handleSubmit = async (data: Partial<Contact>) => {
     setIsLoading(true);
-    
+
     try {
       if (contact) {
         // Update existing contact
@@ -44,7 +44,7 @@ export function ContactDialog({
         // Create new contact
         await addContact(data as Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>);
       }
-      
+
       setOpen(false);
     } catch (error) {
       console.error('Failed to save contact:', error);
@@ -60,12 +60,10 @@ export function ContactDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      
+
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {contact ? 'Edit Contact' : 'Add New Contact'}
-          </DialogTitle>
+          <DialogTitle>{contact ? 'Edit Contact' : 'Add New Contact'}</DialogTitle>
           <DialogDescription>
             {contact
               ? 'Update the contact information and notes.'

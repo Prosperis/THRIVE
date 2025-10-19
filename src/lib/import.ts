@@ -65,7 +65,7 @@ export interface CSVImportResult {
  */
 export function parseCSVFile(content: string): CSVImportResult {
   const rows = parseCSV(content);
-  
+
   if (rows.length === 0) {
     return { headers: [], rows: [], totalRows: 0 };
   }
@@ -183,7 +183,10 @@ export function mapRowToApplication(
         break;
       case 'tags':
         // Parse semicolon-separated tags
-        app.tags = value.split(';').map((t) => t.trim()).filter(Boolean);
+        app.tags = value
+          .split(';')
+          .map((t) => t.trim())
+          .filter(Boolean);
         break;
       case 'salary':
         // Skip - handled by salaryMin/salaryMax in validation
@@ -349,50 +352,50 @@ export function autoDetectMapping(headers: string[]): FieldMapping[] {
     // Common variations
     'company name': 'companyName',
     company: 'companyName',
-    
+
     'job title': 'position',
     title: 'position',
     role: 'position',
 
     'target date': 'targetDate',
     targeted: 'targetDate',
-    
+
     'applied date': 'appliedDate',
     'application date': 'appliedDate',
     applied: 'appliedDate',
-    
+
     'interview date': 'firstInterviewDate',
     'first interview': 'firstInterviewDate',
-    
+
     'offer date': 'offerDate',
     offer: 'offerDate',
-    
+
     'response deadline': 'responseDeadline',
     deadline: 'responseDeadline',
-    
+
     'work type': 'workType',
     'remote/hybrid/onsite': 'workType',
-    
+
     'employment type': 'employmentType',
     type: 'employmentType',
-    
+
     'salary min': 'salary',
     'min salary': 'salary',
     'salary minimum': 'salary',
-    
+
     'job url': 'jobUrl',
     url: 'jobUrl',
     link: 'jobUrl',
-    
+
     'job description': 'jobDescription',
     description: 'jobDescription',
-    
+
     'referral name': 'referralName',
     referral: 'referralName',
-    
+
     'created at': 'createdAt',
     created: 'createdAt',
-    
+
     'updated at': 'updatedAt',
     updated: 'updatedAt',
     modified: 'updatedAt',
@@ -401,7 +404,7 @@ export function autoDetectMapping(headers: string[]): FieldMapping[] {
   return headers.map((header) => {
     const normalized = header.toLowerCase().trim();
     const appField = fieldMap[normalized] || null;
-    
+
     return {
       csvColumn: header,
       appField,
@@ -425,7 +428,11 @@ export interface JSONValidationResult {
 /**
  * Validate a single application record from JSON
  */
-function validateJSONApplication(data: unknown): { valid: boolean; errors: string[]; app?: Application } {
+function validateJSONApplication(data: unknown): {
+  valid: boolean;
+  errors: string[];
+  app?: Application;
+} {
   const errors: string[] = [];
 
   if (typeof data !== 'object' || data === null) {
@@ -451,7 +458,15 @@ function validateJSONApplication(data: unknown): { valid: boolean; errors: strin
   }
 
   // Validate dates if present
-  const dateFields = ['targetDate', 'appliedDate', 'firstInterviewDate', 'offerDate', 'responseDeadline', 'createdAt', 'updatedAt'];
+  const dateFields = [
+    'targetDate',
+    'appliedDate',
+    'firstInterviewDate',
+    'offerDate',
+    'responseDeadline',
+    'createdAt',
+    'updatedAt',
+  ];
   for (const field of dateFields) {
     if (record[field]) {
       const date = new Date(record[field] as string);
@@ -472,7 +487,10 @@ function validateJSONApplication(data: unknown): { valid: boolean; errors: strin
   }
 
   // Validate employmentType if present
-  if (record.employmentType && !['full-time', 'part-time', 'contract', 'internship'].includes(record.employmentType as string)) {
+  if (
+    record.employmentType &&
+    !['full-time', 'part-time', 'contract', 'internship'].includes(record.employmentType as string)
+  ) {
     errors.push(`Invalid employmentType: ${record.employmentType}`);
   }
 
@@ -483,15 +501,19 @@ function validateJSONApplication(data: unknown): { valid: boolean; errors: strin
   // Convert dates
   const app: Application = {
     ...record,
-    id: record.id as string || crypto.randomUUID(),
+    id: (record.id as string) || crypto.randomUUID(),
     companyName: record.companyName as string,
     position: record.position as string,
     status: record.status as ApplicationStatus,
     targetDate: record.targetDate ? new Date(record.targetDate as string) : undefined,
     appliedDate: record.appliedDate ? new Date(record.appliedDate as string) : undefined,
-    firstInterviewDate: record.firstInterviewDate ? new Date(record.firstInterviewDate as string) : undefined,
+    firstInterviewDate: record.firstInterviewDate
+      ? new Date(record.firstInterviewDate as string)
+      : undefined,
     offerDate: record.offerDate ? new Date(record.offerDate as string) : undefined,
-    responseDeadline: record.responseDeadline ? new Date(record.responseDeadline as string) : undefined,
+    responseDeadline: record.responseDeadline
+      ? new Date(record.responseDeadline as string)
+      : undefined,
     createdAt: record.createdAt ? new Date(record.createdAt as string) : new Date(),
     updatedAt: record.updatedAt ? new Date(record.updatedAt as string) : new Date(),
   } as Application;

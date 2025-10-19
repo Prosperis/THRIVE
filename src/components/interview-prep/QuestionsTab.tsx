@@ -1,17 +1,8 @@
+import { BookOpen, Edit, Play, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -21,9 +12,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, BookOpen, Edit, Trash2, Play } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  COMMON_INTERVIEW_QUESTIONS,
+  DIFFICULTY_LEVELS,
+  QUESTION_CATEGORIES,
+} from '@/data/commonQuestions';
 import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
-import { COMMON_INTERVIEW_QUESTIONS, QUESTION_CATEGORIES, DIFFICULTY_LEVELS } from '@/data/commonQuestions';
 import type { QuestionCategory, QuestionDifficulty } from '@/types/interviewPrep';
 
 export function QuestionsTab() {
@@ -51,7 +55,7 @@ export function QuestionsTab() {
     return matchesCategory && matchesDifficulty && matchesSearch;
   });
 
-  const handleAddCommonQuestion = (question: typeof COMMON_INTERVIEW_QUESTIONS[0]) => {
+  const handleAddCommonQuestion = (question: (typeof COMMON_INTERVIEW_QUESTIONS)[0]) => {
     addQuestion({
       question: question.question,
       category: question.category,
@@ -68,7 +72,10 @@ export function QuestionsTab() {
       question: formData.get('question') as string,
       category: formData.get('category') as QuestionCategory,
       difficulty: (formData.get('difficulty') as QuestionDifficulty) || undefined,
-      tags: (formData.get('tags') as string)?.split(',').map((t) => t.trim()).filter(Boolean),
+      tags: (formData.get('tags') as string)
+        ?.split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
       isCommon: false,
     });
     setShowAddDialog(false);
@@ -78,17 +85,17 @@ export function QuestionsTab() {
   const handleAddAnswer = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedQuestionId) return;
-    
+
     const formData = new FormData(e.currentTarget);
     const existingAnswers = getAnswersForQuestion(selectedQuestionId);
-    
+
     addAnswer({
       questionId: selectedQuestionId,
       answer: formData.get('answer') as string,
       notes: (formData.get('notes') as string) || undefined,
       version: existingAnswers.length + 1,
     });
-    
+
     setShowAnswerDialog(false);
     setSelectedQuestionId(null);
     e.currentTarget.reset();
@@ -116,7 +123,10 @@ export function QuestionsTab() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as QuestionCategory | 'all')}>
+            <Select
+              value={selectedCategory}
+              onValueChange={(v) => setSelectedCategory(v as QuestionCategory | 'all')}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
@@ -129,7 +139,10 @@ export function QuestionsTab() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={selectedDifficulty} onValueChange={(v) => setSelectedDifficulty(v as QuestionDifficulty | 'all')}>
+            <Select
+              value={selectedDifficulty}
+              onValueChange={(v) => setSelectedDifficulty(v as QuestionDifficulty | 'all')}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
@@ -153,7 +166,9 @@ export function QuestionsTab() {
                 <form onSubmit={handleAddCustomQuestion}>
                   <DialogHeader>
                     <DialogTitle>Add Custom Question</DialogTitle>
-                    <DialogDescription>Create your own interview question to practice</DialogDescription>
+                    <DialogDescription>
+                      Create your own interview question to practice
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
@@ -233,7 +248,10 @@ export function QuestionsTab() {
                           {q.category}
                         </Badge>
                         {q.difficulty && (
-                          <Badge variant="outline" className={`text-xs ${getDifficultyColor(q.difficulty)}`}>
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${getDifficultyColor(q.difficulty)}`}
+                          >
                             {q.difficulty}
                           </Badge>
                         )}
@@ -243,9 +261,7 @@ export function QuestionsTab() {
                           </Badge>
                         ))}
                       </div>
-                      {q.tips && (
-                        <p className="text-xs text-muted-foreground mt-1">{q.tips}</p>
-                      )}
+                      {q.tips && <p className="text-xs text-muted-foreground mt-1">{q.tips}</p>}
                     </div>
                     <Button
                       size="sm"
@@ -266,13 +282,11 @@ export function QuestionsTab() {
       {/* My Questions */}
       {filteredQuestions.length > 0 ? (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">
-            My Questions ({filteredQuestions.length})
-          </h3>
+          <h3 className="text-lg font-semibold">My Questions ({filteredQuestions.length})</h3>
           {filteredQuestions.map((question) => {
             const questionAnswers = getAnswersForQuestion(question.id);
             const hasAnswer = questionAnswers.length > 0;
-            
+
             return (
               <Card key={question.id}>
                 <CardHeader>
@@ -285,13 +299,14 @@ export function QuestionsTab() {
                           {question.category}
                         </Badge>
                         {question.difficulty && (
-                          <Badge variant="outline" className={getDifficultyColor(question.difficulty)}>
+                          <Badge
+                            variant="outline"
+                            className={getDifficultyColor(question.difficulty)}
+                          >
                             {question.difficulty}
                           </Badge>
                         )}
-                        {question.isCommon && (
-                          <Badge variant="secondary">Common</Badge>
-                        )}
+                        {question.isCommon && <Badge variant="secondary">Common</Badge>}
                         {question.tags?.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
@@ -325,7 +340,10 @@ export function QuestionsTab() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Your Answer ({questionAnswers.length} version{questionAnswers.length > 1 ? 's' : ''})</span>
+                        <span className="text-sm font-medium">
+                          Your Answer ({questionAnswers.length} version
+                          {questionAnswers.length > 1 ? 's' : ''})
+                        </span>
                       </div>
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                         {questionAnswers[questionAnswers.length - 1].answer}

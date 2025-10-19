@@ -1,9 +1,21 @@
-import { useMemo, useState, useCallback } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
+import {
+  Download,
+  Eye,
+  FileDown,
+  MoreHorizontal,
+  Pencil,
+  Settings,
+  Trash2,
+  Upload,
+} from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { AnimatedStatusBadge } from '@/components/ui/animated-status-badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DataTable } from '@/components/ui/data-table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,23 +24,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DataTable } from '@/components/ui/data-table';
 import { SortableHeader } from '@/components/ui/sortable-header';
-import { BulkActions } from './BulkActions';
-import { ApplicationDialog } from './ApplicationDialog';
-import { CSVImportDialog } from './CSVImportDialog';
-import { JSONImportDialog } from './JSONImportDialog';
-import { BackupManagementDialog } from './BackupManagementDialog';
+import { exportAndDownloadApplicationsCSV, exportAndDownloadApplicationsJSON } from '@/lib/export';
+import { notify } from '@/lib/notifications';
+import { formatDate } from '@/lib/utils';
 import { useApplicationsStore, useSettingsStore } from '@/stores';
 import type { Application } from '@/types';
-import { formatDate } from '@/lib/utils';
-import {
-  exportAndDownloadApplicationsCSV,
-  exportAndDownloadApplicationsJSON,
-} from '@/lib/export';
-import { toast } from 'sonner';
-import { notify } from '@/lib/notifications';
-import { MoreHorizontal, Eye, Pencil, Trash2, Download, FileDown, Upload, Settings } from 'lucide-react';
+import { ApplicationDialog } from './ApplicationDialog';
+import { BackupManagementDialog } from './BackupManagementDialog';
+import { BulkActions } from './BulkActions';
+import { CSVImportDialog } from './CSVImportDialog';
+import { JSONImportDialog } from './JSONImportDialog';
 
 const statusColors: Record<Application['status'], string> = {
   target: 'bg-gray-500',
@@ -94,9 +100,7 @@ export function ApplicationsTable() {
       },
       {
         accessorKey: 'position',
-        header: ({ column }) => (
-          <SortableHeader column={column}>Position</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Position</SortableHeader>,
         cell: ({ row }) => {
           return (
             <div>
@@ -108,25 +112,18 @@ export function ApplicationsTable() {
       },
       {
         accessorKey: 'companyName',
-        header: ({ column }) => (
-          <SortableHeader column={column}>Company</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Company</SortableHeader>,
         cell: ({ row }) => {
           return <div className="font-medium">{row.getValue('companyName')}</div>;
         },
       },
       {
         accessorKey: 'status',
-        header: ({ column }) => (
-          <SortableHeader column={column}>Status</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Status</SortableHeader>,
         cell: ({ row }) => {
           const status = row.getValue('status') as Application['status'];
           return (
-            <AnimatedStatusBadge 
-              status={status}
-              className={statusColors[status]}
-            >
+            <AnimatedStatusBadge status={status} className={statusColors[status]}>
               {status.replace('-', ' ')}
             </AnimatedStatusBadge>
           );
@@ -137,9 +134,7 @@ export function ApplicationsTable() {
       },
       {
         accessorKey: 'priority',
-        header: ({ column }) => (
-          <SortableHeader column={column}>Priority</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Priority</SortableHeader>,
         cell: ({ row }) => {
           const priority = row.getValue('priority') as Application['priority'];
           if (!priority) return <span className="text-muted-foreground">-</span>;
@@ -167,48 +162,49 @@ export function ApplicationsTable() {
       {
         accessorKey: 'salary.min',
         id: 'salary',
-        header: ({ column }) => (
-          <SortableHeader column={column}>Salary</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Salary</SortableHeader>,
         cell: ({ row }) => {
           const salary = row.original.salary;
-          if (!salary?.min && !salary?.max) return <span className="text-muted-foreground">N/A</span>;
-          
+          if (!salary?.min && !salary?.max)
+            return <span className="text-muted-foreground">N/A</span>;
+
           const formatter = new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: salary?.currency || 'USD',
             maximumFractionDigits: 0,
           });
-          
+
           if (salary?.min && salary?.max) {
             return (
               <div>
-                <div>{formatter.format(salary.min)} - {formatter.format(salary.max)}</div>
+                <div>
+                  {formatter.format(salary.min)} - {formatter.format(salary.max)}
+                </div>
                 {salary.period && (
                   <div className="text-sm text-muted-foreground">per {salary.period}</div>
                 )}
               </div>
             );
           }
-          
+
           return <span>{formatter.format(salary?.min || salary?.max || 0)}</span>;
         },
       },
       {
         accessorKey: 'appliedDate',
-        header: ({ column }) => (
-          <SortableHeader column={column}>Applied</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Applied</SortableHeader>,
         cell: ({ row }) => {
           const date = row.getValue('appliedDate') as Date | undefined;
-          return date ? formatDate(date) : <span className="text-muted-foreground">Not applied</span>;
+          return date ? (
+            formatDate(date)
+          ) : (
+            <span className="text-muted-foreground">Not applied</span>
+          );
         },
       },
       {
         accessorKey: 'updatedAt',
-        header: ({ column }) => (
-          <SortableHeader column={column}>Updated</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Updated</SortableHeader>,
         cell: ({ row }) => {
           return formatDate(row.getValue('updatedAt'));
         },
@@ -228,9 +224,7 @@ export function ApplicationsTable() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem
-                  onClick={() => navigator.clipboard.writeText(application.id)}
-                >
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(application.id)}>
                   Copy ID
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -245,9 +239,15 @@ export function ApplicationsTable() {
                 <DropdownMenuItem
                   className="text-destructive"
                   onClick={() => {
-                    if (!dataSettings.confirmDelete || confirm(`Are you sure you want to delete "${application.position}"?`)) {
+                    if (
+                      !dataSettings.confirmDelete ||
+                      confirm(`Are you sure you want to delete "${application.position}"?`)
+                    ) {
                       deleteApplication(application.id);
-                      notify.success('Application Deleted', `${application.position} has been deleted`);
+                      notify.success(
+                        'Application Deleted',
+                        `${application.position} has been deleted`
+                      );
                     }
                   }}
                 >
@@ -328,7 +328,7 @@ export function ApplicationsTable() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -357,27 +357,18 @@ export function ApplicationsTable() {
           </>
         )}
       />
-      
+
       <ApplicationDialog
         application={editingApplication}
         open={isEditDialogOpen}
         onOpenChange={handleEditDialogClose}
       />
-      
-      <CSVImportDialog
-        open={isCSVImportDialogOpen}
-        onOpenChange={setIsCSVImportDialogOpen}
-      />
-      
-      <JSONImportDialog
-        open={isJSONImportDialogOpen}
-        onOpenChange={setIsJSONImportDialogOpen}
-      />
-      
-      <BackupManagementDialog
-        open={isBackupDialogOpen}
-        onOpenChange={setIsBackupDialogOpen}
-      />
+
+      <CSVImportDialog open={isCSVImportDialogOpen} onOpenChange={setIsCSVImportDialogOpen} />
+
+      <JSONImportDialog open={isJSONImportDialogOpen} onOpenChange={setIsJSONImportDialogOpen} />
+
+      <BackupManagementDialog open={isBackupDialogOpen} onOpenChange={setIsBackupDialogOpen} />
     </>
   );
 }

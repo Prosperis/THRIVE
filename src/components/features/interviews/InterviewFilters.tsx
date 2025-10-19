@@ -1,6 +1,7 @@
-import { useState, useId } from 'react';
-import { Button } from '@/components/ui/button';
+import { Calendar, Filter, X } from 'lucide-react';
+import { useId, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -9,10 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useInterviewsStore } from '@/stores/interviewsStore';
-import { INTERVIEW_TYPES, INTERVIEW_STATUSES } from '@/lib/constants';
-import { Filter, X, Calendar } from 'lucide-react';
+import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { useInterviewsStore } from '@/stores/interviewsStore';
 
 export function InterviewFilters() {
   const { filters, setFilters } = useInterviewsStore();
@@ -25,14 +25,26 @@ export function InterviewFilters() {
   const statusFilters = filters.status || [];
 
   // Toggle filter functions
-  const toggleTypeFilter = (type: 'phone-screen' | 'video' | 'on-site' | 'technical' | 'behavioral' | 'panel' | 'final' | 'other') => {
+  const toggleTypeFilter = (
+    type:
+      | 'phone-screen'
+      | 'video'
+      | 'on-site'
+      | 'technical'
+      | 'behavioral'
+      | 'panel'
+      | 'final'
+      | 'other'
+  ) => {
     const newTypes = typeFilters.includes(type)
       ? typeFilters.filter((t) => t !== type)
       : [...typeFilters, type];
     setFilters({ type: newTypes.length > 0 ? newTypes : undefined });
   };
 
-  const toggleStatusFilter = (status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show') => {
+  const toggleStatusFilter = (
+    status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show'
+  ) => {
     const newStatuses = statusFilters.includes(status)
       ? statusFilters.filter((s) => s !== status)
       : [...statusFilters, status];
@@ -118,11 +130,7 @@ export function InterviewFilters() {
         {/* Date Range Filter */}
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(hasDateFilters && 'border-primary')}
-            >
+            <Button variant="outline" size="sm" className={cn(hasDateFilters && 'border-primary')}>
               <Calendar className="mr-2 h-4 w-4" />
               Date Range
               {hasDateFilters && (
@@ -132,7 +140,11 @@ export function InterviewFilters() {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-72 p-4" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuContent
+            align="start"
+            className="w-72 p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="space-y-4">
               <div>
                 <DropdownMenuLabel className="px-0">Scheduled Date Range</DropdownMenuLabel>
@@ -140,37 +152,49 @@ export function InterviewFilters() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label htmlFor={dateFromId} className="text-sm font-medium mb-1 block">From</label>
+                  <label htmlFor={dateFromId} className="text-sm font-medium mb-1 block">
+                    From
+                  </label>
                   <input
                     id={dateFromId}
                     type="date"
                     className="w-full px-3 py-2 text-sm border rounded-md bg-background"
-                    value={filters.dateRange?.start ? new Date(filters.dateRange.start).toISOString().split('T')[0] : ''}
+                    value={
+                      filters.dateRange?.start
+                        ? new Date(filters.dateRange.start).toISOString().split('T')[0]
+                        : ''
+                    }
                     onChange={(e) => {
                       const value = e.target.value;
-                      setFilters({ 
+                      setFilters({
                         dateRange: {
                           ...filters.dateRange,
                           start: value ? new Date(value) : undefined,
-                        }
+                        },
                       });
                     }}
                   />
                 </div>
                 <div>
-                  <label htmlFor={dateToId} className="text-sm font-medium mb-1 block">To</label>
+                  <label htmlFor={dateToId} className="text-sm font-medium mb-1 block">
+                    To
+                  </label>
                   <input
                     id={dateToId}
                     type="date"
                     className="w-full px-3 py-2 text-sm border rounded-md bg-background"
-                    value={filters.dateRange?.end ? new Date(filters.dateRange.end).toISOString().split('T')[0] : ''}
+                    value={
+                      filters.dateRange?.end
+                        ? new Date(filters.dateRange.end).toISOString().split('T')[0]
+                        : ''
+                    }
                     onChange={(e) => {
                       const value = e.target.value;
-                      setFilters({ 
+                      setFilters({
                         dateRange: {
                           ...filters.dateRange,
                           end: value ? new Date(value) : undefined,
-                        }
+                        },
                       });
                     }}
                   />
@@ -205,7 +229,7 @@ export function InterviewFilters() {
       {totalActiveFilters > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground">Active filters:</span>
-          
+
           {/* Type badges */}
           {typeFilters.map((type) => {
             const typeConfig = INTERVIEW_TYPES.find((t) => t.value === type);
@@ -244,7 +268,9 @@ export function InterviewFilters() {
           {hasDateFilters && (
             <Badge variant="secondary" className="gap-1">
               {filters.dateRange?.start && new Date(filters.dateRange.start).toLocaleDateString()} -{' '}
-              {filters.dateRange?.end ? new Date(filters.dateRange.end).toLocaleDateString() : 'Now'}
+              {filters.dateRange?.end
+                ? new Date(filters.dateRange.end).toLocaleDateString()
+                : 'Now'}
               <button
                 type="button"
                 onClick={() => setFilters({ dateRange: undefined })}

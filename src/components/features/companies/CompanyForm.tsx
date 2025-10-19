@@ -1,5 +1,5 @@
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { COMPANY_SIZES, INDUSTRIES } from '@/lib/constants';
 import type { Company } from '@/types';
 
@@ -48,12 +48,7 @@ interface CompanyFormProps {
   isLoading?: boolean;
 }
 
-export function CompanyForm({
-  company,
-  onSubmit,
-  onCancel,
-  isLoading = false,
-}: CompanyFormProps) {
+export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: CompanyFormProps) {
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
@@ -83,16 +78,28 @@ export function CompanyForm({
       description: values.description || undefined,
       culture: values.culture || undefined,
       techStack: values.techStack
-        ? values.techStack.split(',').map((item) => item.trim()).filter(Boolean)
+        ? values.techStack
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
         : undefined,
       benefits: values.benefits
-        ? values.benefits.split(',').map((item) => item.trim()).filter(Boolean)
+        ? values.benefits
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
         : undefined,
       pros: values.pros
-        ? values.pros.split(',').map((item) => item.trim()).filter(Boolean)
+        ? values.pros
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
         : undefined,
       cons: values.cons
-        ? values.cons.split(',').map((item) => item.trim()).filter(Boolean)
+        ? values.cons
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
         : undefined,
       notes: values.notes || undefined,
     };
@@ -106,7 +113,7 @@ export function CompanyForm({
         {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Basic Information</h3>
-          
+
           <FormField
             control={form.control}
             name="name"
@@ -196,9 +203,7 @@ export function CompanyForm({
                 <FormControl>
                   <Input placeholder="e.g., San Francisco, CA" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Headquarters or main office location
-                </FormDescription>
+                <FormDescription>Headquarters or main office location</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -208,7 +213,7 @@ export function CompanyForm({
         {/* Company Research */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Company Research</h3>
-          
+
           <FormField
             control={form.control}
             name="description"
@@ -256,9 +261,7 @@ export function CompanyForm({
                 <FormControl>
                   <Input placeholder="React, TypeScript, Node.js, PostgreSQL" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Comma-separated list of technologies
-                </FormDescription>
+                <FormDescription>Comma-separated list of technologies</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -273,9 +276,7 @@ export function CompanyForm({
                 <FormControl>
                   <Input placeholder="Health insurance, 401k, Remote work, PTO" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Comma-separated list of benefits and perks
-                </FormDescription>
+                <FormDescription>Comma-separated list of benefits and perks</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -285,7 +286,7 @@ export function CompanyForm({
         {/* Analysis */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Analysis</h3>
-          
+
           <FormField
             control={form.control}
             name="pros"
@@ -293,11 +294,12 @@ export function CompanyForm({
               <FormItem>
                 <FormLabel>Pros</FormLabel>
                 <FormControl>
-                  <Input placeholder="Great culture, Competitive salary, Growth opportunities" {...field} />
+                  <Input
+                    placeholder="Great culture, Competitive salary, Growth opportunities"
+                    {...field}
+                  />
                 </FormControl>
-                <FormDescription>
-                  Comma-separated list of positive aspects
-                </FormDescription>
+                <FormDescription>Comma-separated list of positive aspects</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -310,11 +312,12 @@ export function CompanyForm({
               <FormItem>
                 <FormLabel>Cons</FormLabel>
                 <FormControl>
-                  <Input placeholder="Long commute, Startup uncertainty, Limited benefits" {...field} />
+                  <Input
+                    placeholder="Long commute, Startup uncertainty, Limited benefits"
+                    {...field}
+                  />
                 </FormControl>
-                <FormDescription>
-                  Comma-separated list of concerns or drawbacks
-                </FormDescription>
+                <FormDescription>Comma-separated list of concerns or drawbacks</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

@@ -1,11 +1,11 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router';
+import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { GlobalAnnouncer } from '@/components/a11y/LiveRegion';
+import { SkipNav } from '@/components/a11y/SkipNav';
+import { CommandPalette } from '@/components/features/command/CommandPalette';
 import { MainLayout } from '@/components/layout';
 import { Toaster } from '@/components/ui/sonner';
-import { CommandPalette } from '@/components/features/command/CommandPalette';
 import { useNavigationShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { SkipNav } from '@/components/a11y/SkipNav';
-import { GlobalAnnouncer } from '@/components/a11y/LiveRegion';
 
 export const Route = createRootRoute({
   component: RootComponent,

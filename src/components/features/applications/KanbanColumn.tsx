@@ -1,10 +1,10 @@
 import { useDroppable } from '@dnd-kit/core';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { GripVertical } from 'lucide-react';
-import type { Application, ApplicationStatus } from '@/types';
-import { KanbanCard } from './KanbanCard';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import type { Application, ApplicationStatus } from '@/types';
+import { KanbanCard } from './KanbanCard';
 
 interface KanbanColumnProps {
   status: {
@@ -38,7 +38,9 @@ export function KanbanColumn({ status, applications, count }: KanbanColumnProps)
       {/* Column Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className={cn('w-3 h-3 rounded-full', colorClasses[status.color] || 'bg-gray-500')} />
+          <div
+            className={cn('w-3 h-3 rounded-full', colorClasses[status.color] || 'bg-gray-500')}
+          />
           <h3 className="font-semibold text-sm">{status.label}</h3>
           <Badge variant="secondary" className="text-xs">
             {count}
@@ -84,7 +86,7 @@ export function KanbanColumn({ status, applications, count }: KanbanColumnProps)
               </motion.div>
             ))}
           </AnimatePresence>
-          
+
           {applications.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}

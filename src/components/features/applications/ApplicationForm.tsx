@@ -1,6 +1,7 @@
 // @ts-nocheck - Complex react-hook-form type inference issues with Zod resolver
-import { useForm } from 'react-hook-form';
+
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +14,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -21,14 +21,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { APPLICATION_STATUSES, PRIORITY_LEVELS, WORK_TYPES, EMPLOYMENT_TYPES } from '@/lib/constants';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  APPLICATION_STATUSES,
+  EMPLOYMENT_TYPES,
+  PRIORITY_LEVELS,
+  WORK_TYPES,
+} from '@/lib/constants';
 import type { Application } from '@/types';
 
 // Form schema based on application schema
 const applicationFormSchema = z.object({
   position: z.string().min(1, 'Position is required').max(200),
   companyName: z.string().min(1, 'Company name is required').max(200),
-  status: z.enum(['target', 'hunting', 'applied', 'interviewing', 'offer', 'accepted', 'rejected', 'withdrawn']),
+  status: z.enum([
+    'target',
+    'hunting',
+    'applied',
+    'interviewing',
+    'offer',
+    'accepted',
+    'rejected',
+    'withdrawn',
+  ]),
   priority: z.enum(['low', 'medium', 'high']).optional(),
   workType: z.enum(['remote', 'hybrid', 'onsite']).optional(),
   employmentType: z.enum(['full-time', 'part-time', 'contract', 'internship']).optional(),
@@ -72,8 +87,12 @@ export function ApplicationForm({
       salaryMin: application?.salary?.min || undefined,
       salaryMax: application?.salary?.max || undefined,
       salaryCurrency: application?.salary?.currency || 'USD',
-      targetDate: application?.targetDate ? new Date(application.targetDate).toISOString().split('T')[0] : '',
-      appliedDate: application?.appliedDate ? new Date(application.appliedDate).toISOString().split('T')[0] : '',
+      targetDate: application?.targetDate
+        ? new Date(application.targetDate).toISOString().split('T')[0]
+        : '',
+      appliedDate: application?.appliedDate
+        ? new Date(application.appliedDate).toISOString().split('T')[0]
+        : '',
       notes: application?.notes || '',
       tags: application?.tags?.join(', ') || '',
     },
@@ -90,15 +109,23 @@ export function ApplicationForm({
       employmentType: values.employmentType,
       location: values.location || undefined,
       jobUrl: values.jobUrl || undefined,
-      salary: (values.salaryMin || values.salaryMax) ? {
-        min: values.salaryMin,
-        max: values.salaryMax,
-        currency: values.salaryCurrency,
-      } : undefined,
+      salary:
+        values.salaryMin || values.salaryMax
+          ? {
+              min: values.salaryMin,
+              max: values.salaryMax,
+              currency: values.salaryCurrency,
+            }
+          : undefined,
       targetDate: values.targetDate ? new Date(values.targetDate) : undefined,
       appliedDate: values.appliedDate ? new Date(values.appliedDate) : undefined,
       notes: values.notes || undefined,
-      tags: values.tags ? values.tags.split(',').map((tag) => tag.trim()).filter(Boolean) : undefined,
+      tags: values.tags
+        ? values.tags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+        : undefined,
     };
 
     onSubmit(applicationData);
@@ -110,7 +137,7 @@ export function ApplicationForm({
         {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Basic Information</h3>
-          
+
           <FormField
             control={form.control}
             name="position"
@@ -195,7 +222,7 @@ export function ApplicationForm({
         {/* Job Details */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Job Details</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -271,9 +298,7 @@ export function ApplicationForm({
                 <FormControl>
                   <Input type="url" placeholder="https://company.com/jobs/123" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Link to the job posting
-                </FormDescription>
+                <FormDescription>Link to the job posting</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -283,7 +308,7 @@ export function ApplicationForm({
         {/* Salary Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Salary Information</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
               control={form.control}
@@ -332,7 +357,7 @@ export function ApplicationForm({
         {/* Important Dates */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Important Dates</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -343,9 +368,7 @@ export function ApplicationForm({
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    When you identified this opportunity
-                  </FormDescription>
+                  <FormDescription>When you identified this opportunity</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -360,9 +383,7 @@ export function ApplicationForm({
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    When you submitted your application
-                  </FormDescription>
+                  <FormDescription>When you submitted your application</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -373,7 +394,7 @@ export function ApplicationForm({
         {/* Additional Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Additional Information</h3>
-          
+
           <FormField
             control={form.control}
             name="tags"
@@ -383,9 +404,7 @@ export function ApplicationForm({
                 <FormControl>
                   <Input placeholder="react, typescript, remote" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Comma-separated tags for organization
-                </FormDescription>
+                <FormDescription>Comma-separated tags for organization</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

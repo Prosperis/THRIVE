@@ -19,19 +19,19 @@ export const BREAKPOINTS: Record<string, Breakpoint> = {
   'iphone-14-pro': { name: 'iPhone 14 Pro', width: 393, height: 852 },
   'samsung-s21': { name: 'Samsung S21', width: 360, height: 800 },
   'pixel-5': { name: 'Google Pixel 5', width: 393, height: 851 },
-  
+
   // Tablet
   'ipad-mini': { name: 'iPad Mini', width: 744, height: 1133 },
   'ipad-air': { name: 'iPad Air', width: 820, height: 1180 },
   'ipad-pro-11': { name: 'iPad Pro 11"', width: 834, height: 1194 },
   'ipad-pro-13': { name: 'iPad Pro 13"', width: 1024, height: 1366 },
-  
+
   // Desktop
-  'laptop': { name: 'Laptop', width: 1366, height: 768 },
-  'desktop': { name: 'Desktop', width: 1920, height: 1080 },
+  laptop: { name: 'Laptop', width: 1366, height: 768 },
+  desktop: { name: 'Desktop', width: 1920, height: 1080 },
   'desktop-large': { name: 'Large Desktop', width: 2560, height: 1440 },
   '4k': { name: '4K Monitor', width: 3840, height: 2160 },
-  
+
   // Custom
   'mobile-small': { name: 'Small Mobile', width: 320, height: 568 },
   'tablet-landscape': { name: 'Tablet Landscape', width: 1024, height: 768 },
@@ -53,7 +53,7 @@ export const TAILWIND_BREAKPOINTS = {
  */
 export function getCurrentBreakpoint(): keyof typeof TAILWIND_BREAKPOINTS | 'xs' {
   const width = window.innerWidth;
-  
+
   if (width >= TAILWIND_BREAKPOINTS['2xl']) return '2xl';
   if (width >= TAILWIND_BREAKPOINTS.xl) return 'xl';
   if (width >= TAILWIND_BREAKPOINTS.lg) return 'lg';
@@ -89,10 +89,10 @@ export function isPartiallyInViewport(element: HTMLElement): boolean {
   const rect = element.getBoundingClientRect();
   const windowHeight = window.innerHeight || document.documentElement.clientHeight;
   const windowWidth = window.innerWidth || document.documentElement.clientWidth;
-  
+
   const vertInView = rect.top <= windowHeight && rect.top + rect.height >= 0;
   const horInView = rect.left <= windowWidth && rect.left + rect.width >= 0;
-  
+
   return vertInView && horInView;
 }
 
@@ -145,11 +145,11 @@ export function isScrolled(threshold: number = 0): boolean {
 export class ResponsiveTest {
   private results: Map<string, boolean> = new Map();
   private deviceName: string;
-  
+
   constructor(deviceName: string) {
     this.deviceName = deviceName;
   }
-  
+
   testElement(name: string, selector: string, condition: (el: HTMLElement) => boolean): void {
     const element = document.querySelector<HTMLElement>(selector);
     if (!element) {
@@ -157,31 +157,31 @@ export class ResponsiveTest {
       this.results.set(name, false);
       return;
     }
-    
+
     const passed = condition(element);
     this.results.set(name, passed);
   }
-  
+
   testVisibility(name: string, selector: string): void {
     this.testElement(name, selector, (el) => {
       const style = window.getComputedStyle(el);
       return style.display !== 'none' && style.visibility !== 'hidden';
     });
   }
-  
+
   testTouchTarget(name: string, selector: string, minSize: number = 44): void {
     this.testElement(name, selector, (el) => {
       const rect = el.getBoundingClientRect();
       return rect.width >= minSize && rect.height >= minSize;
     });
   }
-  
+
   testOverflow(name: string, selector: string): void {
     this.testElement(name, selector, (el) => {
       return el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight;
     });
   }
-  
+
   testContrast(name: string, selector: string): void {
     this.testElement(name, selector, (el) => {
       const style = window.getComputedStyle(el);
@@ -191,20 +191,20 @@ export class ResponsiveTest {
       return color !== backgroundColor;
     });
   }
-  
+
   getResults(): Map<string, boolean> {
     return this.results;
   }
-  
+
   printResults(): void {
     console.group(`📱 Responsive Test Results: ${this.deviceName}`);
-    
+
     const passed = Array.from(this.results.entries()).filter(([, result]) => result);
     const failed = Array.from(this.results.entries()).filter(([, result]) => !result);
-    
+
     console.log(`✅ Passed: ${passed.length}/${this.results.size}`);
     console.log(`❌ Failed: ${failed.length}/${this.results.size}`);
-    
+
     if (failed.length > 0) {
       console.group('Failed Tests:');
       failed.forEach(([name]) => {
@@ -212,7 +212,7 @@ export class ResponsiveTest {
       });
       console.groupEnd();
     }
-    
+
     console.groupEnd();
   }
 }
@@ -276,7 +276,7 @@ export function observeBreakpoints(
   callback: (breakpoint: keyof typeof TAILWIND_BREAKPOINTS | 'xs') => void
 ): () => void {
   let currentBreakpoint = getCurrentBreakpoint();
-  
+
   const handleResize = () => {
     const newBreakpoint = getCurrentBreakpoint();
     if (newBreakpoint !== currentBreakpoint) {
@@ -284,9 +284,9 @@ export function observeBreakpoints(
       callback(newBreakpoint);
     }
   };
-  
+
   window.addEventListener('resize', handleResize);
-  
+
   // Return cleanup function
   return () => {
     window.removeEventListener('resize', handleResize);
@@ -301,7 +301,7 @@ export function logResponsiveState(): void {
   const { width, height } = getViewportDimensions();
   const orientation = isLandscape() ? 'Landscape' : 'Portrait';
   const scrolled = isScrolled(100) ? 'Yes' : 'No';
-  
+
   console.group('📐 Responsive State');
   console.log('Viewport:', `${width}x${height}`);
   console.log('Breakpoint:', breakpoint);

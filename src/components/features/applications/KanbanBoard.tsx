@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
 import {
+  closestCenter,
   DndContext,
   type DragEndEvent,
   DragOverlay,
@@ -7,15 +7,15 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter,
 } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { useApplicationsStore } from '@/stores';
-import type { Application, ApplicationStatus } from '@/types';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useMemo, useState } from 'react';
 import { APPLICATION_STATUSES } from '@/lib/constants';
 import { notify } from '@/lib/notifications';
-import { KanbanColumn } from './KanbanColumn';
+import { useApplicationsStore } from '@/stores';
+import type { Application, ApplicationStatus } from '@/types';
 import { KanbanCard } from './KanbanCard';
+import { KanbanColumn } from './KanbanColumn';
 
 export function KanbanBoard() {
   const { getFilteredApplications, updateApplication } = useApplicationsStore();
@@ -33,19 +33,19 @@ export function KanbanBoard() {
   // Group applications by status and sort by sortOrder
   const applicationsByStatus = useMemo(() => {
     const grouped = new Map<ApplicationStatus, Application[]>();
-    
+
     // Initialize all statuses with empty arrays
     for (const status of APPLICATION_STATUSES) {
       grouped.set(status.value, []);
     }
-    
+
     // Group applications
     for (const app of applications) {
       const statusApps = grouped.get(app.status) || [];
       statusApps.push(app);
       grouped.set(app.status, statusApps);
     }
-    
+
     // Sort each group by sortOrder (if present), then by updatedAt
     for (const apps of grouped.values()) {
       apps.sort((a, b) => {
@@ -60,7 +60,7 @@ export function KanbanBoard() {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
     }
-    
+
     return grouped;
   }, [applications]);
 
@@ -74,7 +74,7 @@ export function KanbanBoard() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over) {
       setActiveCard(null);
       return;
@@ -92,40 +92,41 @@ export function KanbanBoard() {
 
     // Check if we're dropping on a column (status change)
     const isDropOnColumn = APPLICATION_STATUSES.some((s) => s.value === overId);
-    
+
     if (isDropOnColumn) {
       // Status change - dropping on column
       const newStatus = overId as ApplicationStatus;
-      
+
       if (draggedApp.status !== newStatus) {
         updateApplication(draggedId, { status: newStatus });
-        
+
         // Find the new status label for the toast
-        const statusLabel = APPLICATION_STATUSES.find((s) => s.value === newStatus)?.label || newStatus;
-        
+        const statusLabel =
+          APPLICATION_STATUSES.find((s) => s.value === newStatus)?.label || newStatus;
+
         // Show status change notification (respects user preferences)
         notify.statusChange('Status Updated', `${draggedApp.position} moved to ${statusLabel}`);
       }
     } else {
       // Reordering within column - dropping on another card
       const overApp = applications.find((app) => app.id === overId);
-      
+
       if (overApp && draggedApp.status === overApp.status && draggedId !== overId) {
         // Both apps are in the same column, reorder them
         const statusApps = applicationsByStatus.get(draggedApp.status) || [];
         const oldIndex = statusApps.findIndex((app) => app.id === draggedId);
         const newIndex = statusApps.findIndex((app) => app.id === overId);
-        
+
         if (oldIndex !== -1 && newIndex !== -1) {
           // We'll use the array index as a simple sort order
           // In a real app, you might want to store this in the database
           const reorderedApps = arrayMove(statusApps, oldIndex, newIndex);
-          
+
           // Update the sortOrder for all affected applications
           reorderedApps.forEach((app, index) => {
             updateApplication(app.id, { sortOrder: index });
           });
-          
+
           notify.success('Reordered', `${draggedApp.position} position updated`);
         }
       }
@@ -149,7 +150,7 @@ export function KanbanBoard() {
       <div className="flex gap-4 overflow-x-auto pb-4">
         {APPLICATION_STATUSES.map((status) => {
           const columnApplications = applicationsByStatus.get(status.value) || [];
-          
+
           return (
             <SortableContext
               key={status.value}

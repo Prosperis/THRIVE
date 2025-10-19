@@ -1,13 +1,35 @@
-import { useCallback, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { PageTransition } from '@/components/layout/PageTransition';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
+import {
+  AlertTriangle,
+  Bell,
+  BookOpen,
+  Calendar,
+  Clock,
+  Database,
+  ExternalLink,
+  Github,
+  Globe,
+  Heart,
+  History,
+  Info,
+  Keyboard,
+  Layout,
+  Monitor,
+  Moon,
+  Palette,
+  RotateCcw,
+  Save,
+  Sun,
+} from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { ChangelogDialog } from '@/components/features/settings/ChangelogDialog';
 import { KeyboardShortcutsDialog } from '@/components/features/settings/KeyboardShortcutsDialog';
-import { HELP_RESOURCES, CREDITS } from '@/lib/about';
+import { useTheme } from '@/components/layout';
+import { PageTransition } from '@/components/layout/PageTransition';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -15,31 +37,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { CREDITS, HELP_RESOURCES } from '@/lib/about';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { useTheme } from '@/components/layout';
-import { toast } from 'sonner';
-import {
-  Palette,
-  Bell,
-  Database,
-  Info,
-  RotateCcw,
-  Moon,
-  Sun,
-  Monitor,
-  Globe,
-  Calendar,
-  Clock,
-  Layout,
-  Save,
-  AlertTriangle,
-  BookOpen,
-  Keyboard,
-  History,
-  ExternalLink,
-  Github,
-  Heart,
-} from 'lucide-react';
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
@@ -48,9 +48,16 @@ export const Route = createFileRoute('/settings')({
 function SettingsPage() {
   const navigate = useNavigate();
   const { setTheme } = useTheme();
-  const { display, notifications, data, updateDisplay, updateNotifications, updateData, resetToDefaults } =
-    useSettingsStore();
-  
+  const {
+    display,
+    notifications,
+    data,
+    updateDisplay,
+    updateNotifications,
+    updateData,
+    resetToDefaults,
+  } = useSettingsStore();
+
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
@@ -58,7 +65,9 @@ function SettingsPage() {
     (newTheme: 'light' | 'dark' | 'system') => {
       if (newTheme === 'system') {
         // Get system preference
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
         setTheme(systemTheme);
       } else {
         setTheme(newTheme);
@@ -72,10 +81,14 @@ function SettingsPage() {
   );
 
   const handleReset = useCallback(() => {
-    if (confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
+    if (
+      confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')
+    ) {
       resetToDefaults();
       // Reset theme to system
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
       setTheme(systemTheme);
       toast.success('Settings Reset', {
         description: 'All settings have been reset to defaults',
@@ -159,9 +172,7 @@ function SettingsPage() {
                     <Globe className="w-4 h-4" />
                     Language
                   </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Select your preferred language
-                  </p>
+                  <p className="text-sm text-muted-foreground">Select your preferred language</p>
                 </div>
                 <Select
                   value={display.language}
@@ -189,9 +200,7 @@ function SettingsPage() {
                     <Calendar className="w-4 h-4" />
                     Date Format
                   </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Choose how dates are displayed
-                  </p>
+                  <p className="text-sm text-muted-foreground">Choose how dates are displayed</p>
                 </div>
                 <Select
                   value={display.dateFormat}
@@ -218,9 +227,7 @@ function SettingsPage() {
                     <Clock className="w-4 h-4" />
                     Time Format
                   </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Choose 12-hour or 24-hour format
-                  </p>
+                  <p className="text-sm text-muted-foreground">Choose 12-hour or 24-hour format</p>
                 </div>
                 <Select
                   value={display.timeFormat}
@@ -243,9 +250,7 @@ function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label>Compact Mode</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Reduce spacing for more content
-                  </p>
+                  <p className="text-sm text-muted-foreground">Reduce spacing for more content</p>
                 </div>
                 <Switch
                   checked={display.compactMode}
@@ -338,9 +343,7 @@ function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label>Interview Reminders</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Remind about upcoming interviews
-                  </p>
+                  <p className="text-sm text-muted-foreground">Remind about upcoming interviews</p>
                 </div>
                 <Switch
                   checked={notifications.interviewReminders}
@@ -358,9 +361,7 @@ function SettingsPage() {
                       Coming Soon
                     </Badge>
                   </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive notifications via email
-                  </p>
+                  <p className="text-sm text-muted-foreground">Receive notifications via email</p>
                 </div>
                 <Switch
                   checked={notifications.emailNotifications}
@@ -495,7 +496,9 @@ function SettingsPage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold">About Thrive</h2>
-                <p className="text-sm text-muted-foreground">Application information and resources</p>
+                <p className="text-sm text-muted-foreground">
+                  Application information and resources
+                </p>
               </div>
             </div>
 
@@ -568,9 +571,7 @@ function SettingsPage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold">Help & Resources</h2>
-                <p className="text-sm text-muted-foreground">
-                  Learn more and get support
-                </p>
+                <p className="text-sm text-muted-foreground">Learn more and get support</p>
               </div>
             </div>
 
@@ -591,9 +592,7 @@ function SettingsPage() {
                       <h3 className="text-sm font-medium">{resource.title}</h3>
                       <ExternalLink className="w-3 h-3 text-muted-foreground" />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {resource.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{resource.description}</p>
                   </div>
                 </a>
               ))}
@@ -631,9 +630,7 @@ function SettingsPage() {
                       >
                         <div>
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {item.description}
-                          </div>
+                          <div className="text-xs text-muted-foreground">{item.description}</div>
                         </div>
                         <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </a>

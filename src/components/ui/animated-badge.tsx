@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
 
 interface AnimatedBadgeProps {
   children: ReactNode;
@@ -13,16 +13,16 @@ interface AnimatedBadgeProps {
 
 /**
  * AnimatedBadge - Generic badge with smooth animations
- * 
+ *
  * Provides entrance animations and optional pulse effect.
  * Use for any badge that needs animation.
- * 
+ *
  * @example
  * ```tsx
  * <AnimatedBadge className="bg-green-500">
  *   Active
  * </AnimatedBadge>
- * 
+ *
  * <AnimatedBadge variant="outline" pulse>
  *   New
  * </AnimatedBadge>
@@ -47,20 +47,21 @@ export function AnimatedBadge({
       className="inline-flex"
     >
       <motion.div
-        animate={pulse ? {
-          scale: [1, 1.1, 1],
-          opacity: [1, 0.8, 1],
-        } : {}}
+        animate={
+          pulse
+            ? {
+                scale: [1, 1.1, 1],
+                opacity: [1, 0.8, 1],
+              }
+            : {}
+        }
         transition={{
           duration: 2,
           repeat: Number.POSITIVE_INFINITY,
           ease: 'easeInOut',
         }}
       >
-        <Badge 
-          variant={variant}
-          className={cn('transition-colors duration-300', className)}
-        >
+        <Badge variant={variant} className={cn('transition-colors duration-300', className)}>
           {children}
         </Badge>
       </motion.div>

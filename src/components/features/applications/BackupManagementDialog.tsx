@@ -1,5 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { AlertCircle, CheckCircle2, Clock, Download, HardDrive, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,12 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { AnimatedButton } from '@/components/ui/animated-button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -20,19 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useApplicationsStore } from '@/stores';
-import { useBackupStore, isBackupDue } from '@/stores/backupStore';
+import { Switch } from '@/components/ui/switch';
 import { exportBackup, formatBytes } from '@/lib/backup';
-import { formatDate } from '@/lib/utils';
 import { notify } from '@/lib/notifications';
-import {
-  Download,
-  Trash2,
-  Clock,
-  HardDrive,
-  CheckCircle2,
-  AlertCircle,
-} from 'lucide-react';
+import { formatDate } from '@/lib/utils';
+import { useApplicationsStore } from '@/stores';
+import { isBackupDue, useBackupStore } from '@/stores/backupStore';
 
 interface BackupManagementDialogProps {
   open: boolean;
@@ -102,7 +95,10 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
   // Check for due backups on mount
   useEffect(() => {
     if (open && backupDue && applications.length > 0) {
-      notify.backupReminder('Backup Due', 'Your scheduled backup is due. Consider creating a backup.');
+      notify.backupReminder(
+        'Backup Due',
+        'Your scheduled backup is due. Consider creating a backup.'
+      );
     }
   }, [open, backupDue, applications.length]);
 
@@ -111,9 +107,7 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Backup Management</DialogTitle>
-          <DialogDescription>
-            Manage automatic backups and view backup history
-          </DialogDescription>
+          <DialogDescription>Manage automatic backups and view backup history</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden space-y-6">
@@ -157,7 +151,9 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
                   <Label className="min-w-[100px]">Max Backups</Label>
                   <Select
                     value={String(settings.maxBackups)}
-                    onValueChange={(value) => updateSettings({ maxBackups: Number.parseInt(value, 10) })}
+                    onValueChange={(value) =>
+                      updateSettings({ maxBackups: Number.parseInt(value, 10) })
+                    }
                   >
                     <SelectTrigger className="w-[200px]">
                       <SelectValue />
@@ -295,8 +291,8 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
               <p className="font-medium mb-1">About Backups</p>
               <p className="text-blue-700 dark:text-blue-300">
                 Backups are stored locally in your browser. To restore data, use the "Import from
-                JSON" option in the Applications table. History only tracks metadata - actual
-                backup files must be kept safe manually.
+                JSON" option in the Applications table. History only tracks metadata - actual backup
+                files must be kept safe manually.
               </p>
             </div>
           </div>

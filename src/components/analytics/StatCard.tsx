@@ -1,7 +1,7 @@
-import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AnimatedCard } from '@/components/ui/animated-card';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { AnimatedCard } from '@/components/ui/animated-card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 export interface StatCardProps {
@@ -42,25 +42,21 @@ export function StatCard({
   };
 
   return (
-    <AnimatedCard 
-      hoverEffect="lift" 
-      animateOnMount 
-      delay={delay}
-      className={className}
-    >
+    <AnimatedCard hoverEffect="lift" animateOnMount delay={delay} className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         {trend && (
           <div className={cn('flex items-center gap-1 text-xs mt-2', getTrendColor())}>
             {getTrendIcon()}
-            <span className="font-medium">{trend.value > 0 ? '+' : ''}{trend.value}%</span>
+            <span className="font-medium">
+              {trend.value > 0 ? '+' : ''}
+              {trend.value}%
+            </span>
             <span className="text-muted-foreground">{trend.label}</span>
           </div>
         )}
@@ -72,10 +68,14 @@ export function StatCard({
 /**
  * Grid layout for metric cards
  */
-export function MetricGrid({ children, className }: { children: React.ReactNode; className?: string }) {
+export function MetricGrid({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>
-      {children}
-    </div>
+    <div className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>{children}</div>
   );
 }

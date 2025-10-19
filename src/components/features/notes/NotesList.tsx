@@ -1,14 +1,8 @@
+import { formatDistanceToNow } from 'date-fns';
+import { MoreVertical, Pencil, Pin, Plus, StickyNote, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,12 +10,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, MoreVertical, Pin, Pencil, Trash2, StickyNote } from 'lucide-react';
-import { useNoteStore } from '@/stores/noteStore';
-import { useActivityStore } from '@/stores/activityStore';
-import type { Note } from '@/types/activity';
-import { formatDistanceToNow } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { useActivityStore } from '@/stores/activityStore';
+import { useNoteStore } from '@/stores/noteStore';
+import type { Note } from '@/types/activity';
 
 interface NotesListProps {
   entityId: string;
@@ -52,7 +52,7 @@ export function NotesList({ entityId, entityType, className }: NotesListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [newNoteCategory, setNewNoteCategory] = useState<Note['category']>('general');
-  
+
   const notes = useNoteStore((state) => state.getNotesByEntity(entityId, entityType));
   const addNote = useNoteStore((state) => state.addNote);
   const updateNote = useNoteStore((state) => state.updateNote);
@@ -171,7 +171,8 @@ export function NotesList({ entityId, entityType, className }: NotesListProps) {
           key={note.id}
           className={cn(
             'rounded-lg border p-3 space-y-2',
-            note.isPinned && 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
+            note.isPinned &&
+              'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
           )}
         >
           {/* Header */}

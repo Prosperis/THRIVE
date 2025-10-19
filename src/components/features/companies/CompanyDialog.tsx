@@ -7,9 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { CompanyForm } from './CompanyForm';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import type { Company } from '@/types';
+import { CompanyForm } from './CompanyForm';
 
 interface CompanyDialogProps {
   company?: Company;
@@ -26,7 +26,7 @@ export function CompanyDialog({
 }: CompanyDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { addCompany, updateCompany } = useCompaniesStore();
 
   // Use controlled or uncontrolled state
@@ -35,7 +35,7 @@ export function CompanyDialog({
 
   const handleSubmit = async (data: Partial<Company>) => {
     setIsLoading(true);
-    
+
     try {
       if (company) {
         // Update existing company
@@ -44,7 +44,7 @@ export function CompanyDialog({
         // Create new company
         await addCompany(data as Omit<Company, 'id' | 'createdAt' | 'updatedAt'>);
       }
-      
+
       setOpen(false);
     } catch (error) {
       console.error('Failed to save company:', error);
@@ -60,12 +60,10 @@ export function CompanyDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      
+
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {company ? 'Edit Company' : 'Add New Company'}
-          </DialogTitle>
+          <DialogTitle>{company ? 'Edit Company' : 'Add New Company'}</DialogTitle>
           <DialogDescription>
             {company
               ? 'Update the company information and research notes.'

@@ -1,5 +1,9 @@
-import { useState, useCallback, useMemo } from 'react';
+import { AlertCircle, CheckCircle2, FileText, Upload, X } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,11 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { AnimatedButton } from '@/components/ui/animated-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
@@ -22,15 +23,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  parseCSVFile,
   autoDetectMapping,
-  previewImport,
-  type FieldMapping,
   type CSVImportResult,
+  type FieldMapping,
   type ImportPreview,
+  parseCSVFile,
+  previewImport,
 } from '@/lib/import';
 import { useApplicationsStore } from '@/stores';
-import { Upload, FileText, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import type { Application } from '@/types';
 
 interface CSVImportDialogProps {
@@ -234,14 +234,18 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
                       <div className="flex-1">
                         <Label className="text-sm font-medium">{mapping.csvColumn}</Label>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Sample: {csvData.rows[0]?.[csvData.headers.indexOf(mapping.csvColumn)] || 'N/A'}
+                          Sample:{' '}
+                          {csvData.rows[0]?.[csvData.headers.indexOf(mapping.csvColumn)] || 'N/A'}
                         </p>
                       </div>
                       <div className="w-48">
                         <Select
                           value={mapping.appField || 'none'}
                           onValueChange={(value) =>
-                            handleMappingChange(mapping.csvColumn, value as keyof Application | 'none')
+                            handleMappingChange(
+                              mapping.csvColumn,
+                              value as keyof Application | 'none'
+                            )
                           }
                         >
                           <SelectTrigger>
@@ -400,10 +404,7 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
               <Button variant="outline" onClick={() => setStep('upload')}>
                 Back
               </Button>
-              <AnimatedButton
-                onClick={handleGeneratePreview}
-                disabled={!canProceedToPreview}
-              >
+              <AnimatedButton onClick={handleGeneratePreview} disabled={!canProceedToPreview}>
                 Next: Preview
               </AnimatedButton>
             </>
@@ -425,11 +426,7 @@ export function CSVImportDialog({ open, onOpenChange }: CSVImportDialogProps) {
             </>
           )}
 
-          {step === 'complete' && (
-            <Button onClick={handleClose}>
-              Done
-            </Button>
-          )}
+          {step === 'complete' && <Button onClick={handleClose}>Done</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

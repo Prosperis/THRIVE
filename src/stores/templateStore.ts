@@ -1,15 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Template, TemplateCategory, ResolvedTemplate } from '@/types/template';
+import type { ResolvedTemplate, Template, TemplateCategory } from '@/types/template';
 import { DEFAULT_TEMPLATES } from '@/types/template';
 
 interface TemplateStore {
   templates: Template[];
   initialized: boolean;
-  
+
   // Actions
   initializeTemplates: () => void;
-  addTemplate: (template: Omit<Template, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => Template;
+  addTemplate: (
+    template: Omit<Template, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>
+  ) => Template;
   updateTemplate: (id: string, updates: Partial<Omit<Template, 'id' | 'createdAt'>>) => void;
   deleteTemplate: (id: string) => void;
   getTemplate: (id: string) => Template | undefined;
@@ -28,7 +30,7 @@ export const useTemplateStore = create<TemplateStore>()(
 
       initializeTemplates: () => {
         const { initialized, templates } = get();
-        
+
         // Only initialize once and only if no templates exist
         if (!initialized && templates.length === 0) {
           const now = new Date();

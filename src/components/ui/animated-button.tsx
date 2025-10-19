@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { Button, type ButtonProps } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { forwardRef } from 'react';
+import { Button, type ButtonProps } from '@/components/ui/button';
 
 interface AnimatedButtonProps extends ButtonProps {
   loading?: boolean;
@@ -12,30 +12,33 @@ interface AnimatedButtonProps extends ButtonProps {
 
 /**
  * AnimatedButton - Button with smooth hover, tap, and loading animations
- * 
+ *
  * Extends the standard Button component with Framer Motion animations.
- * 
+ *
  * @example
  * ```tsx
  * <AnimatedButton onClick={handleClick}>
  *   Click Me
  * </AnimatedButton>
- * 
+ *
  * <AnimatedButton loading loadingText="Saving...">
  *   Save
  * </AnimatedButton>
  * ```
  */
 const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>(
-  ({ 
-    children, 
-    loading = false, 
-    loadingText,
-    scaleOnHover = true,
-    scaleOnTap = true,
-    disabled,
-    ...props 
-  }, ref) => {
+  (
+    {
+      children,
+      loading = false,
+      loadingText,
+      scaleOnHover = true,
+      scaleOnTap = true,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <motion.div
         whileHover={!disabled && !loading && scaleOnHover ? { scale: 1.05 } : undefined}

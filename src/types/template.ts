@@ -2,20 +2,9 @@
  * Template System Types
  */
 
-export type TemplateCategory = 
-  | 'application'
-  | 'email'
-  | 'cover-letter'
-  | 'note'
-  | 'other';
+export type TemplateCategory = 'application' | 'email' | 'cover-letter' | 'note' | 'other';
 
-export type TemplateVariableType = 
-  | 'text'
-  | 'date'
-  | 'company'
-  | 'position'
-  | 'name'
-  | 'custom';
+export type TemplateVariableType = 'text' | 'date' | 'company' | 'position' | 'name' | 'custom';
 
 /**
  * Template variable definition
@@ -57,14 +46,15 @@ export interface ResolvedTemplate {
 /**
  * Default template presets
  */
-export const DEFAULT_TEMPLATES: Omit<Template, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>[] = [
-  {
-    name: 'Software Engineer Application',
-    description: 'Standard application template for software engineering positions',
-    category: 'application',
-    isDefault: true,
-    tags: ['engineering', 'tech'],
-    content: `Application for {{position}} at {{company}}
+export const DEFAULT_TEMPLATES: Omit<Template, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>[] =
+  [
+    {
+      name: 'Software Engineer Application',
+      description: 'Standard application template for software engineering positions',
+      category: 'application',
+      isDefault: true,
+      tags: ['engineering', 'tech'],
+      content: `Application for {{position}} at {{company}}
 
 I am writing to express my strong interest in the {{position}} role at {{company}}. With {{yearsOfExperience}} years of experience in software development, I am confident that my skills align well with your team's needs.
 
@@ -77,23 +67,28 @@ I am excited about the opportunity to contribute to {{company}}'s mission and wo
 
 Best regards,
 {{yourName}}`,
-    variables: [
-      { key: 'position', label: 'Position', type: 'position', required: true },
-      { key: 'company', label: 'Company', type: 'company', required: true },
-      { key: 'yourName', label: 'Your Name', type: 'name', required: true },
-      { key: 'yearsOfExperience', label: 'Years of Experience', type: 'text', defaultValue: '5' },
-      { key: 'skill1', label: 'Key Skill 1', type: 'text', placeholder: 'e.g., React & TypeScript' },
-      { key: 'skill2', label: 'Key Skill 2', type: 'text', placeholder: 'e.g., System Design' },
-      { key: 'skill3', label: 'Key Skill 3', type: 'text', placeholder: 'e.g., Team Leadership' },
-    ],
-  },
-  {
-    name: 'Follow-up Email',
-    description: 'Professional follow-up email after submitting an application',
-    category: 'email',
-    isDefault: true,
-    tags: ['follow-up', 'email'],
-    content: `Subject: Following Up on {{position}} Application
+      variables: [
+        { key: 'position', label: 'Position', type: 'position', required: true },
+        { key: 'company', label: 'Company', type: 'company', required: true },
+        { key: 'yourName', label: 'Your Name', type: 'name', required: true },
+        { key: 'yearsOfExperience', label: 'Years of Experience', type: 'text', defaultValue: '5' },
+        {
+          key: 'skill1',
+          label: 'Key Skill 1',
+          type: 'text',
+          placeholder: 'e.g., React & TypeScript',
+        },
+        { key: 'skill2', label: 'Key Skill 2', type: 'text', placeholder: 'e.g., System Design' },
+        { key: 'skill3', label: 'Key Skill 3', type: 'text', placeholder: 'e.g., Team Leadership' },
+      ],
+    },
+    {
+      name: 'Follow-up Email',
+      description: 'Professional follow-up email after submitting an application',
+      category: 'email',
+      isDefault: true,
+      tags: ['follow-up', 'email'],
+      content: `Subject: Following Up on {{position}} Application
 
 Dear {{hiringManager}},
 
@@ -107,24 +102,34 @@ Best regards,
 {{yourName}}
 {{yourEmail}}
 {{yourPhone}}`,
-    variables: [
-      { key: 'position', label: 'Position', type: 'position', required: true },
-      { key: 'company', label: 'Company', type: 'company', required: true },
-      { key: 'hiringManager', label: 'Hiring Manager', type: 'name', placeholder: 'Hiring Manager' },
-      { key: 'applicationDate', label: 'Application Date', type: 'date', required: true },
-      { key: 'additionalContext', label: 'Additional Context', type: 'text', placeholder: 'Optional additional information' },
-      { key: 'yourName', label: 'Your Name', type: 'name', required: true },
-      { key: 'yourEmail', label: 'Your Email', type: 'text', required: true },
-      { key: 'yourPhone', label: 'Your Phone', type: 'text' },
-    ],
-  },
-  {
-    name: 'Thank You Email',
-    description: 'Thank you email to send after an interview',
-    category: 'email',
-    isDefault: true,
-    tags: ['thank-you', 'interview', 'email'],
-    content: `Subject: Thank You - {{position}} Interview
+      variables: [
+        { key: 'position', label: 'Position', type: 'position', required: true },
+        { key: 'company', label: 'Company', type: 'company', required: true },
+        {
+          key: 'hiringManager',
+          label: 'Hiring Manager',
+          type: 'name',
+          placeholder: 'Hiring Manager',
+        },
+        { key: 'applicationDate', label: 'Application Date', type: 'date', required: true },
+        {
+          key: 'additionalContext',
+          label: 'Additional Context',
+          type: 'text',
+          placeholder: 'Optional additional information',
+        },
+        { key: 'yourName', label: 'Your Name', type: 'name', required: true },
+        { key: 'yourEmail', label: 'Your Email', type: 'text', required: true },
+        { key: 'yourPhone', label: 'Your Phone', type: 'text' },
+      ],
+    },
+    {
+      name: 'Thank You Email',
+      description: 'Thank you email to send after an interview',
+      category: 'email',
+      isDefault: true,
+      tags: ['thank-you', 'interview', 'email'],
+      content: `Subject: Thank You - {{position}} Interview
 
 Dear {{interviewer}},
 
@@ -138,23 +143,33 @@ Thank you again for your time and consideration.
 
 Best regards,
 {{yourName}}`,
-    variables: [
-      { key: 'position', label: 'Position', type: 'position', required: true },
-      { key: 'company', label: 'Company', type: 'company', required: true },
-      { key: 'interviewer', label: 'Interviewer Name', type: 'name', required: true },
-      { key: 'interviewDate', label: 'Interview Date', type: 'date', defaultValue: 'today' },
-      { key: 'specificDetail', label: 'Specific Detail', type: 'text', placeholder: 'Mention something specific from the interview' },
-      { key: 'projectOrGoal', label: 'Project/Goal', type: 'text', placeholder: 'Specific project or company goal discussed' },
-      { key: 'yourName', label: 'Your Name', type: 'name', required: true },
-    ],
-  },
-  {
-    name: 'Networking Cold Outreach',
-    description: 'Professional cold outreach for networking and referrals',
-    category: 'email',
-    isDefault: true,
-    tags: ['networking', 'referral', 'email'],
-    content: `Subject: {{connectionReason}} - {{position}} at {{company}}
+      variables: [
+        { key: 'position', label: 'Position', type: 'position', required: true },
+        { key: 'company', label: 'Company', type: 'company', required: true },
+        { key: 'interviewer', label: 'Interviewer Name', type: 'name', required: true },
+        { key: 'interviewDate', label: 'Interview Date', type: 'date', defaultValue: 'today' },
+        {
+          key: 'specificDetail',
+          label: 'Specific Detail',
+          type: 'text',
+          placeholder: 'Mention something specific from the interview',
+        },
+        {
+          key: 'projectOrGoal',
+          label: 'Project/Goal',
+          type: 'text',
+          placeholder: 'Specific project or company goal discussed',
+        },
+        { key: 'yourName', label: 'Your Name', type: 'name', required: true },
+      ],
+    },
+    {
+      name: 'Networking Cold Outreach',
+      description: 'Professional cold outreach for networking and referrals',
+      category: 'email',
+      isDefault: true,
+      tags: ['networking', 'referral', 'email'],
+      content: `Subject: {{connectionReason}} - {{position}} at {{company}}
 
 Hi {{contactName}},
 
@@ -171,24 +186,39 @@ Thank you for considering my request!
 Best regards,
 {{yourName}}
 {{yourLinkedIn}}`,
-    variables: [
-      { key: 'contactName', label: 'Contact Name', type: 'name', required: true },
-      { key: 'connectionReason', label: 'Connection Reason', type: 'text', placeholder: 'e.g., Fellow Alumni, Mutual Connection' },
-      { key: 'introduction', label: 'Introduction', type: 'text', placeholder: 'How you know them or found them' },
-      { key: 'company', label: 'Company', type: 'company', required: true },
-      { key: 'position', label: 'Position', type: 'position', required: true },
-      { key: 'whyInterested', label: 'Why Interested', type: 'text', placeholder: 'Brief reason for interest in the role' },
-      { key: 'yourName', label: 'Your Name', type: 'name', required: true },
-      { key: 'yourLinkedIn', label: 'Your LinkedIn', type: 'text' },
-    ],
-  },
-  {
-    name: 'Status Inquiry',
-    description: 'Polite inquiry about application status',
-    category: 'email',
-    isDefault: true,
-    tags: ['status', 'follow-up', 'email'],
-    content: `Subject: Application Status - {{position}}
+      variables: [
+        { key: 'contactName', label: 'Contact Name', type: 'name', required: true },
+        {
+          key: 'connectionReason',
+          label: 'Connection Reason',
+          type: 'text',
+          placeholder: 'e.g., Fellow Alumni, Mutual Connection',
+        },
+        {
+          key: 'introduction',
+          label: 'Introduction',
+          type: 'text',
+          placeholder: 'How you know them or found them',
+        },
+        { key: 'company', label: 'Company', type: 'company', required: true },
+        { key: 'position', label: 'Position', type: 'position', required: true },
+        {
+          key: 'whyInterested',
+          label: 'Why Interested',
+          type: 'text',
+          placeholder: 'Brief reason for interest in the role',
+        },
+        { key: 'yourName', label: 'Your Name', type: 'name', required: true },
+        { key: 'yourLinkedIn', label: 'Your LinkedIn', type: 'text' },
+      ],
+    },
+    {
+      name: 'Status Inquiry',
+      description: 'Polite inquiry about application status',
+      category: 'email',
+      isDefault: true,
+      tags: ['status', 'follow-up', 'email'],
+      content: `Subject: Application Status - {{position}}
 
 Dear {{hiringManager}},
 
@@ -200,12 +230,22 @@ Thank you for your time and consideration.
 
 Best regards,
 {{yourName}}`,
-    variables: [
-      { key: 'position', label: 'Position', type: 'position', required: true },
-      { key: 'company', label: 'Company', type: 'company', required: true },
-      { key: 'hiringManager', label: 'Hiring Manager', type: 'name', placeholder: 'Hiring Manager' },
-      { key: 'timeAgo', label: 'Time Since Application', type: 'text', placeholder: 'e.g., 2 weeks ago' },
-      { key: 'yourName', label: 'Your Name', type: 'name', required: true },
-    ],
-  },
-];
+      variables: [
+        { key: 'position', label: 'Position', type: 'position', required: true },
+        { key: 'company', label: 'Company', type: 'company', required: true },
+        {
+          key: 'hiringManager',
+          label: 'Hiring Manager',
+          type: 'name',
+          placeholder: 'Hiring Manager',
+        },
+        {
+          key: 'timeAgo',
+          label: 'Time Since Application',
+          type: 'text',
+          placeholder: 'e.g., 2 weeks ago',
+        },
+        { key: 'yourName', label: 'Your Name', type: 'name', required: true },
+      ],
+    },
+  ];

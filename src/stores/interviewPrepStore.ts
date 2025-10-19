@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
-  InterviewQuestion,
-  PrepAnswer,
   CompanyPrepNote,
-  TechnicalChallenge,
+  InterviewQuestion,
   PracticeSession,
+  PrepAnswer,
   PrepStats,
+  TechnicalChallenge,
 } from '@/types/interviewPrep';
 
 interface InterviewPrepState {

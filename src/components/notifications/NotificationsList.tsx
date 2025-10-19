@@ -1,11 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Link } from '@tanstack/react-router';
+import { AlertTriangle, Bell, CheckCheck, Clock, Timer as Snooze, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Bell, CheckCheck, Clock, X, Timer as Snooze, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatRelativeTime } from '@/lib/utils';
 import { useNotificationsStore } from '@/stores/notificationsStore';
 import type { Notification, NotificationPriority } from '@/types/notifications';
-import { formatRelativeTime } from '@/lib/utils';
-import { Link } from '@tanstack/react-router';
 
 const PRIORITY_COLORS: Record<NotificationPriority, string> = {
   low: 'bg-gray-500',
@@ -41,7 +41,7 @@ export function NotificationsList() {
 
   const renderNotification = (notification: Notification) => {
     const isUnread = notification.status === 'sent' || notification.status === 'pending';
-    
+
     return (
       <Card key={notification.id} className={isUnread ? 'border-l-4 border-l-primary' : ''}>
         <CardHeader className="pb-3">
@@ -136,7 +136,8 @@ export function NotificationsList() {
       {unreadNotifications.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {unreadNotifications.length} unread notification{unreadNotifications.length > 1 ? 's' : ''}
+            {unreadNotifications.length} unread notification
+            {unreadNotifications.length > 1 ? 's' : ''}
           </p>
           <Button onClick={markAllAsRead} variant="outline" size="sm">
             <CheckCheck className="h-4 w-4 mr-2" />

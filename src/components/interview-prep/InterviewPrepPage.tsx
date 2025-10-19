@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Building2, Code, TrendingUp } from 'lucide-react';
-import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
-import { QuestionsTab } from '@/components/interview-prep/QuestionsTab';
-import { CompanyNotesTab } from '@/components/interview-prep/CompanyNotesTab';
+import { useState } from 'react';
 import { ChallengesTab } from '@/components/interview-prep/ChallengesTab';
+import { CompanyNotesTab } from '@/components/interview-prep/CompanyNotesTab';
 import { PrepStatsOverview } from '@/components/interview-prep/PrepStatsOverview';
+import { QuestionsTab } from '@/components/interview-prep/QuestionsTab';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
 
 export function InterviewPrepPage() {
   const [activeTab, setActiveTab] = useState('questions');

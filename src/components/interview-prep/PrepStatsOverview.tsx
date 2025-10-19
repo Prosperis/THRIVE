@@ -1,6 +1,6 @@
-import type { PrepStats } from '@/types/interviewPrep';
+import { BookOpen, Building2, CheckCircle, Code } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, CheckCircle, Building2, Code } from 'lucide-react';
+import type { PrepStats } from '@/types/interviewPrep';
 
 interface PrepStatsOverviewProps {
   stats: PrepStats;
@@ -60,9 +60,7 @@ export function PrepStatsOverview({ stats }: PrepStatsOverviewProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.challengesCompleted}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.challengesPending} pending
-          </p>
+          <p className="text-xs text-muted-foreground">{stats.challengesPending} pending</p>
         </CardContent>
       </Card>
     </div>

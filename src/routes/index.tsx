@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
+import { PageHeader, PageTransition } from '@/components/layout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { PageHeader, PageTransition } from '@/components/layout';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -31,8 +31,8 @@ function HomePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Phase 2 is now complete! We have TanStack Router configured with file-based
-              routing and navigation.
+              Phase 2 is now complete! We have TanStack Router configured with file-based routing
+              and navigation.
             </p>
 
             {/* Counter Demo */}

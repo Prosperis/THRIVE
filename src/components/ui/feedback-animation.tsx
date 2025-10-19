@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FeedbackAnimationProps {
@@ -33,14 +33,14 @@ const bgMap = {
 
 /**
  * FeedbackAnimation - Animated feedback messages with icons
- * 
+ *
  * Shows success, error, warning, or info messages with smooth animations.
- * 
+ *
  * @example
  * ```tsx
- * <FeedbackAnimation 
- *   type="success" 
- *   message="Saved successfully!" 
+ * <FeedbackAnimation
+ *   type="success"
+ *   message="Saved successfully!"
  *   description="Your changes have been saved."
  * />
  * ```
@@ -59,21 +59,17 @@ export function FeedbackAnimation({
       initial={{ opacity: 0, y: -20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-      transition={{ 
+      transition={{
         type: 'spring',
         stiffness: 500,
         damping: 30,
       }}
-      className={cn(
-        'flex items-start gap-3 p-4 rounded-lg border',
-        bgMap[type],
-        className
-      )}
+      className={cn('flex items-start gap-3 p-4 rounded-lg border', bgMap[type], className)}
     >
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
-        transition={{ 
+        transition={{
           delay: 0.1,
           type: 'spring',
           stiffness: 500,
@@ -82,7 +78,7 @@ export function FeedbackAnimation({
       >
         <Icon className={cn('h-5 w-5', colorMap[type])} />
       </motion.div>
-      
+
       <div className="flex-1">
         <motion.p
           initial={{ opacity: 0, x: -10 }}
@@ -92,7 +88,7 @@ export function FeedbackAnimation({
         >
           {message}
         </motion.p>
-        
+
         {description && (
           <motion.p
             initial={{ opacity: 0, x: -10 }}

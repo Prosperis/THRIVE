@@ -1,7 +1,7 @@
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Home, ArrowLeft } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const Route = createFileRoute('/$')({
   component: NotFoundPage,
@@ -13,9 +13,7 @@ function NotFoundPage() {
       <Card className="max-w-md">
         <CardHeader>
           <CardTitle className="text-4xl font-bold">404</CardTitle>
-          <CardDescription className="text-lg">
-            Page Not Found
-          </CardDescription>
+          <CardDescription className="text-lg">Page Not Found</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">

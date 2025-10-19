@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Application, Interview, Document, Company, Contact } from '@/types';
+import type { Application, Company, Contact, Document, Interview } from '@/types';
 
 // Define the database schema
 const db = new Dexie('ThriveDB') as Dexie & {
@@ -12,8 +12,7 @@ const db = new Dexie('ThriveDB') as Dexie & {
 
 // Schema version 1
 db.version(1).stores({
-  applications:
-    '++id, companyId, position, status, priority, appliedAt, createdAt, updatedAt',
+  applications: '++id, companyId, position, status, priority, appliedAt, createdAt, updatedAt',
   interviews: '++id, applicationId, type, scheduledAt, status, createdAt, updatedAt',
   documents: '++id, type, name, version, applicationId, createdAt, updatedAt',
   companies: '++id, name, industry, size, createdAt, updatedAt',

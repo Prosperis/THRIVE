@@ -1,8 +1,9 @@
-import { useState, useEffect, useId, useCallback } from 'react';
+import { Eye, Plus, Save, X } from 'lucide-react';
+import { useCallback, useEffect, useId, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -10,9 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { X, Plus, Save, Eye } from 'lucide-react';
-import type { Template, TemplateCategory, TemplateVariable, TemplateVariableType } from '@/types/template';
+import { Textarea } from '@/components/ui/textarea';
+import type {
+  Template,
+  TemplateCategory,
+  TemplateVariable,
+  TemplateVariableType,
+} from '@/types/template';
 
 interface TemplateEditorProps {
   template?: Template;
@@ -41,7 +46,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
   const nameId = useId();
   const descriptionId = useId();
   const contentId = useId();
-  
+
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
   const [category, setCategory] = useState<TemplateCategory>(template?.category || 'application');
@@ -61,7 +66,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
   useEffect(() => {
     const detectedVars = extractVariables(content);
     const existingKeys = new Set(variables.map((v) => v.key));
-    
+
     // Add new variables
     const newVars = detectedVars
       .filter((key) => !existingKeys.has(key))
@@ -92,9 +97,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
   };
 
   const handleUpdateVariable = (index: number, updates: Partial<TemplateVariable>) => {
-    setVariables((prev) =>
-      prev.map((v, i) => (i === index ? { ...v, ...updates } : v))
-    );
+    setVariables((prev) => prev.map((v, i) => (i === index ? { ...v, ...updates } : v)));
   };
 
   const handleSave = () => {
@@ -127,9 +130,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
-          {template ? 'Edit Template' : 'Create Template'}
-        </h2>
+        <h2 className="text-2xl font-bold">{template ? 'Edit Template' : 'Create Template'}</h2>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowPreview(!showPreview)}>
             <Eye className="mr-2 h-4 w-4" />
@@ -170,7 +171,10 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <Select value={category} onValueChange={(value) => setCategory(value as TemplateCategory)}>
+              <Select
+                value={category}
+                onValueChange={(value) => setCategory(value as TemplateCategory)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -235,7 +239,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
           {/* Content */}
           <div className="space-y-2">
             <Label htmlFor={contentId}>
-              Template Content * 
+              Template Content *
               <span className="text-xs text-muted-foreground ml-2">
                 Use {'{{'} and {'}'} around variable names, e.g., {'{{company}}'}
               </span>
@@ -261,19 +265,13 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
                   >
                     <div className="space-y-1">
                       <Label className="text-xs">Key</Label>
-                      <Input
-                        value={variable.key}
-                        disabled
-                        className="font-mono text-xs"
-                      />
+                      <Input value={variable.key} disabled className="font-mono text-xs" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Label</Label>
                       <Input
                         value={variable.label}
-                        onChange={(e) =>
-                          handleUpdateVariable(index, { label: e.target.value })
-                        }
+                        onChange={(e) => handleUpdateVariable(index, { label: e.target.value })}
                         className="text-xs"
                       />
                     </div>

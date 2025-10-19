@@ -1,6 +1,7 @@
-import { useState, useId } from 'react';
-import { Button } from '@/components/ui/button';
+import { Calendar, Filter, X } from 'lucide-react';
+import { useId, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -9,11 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { APPLICATION_STATUSES, PRIORITY_LEVELS, WORK_TYPES } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 import { useApplicationsStore } from '@/stores';
 import type { ApplicationStatus } from '@/types';
-import { APPLICATION_STATUSES, PRIORITY_LEVELS, WORK_TYPES } from '@/lib/constants';
-import { Filter, X, Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export function ApplicationFilters() {
   const { filters, setFilters } = useApplicationsStore();
@@ -53,8 +53,7 @@ export function ApplicationFilters() {
   };
 
   // Count active filters
-  const activeFilterCount =
-    statusFilters.length + priorityFilters.length + workTypeFilters.length;
+  const activeFilterCount = statusFilters.length + priorityFilters.length + workTypeFilters.length;
 
   const hasDateFilters = filters.dateRange?.start || filters.dateRange?.end;
   const totalActiveFilters = activeFilterCount + (hasDateFilters ? 1 : 0);
@@ -90,9 +89,7 @@ export function ApplicationFilters() {
                 onCheckedChange={() => toggleStatusFilter(status.value)}
               >
                 <div className="flex items-center gap-2">
-                  <div
-                    className={cn('w-2 h-2 rounded-full', `bg-${status.color}-500`)}
-                  />
+                  <div className={cn('w-2 h-2 rounded-full', `bg-${status.color}-500`)} />
                   <span>{status.label}</span>
                 </div>
               </DropdownMenuCheckboxItem>
@@ -165,11 +162,7 @@ export function ApplicationFilters() {
         {/* Date Range Filter */}
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(hasDateFilters && 'border-primary')}
-            >
+            <Button variant="outline" size="sm" className={cn(hasDateFilters && 'border-primary')}>
               <Calendar className="mr-2 h-4 w-4" />
               Date Range
               {hasDateFilters && (
@@ -179,7 +172,11 @@ export function ApplicationFilters() {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-72 p-4" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuContent
+            align="start"
+            className="w-72 p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="space-y-4">
               <div>
                 <DropdownMenuLabel className="px-0">Applied Date Range</DropdownMenuLabel>
@@ -187,37 +184,49 @@ export function ApplicationFilters() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label htmlFor={dateFromId} className="text-sm font-medium mb-1 block">From</label>
+                  <label htmlFor={dateFromId} className="text-sm font-medium mb-1 block">
+                    From
+                  </label>
                   <input
                     id={dateFromId}
                     type="date"
                     className="w-full px-3 py-2 text-sm border rounded-md bg-background"
-                    value={filters.dateRange?.start ? new Date(filters.dateRange.start).toISOString().split('T')[0] : ''}
+                    value={
+                      filters.dateRange?.start
+                        ? new Date(filters.dateRange.start).toISOString().split('T')[0]
+                        : ''
+                    }
                     onChange={(e) => {
                       const value = e.target.value;
-                      setFilters({ 
+                      setFilters({
                         dateRange: {
                           ...filters.dateRange,
                           start: value ? new Date(value) : undefined,
-                        }
+                        },
                       });
                     }}
                   />
                 </div>
                 <div>
-                  <label htmlFor={dateToId} className="text-sm font-medium mb-1 block">To</label>
+                  <label htmlFor={dateToId} className="text-sm font-medium mb-1 block">
+                    To
+                  </label>
                   <input
                     id={dateToId}
                     type="date"
                     className="w-full px-3 py-2 text-sm border rounded-md bg-background"
-                    value={filters.dateRange?.end ? new Date(filters.dateRange.end).toISOString().split('T')[0] : ''}
+                    value={
+                      filters.dateRange?.end
+                        ? new Date(filters.dateRange.end).toISOString().split('T')[0]
+                        : ''
+                    }
                     onChange={(e) => {
                       const value = e.target.value;
-                      setFilters({ 
+                      setFilters({
                         dateRange: {
                           ...filters.dateRange,
                           end: value ? new Date(value) : undefined,
-                        }
+                        },
                       });
                     }}
                   />
@@ -252,7 +261,7 @@ export function ApplicationFilters() {
       {totalActiveFilters > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground">Active filters:</span>
-          
+
           {/* Status badges */}
           {statusFilters.map((status) => {
             const statusConfig = APPLICATION_STATUSES.find((s) => s.value === status);
@@ -302,7 +311,9 @@ export function ApplicationFilters() {
           {hasDateFilters && (
             <Badge variant="secondary" className="gap-1">
               {filters.dateRange?.start && new Date(filters.dateRange.start).toLocaleDateString()} -{' '}
-              {filters.dateRange?.end ? new Date(filters.dateRange.end).toLocaleDateString() : 'Now'}
+              {filters.dateRange?.end
+                ? new Date(filters.dateRange.end).toLocaleDateString()
+                : 'Now'}
               <button
                 type="button"
                 onClick={() => setFilters({ dateRange: undefined })}

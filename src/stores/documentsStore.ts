@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Document } from '@/types';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
+import type { Document } from '@/types';
 
 interface DocumentsState {
   documents: Document[];

@@ -1,9 +1,9 @@
+import { Award, Calendar, Clock, Target, TrendingDown, TrendingUp } from 'lucide-react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
-import { useMemo } from 'react';
-import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, Target, Award, Calendar, Clock } from 'lucide-react';
 
 export function ResponseMetricsCard() {
   const { applications } = useApplicationsStore();
@@ -26,34 +26,26 @@ export function ResponseMetricsCard() {
     }
 
     // Applications with any response (not just "applied")
-    const responded = applications.filter(app => 
-      app.status !== 'applied'
-    ).length;
+    const responded = applications.filter((app) => app.status !== 'applied').length;
 
     // Applications that reached screening stage
-    const screening = applications.filter(app =>
+    const screening = applications.filter((app) =>
       ['screening', 'interviewing', 'offer', 'accepted'].includes(app.status)
     ).length;
 
     // Applications that reached interview stage
-    const interviewing = applications.filter(app =>
+    const interviewing = applications.filter((app) =>
       ['interviewing', 'offer', 'accepted'].includes(app.status)
     ).length;
 
     // Offers received
-    const offers = applications.filter(app =>
-      ['offer', 'accepted'].includes(app.status)
-    ).length;
+    const offers = applications.filter((app) => ['offer', 'accepted'].includes(app.status)).length;
 
     // Accepted offers
-    const accepted = applications.filter(app =>
-      app.status === 'accepted'
-    ).length;
+    const accepted = applications.filter((app) => app.status === 'accepted').length;
 
     // Rejections
-    const rejected = applications.filter(app =>
-      app.status === 'rejected'
-    ).length;
+    const rejected = applications.filter((app) => app.status === 'rejected').length;
 
     // Total interviews scheduled
     const totalInterviews = interviews.length;
@@ -61,8 +53,8 @@ export function ResponseMetricsCard() {
     // Calculate average time to first response (days)
     let avgTimeToResponse = 0;
     const responseTimes: number[] = [];
-    
-    applications.forEach(app => {
+
+    applications.forEach((app) => {
       if (app.appliedDate && app.updatedAt && app.status !== 'applied') {
         const applied = new Date(app.appliedDate).getTime();
         const updated = new Date(app.updatedAt).getTime();
@@ -124,7 +116,8 @@ export function ResponseMetricsCard() {
       <CardHeader>
         <CardTitle>Success Metrics</CardTitle>
         <CardDescription>
-          Conversion funnel and response analytics for {totalApplications} application{totalApplications !== 1 ? 's' : ''}
+          Conversion funnel and response analytics for {totalApplications} application
+          {totalApplications !== 1 ? 's' : ''}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -134,7 +127,7 @@ export function ResponseMetricsCard() {
             <Target className="h-4 w-4" />
             Conversion Funnel
           </h4>
-          
+
           {/* Response Rate */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
@@ -144,9 +137,7 @@ export function ResponseMetricsCard() {
               </span>
             </div>
             <Progress value={metrics.responseRate} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              Applications receiving any response
-            </p>
+            <p className="text-xs text-muted-foreground">Applications receiving any response</p>
           </div>
 
           {/* Screening Rate */}
@@ -158,9 +149,7 @@ export function ResponseMetricsCard() {
               </span>
             </div>
             <Progress value={metrics.screeningRate} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              Applications reaching screening stage
-            </p>
+            <p className="text-xs text-muted-foreground">Applications reaching screening stage</p>
           </div>
 
           {/* Interview Rate */}
@@ -173,7 +162,8 @@ export function ResponseMetricsCard() {
             </div>
             <Progress value={metrics.interviewRate} className="h-2" />
             <p className="text-xs text-muted-foreground">
-              Applications reaching interview stage ({metrics.totalInterviews} interview{metrics.totalInterviews !== 1 ? 's' : ''})
+              Applications reaching interview stage ({metrics.totalInterviews} interview
+              {metrics.totalInterviews !== 1 ? 's' : ''})
             </p>
           </div>
 
@@ -187,7 +177,8 @@ export function ResponseMetricsCard() {
             </div>
             <Progress value={metrics.offerRate} className="h-2" />
             <p className="text-xs text-muted-foreground">
-              Applications resulting in offers ({metrics.totalOffers} offer{metrics.totalOffers !== 1 ? 's' : ''})
+              Applications resulting in offers ({metrics.totalOffers} offer
+              {metrics.totalOffers !== 1 ? 's' : ''})
             </p>
           </div>
         </div>
@@ -201,9 +192,7 @@ export function ResponseMetricsCard() {
               <span className="text-xs">Acceptance Rate</span>
             </div>
             <p className="text-2xl font-bold">{metrics.acceptanceRate}%</p>
-            <p className="text-xs text-muted-foreground">
-              Of offers received
-            </p>
+            <p className="text-xs text-muted-foreground">Of offers received</p>
           </div>
 
           {/* Rejection Rate */}
@@ -217,9 +206,7 @@ export function ResponseMetricsCard() {
               <span className="text-xs">Rejection Rate</span>
             </div>
             <p className="text-2xl font-bold">{metrics.rejectionRate}%</p>
-            <p className="text-xs text-muted-foreground">
-              Of total applications
-            </p>
+            <p className="text-xs text-muted-foreground">Of total applications</p>
           </div>
 
           {/* Avg Time to Response */}
@@ -229,9 +216,7 @@ export function ResponseMetricsCard() {
               <span className="text-xs">Avg. Response Time</span>
             </div>
             <p className="text-2xl font-bold">{metrics.avgTimeToResponse}</p>
-            <p className="text-xs text-muted-foreground">
-              Days to first response
-            </p>
+            <p className="text-xs text-muted-foreground">Days to first response</p>
           </div>
 
           {/* Active Pipeline */}
@@ -241,13 +226,13 @@ export function ResponseMetricsCard() {
               <span className="text-xs">Active Pipeline</span>
             </div>
             <p className="text-2xl font-bold">
-              {applications.filter(app => 
-                ['applied', 'screening', 'interviewing'].includes(app.status)
-              ).length}
+              {
+                applications.filter((app) =>
+                  ['applied', 'screening', 'interviewing'].includes(app.status)
+                ).length
+              }
             </p>
-            <p className="text-xs text-muted-foreground">
-              In progress
-            </p>
+            <p className="text-xs text-muted-foreground">In progress</p>
           </div>
         </div>
 

@@ -1,3 +1,5 @@
+import { Bug, Package, Sparkles, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -6,9 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { CHANGELOG } from '@/lib/about';
-import { Package, Sparkles, Bug, Zap } from 'lucide-react';
 
 interface ChangelogDialogProps {
   open: boolean;

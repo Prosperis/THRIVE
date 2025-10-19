@@ -43,7 +43,7 @@ export function formatDateForScreenReader(date: Date | string | null | undefined
   if (!date) return 'No date set';
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   return dateObj.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -66,9 +66,7 @@ export function createActionLabel(action: string, item: string, identifier?: str
   };
 
   const actionText = actionLabels[action] || action;
-  return identifier 
-    ? `${actionText} ${item}: ${identifier}`
-    : `${actionText} ${item}`;
+  return identifier ? `${actionText} ${item}: ${identifier}` : `${actionText} ${item}`;
 }
 
 /**
@@ -76,7 +74,7 @@ export function createActionLabel(action: string, item: string, identifier?: str
  */
 export function isElementVisible(element: HTMLElement): boolean {
   if (!element) return false;
-  
+
   const style = window.getComputedStyle(element);
   return (
     style.display !== 'none' &&

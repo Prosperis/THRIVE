@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -13,10 +13,10 @@ interface StatusChangeIndicatorProps {
 
 /**
  * StatusChangeIndicator - Brief animation showing status change
- * 
+ *
  * Displays a success indicator with old and new status when a status changes.
  * Automatically hides after duration.
- * 
+ *
  * @example
  * ```tsx
  * <StatusChangeIndicator
@@ -68,7 +68,7 @@ export function StatusChangeIndicator({
           >
             <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
           </motion.div>
-          
+
           <div className="flex items-center gap-2 text-sm">
             {oldStatus && (
               <>

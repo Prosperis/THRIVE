@@ -1,5 +1,5 @@
 import type { Application } from '@/types';
-import { exportToJSON, downloadJSON } from './export';
+import { downloadJSON, exportToJSON } from './export';
 
 /**
  * Create a backup of applications with metadata
@@ -30,12 +30,12 @@ export function exportBackup(applications: Application[]): { filename: string; s
   const backup = createBackup(applications);
   const jsonContent = exportToJSON(backup);
   const size = new Blob([jsonContent]).size;
-  
+
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
   const filename = `thrive-backup-${timestamp}.json`;
-  
+
   downloadJSON(jsonContent, filename);
-  
+
   return { filename, size };
 }
 

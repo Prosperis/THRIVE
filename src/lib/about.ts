@@ -157,10 +157,22 @@ export const CREDITS = [
     category: 'Libraries & Frameworks',
     items: [
       { name: 'React', description: 'UI Framework', url: 'https://react.dev' },
-      { name: 'TypeScript', description: 'Type-safe JavaScript', url: 'https://typescriptlang.org' },
+      {
+        name: 'TypeScript',
+        description: 'Type-safe JavaScript',
+        url: 'https://typescriptlang.org',
+      },
       { name: 'Vite', description: 'Build tool', url: 'https://vitejs.dev' },
-      { name: 'TanStack Router', description: 'Type-safe routing', url: 'https://tanstack.com/router' },
-      { name: 'TanStack Table', description: 'Headless table library', url: 'https://tanstack.com/table' },
+      {
+        name: 'TanStack Router',
+        description: 'Type-safe routing',
+        url: 'https://tanstack.com/router',
+      },
+      {
+        name: 'TanStack Table',
+        description: 'Headless table library',
+        url: 'https://tanstack.com/table',
+      },
       { name: 'Zustand', description: 'State management', url: 'https://zustand-demo.pmnd.rs' },
       { name: 'Dexie.js', description: 'IndexedDB wrapper', url: 'https://dexie.org' },
       { name: 'Framer Motion', description: 'Animation library', url: 'https://framer.com/motion' },

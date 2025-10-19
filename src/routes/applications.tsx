@@ -1,19 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { LayoutGrid, Plus, Table as TableIcon } from 'lucide-react';
 import { useEffect } from 'react';
-import PageHeader from '@/components/layout/PageHeader';
-import { PageTransition } from '@/components/layout';
-import { AnimatedButton } from '@/components/ui/animated-button';
+import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
+import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
 import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
-import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
-import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
-import { SearchInput } from '@/components/ui/search-input';
 import { SavedFiltersDialog } from '@/components/features/filters/SavedFiltersDialog';
-import { useApplicationsStore } from '@/stores';
+import { PageTransition } from '@/components/layout';
+import PageHeader from '@/components/layout/PageHeader';
+import { AnimatedButton } from '@/components/ui/animated-button';
 import { Button } from '@/components/ui/button';
-import { Plus, Table as TableIcon, LayoutGrid } from 'lucide-react';
-import { useUIStore } from '@/stores';
+import { SearchInput } from '@/components/ui/search-input';
 import { seedDatabase } from '@/lib/seed';
+import { useApplicationsStore, useUIStore } from '@/stores';
 import type { ApplicationFilters as ApplicationFiltersType } from '@/types';
 
 export const Route = createFileRoute('/applications')({
@@ -84,7 +83,9 @@ function ApplicationsPage() {
               <SavedFiltersDialog
                 filterType="applications"
                 currentFilters={filters}
-                onLoadFilter={(loadedFilters) => setFilters(loadedFilters as ApplicationFiltersType)}
+                onLoadFilter={(loadedFilters) =>
+                  setFilters(loadedFilters as ApplicationFiltersType)
+                }
               />
             </div>
 
@@ -92,11 +93,7 @@ function ApplicationsPage() {
             <ApplicationFilters />
 
             {/* View Content */}
-            {activeView === 'table' ? (
-              <ApplicationsTable />
-            ) : (
-              <KanbanBoard />
-            )}
+            {activeView === 'table' ? <ApplicationsTable /> : <KanbanBoard />}
           </div>
         )}
       </div>

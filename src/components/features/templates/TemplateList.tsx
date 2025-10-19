@@ -1,21 +1,5 @@
+import { Copy, FileText, MoreVertical, Pencil, Plus, Search, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,10 +10,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Search, MoreVertical, Copy, Pencil, Trash2, FileText, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { useTemplateStore } from '@/stores/templateStore';
 import type { TemplateCategory } from '@/types/template';
-import { cn } from '@/lib/utils';
 
 interface TemplateListProps {
   category?: TemplateCategory;
@@ -73,9 +73,9 @@ export function TemplateList({
   const duplicateTemplate = useTemplateStore((state) => state.duplicateTemplate);
 
   // Filter templates
-  const filteredTemplates = (
-    searchQuery ? searchTemplates(searchQuery) : templates
-  ).filter((t) => selectedCategory === 'all' || t.category === selectedCategory);
+  const filteredTemplates = (searchQuery ? searchTemplates(searchQuery) : templates).filter(
+    (t) => selectedCategory === 'all' || t.category === selectedCategory
+  );
 
   // Sort by usage count and default status
   const sortedTemplates = [...filteredTemplates].sort((a, b) => {
@@ -274,7 +274,10 @@ export function TemplateList({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

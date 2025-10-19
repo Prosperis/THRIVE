@@ -1,14 +1,5 @@
+import { ChevronDown, Download, Edit, Flag, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,10 +10,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { APPLICATION_STATUSES, PRIORITY_LEVELS } from '@/lib/constants';
 import { useApplicationsStore } from '@/stores';
 import type { Application, ApplicationStatus } from '@/types';
-import { APPLICATION_STATUSES, PRIORITY_LEVELS } from '@/lib/constants';
-import { Trash2, Download, Edit, ChevronDown, Flag } from 'lucide-react';
 
 interface BulkActionsProps {
   selectedRows: Application[];
@@ -40,9 +40,7 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
   const handleBulkDelete = async () => {
     setIsProcessing(true);
     try {
-      await Promise.all(
-        selectedRows.map((row) => deleteApplication(row.id))
-      );
+      await Promise.all(selectedRows.map((row) => deleteApplication(row.id)));
       onClearSelection();
       setShowDeleteDialog(false);
     } catch (error) {
@@ -56,9 +54,7 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
   const handleBulkStatusUpdate = async (status: ApplicationStatus) => {
     setIsProcessing(true);
     try {
-      await Promise.all(
-        selectedRows.map((row) => updateApplication(row.id, { status }))
-      );
+      await Promise.all(selectedRows.map((row) => updateApplication(row.id, { status })));
       onClearSelection();
     } catch (error) {
       console.error('Error updating applications:', error);
@@ -71,9 +67,7 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
   const handleBulkPriorityUpdate = async (priority: 'low' | 'medium' | 'high') => {
     setIsProcessing(true);
     try {
-      await Promise.all(
-        selectedRows.map((row) => updateApplication(row.id, { priority }))
-      );
+      await Promise.all(selectedRows.map((row) => updateApplication(row.id, { priority })));
       onClearSelection();
     } catch (error) {
       console.error('Error updating priorities:', error);
@@ -122,20 +116,18 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
     // Create CSV content
     const csvContent = [
       headers.join(','),
-      ...rows.map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-      ),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
     ].join('\n');
 
     // Create blob and download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute('href', url);
     link.setAttribute('download', `applications-${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -170,9 +162,7 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
                 onClick={() => handleBulkStatusUpdate(status.value)}
               >
                 <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full bg-${status.color}-500`}
-                  />
+                  <div className={`w-2 h-2 rounded-full bg-${status.color}-500`} />
                   <span>{status.label}</span>
                 </div>
               </DropdownMenuItem>
@@ -204,12 +194,7 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
         </DropdownMenu>
 
         {/* Export to CSV */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExportToCSV}
-          disabled={isProcessing}
-        >
+        <Button variant="outline" size="sm" onClick={handleExportToCSV} disabled={isProcessing}>
           <Download className="mr-2 h-4 w-4" />
           Export CSV
         </Button>
@@ -226,12 +211,7 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
         </Button>
 
         {/* Clear Selection */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClearSelection}
-          disabled={isProcessing}
-        >
+        <Button variant="ghost" size="sm" onClick={onClearSelection} disabled={isProcessing}>
           Clear
         </Button>
       </div>
@@ -242,8 +222,8 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {selectedCount} application{selectedCount > 1 ? 's' : ''}.
-              This action cannot be undone.
+              This will permanently delete {selectedCount} application{selectedCount > 1 ? 's' : ''}
+              . This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

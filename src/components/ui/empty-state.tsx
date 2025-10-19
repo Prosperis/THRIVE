@@ -28,14 +28,10 @@ export function EmptyState({
           <Icon className="h-10 w-10 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-          {description}
-        </p>
+        <p className="text-sm text-muted-foreground text-center max-w-md mb-6">{description}</p>
         {(actionLabel || secondaryActionLabel) && (
           <div className="flex gap-3">
-            {actionLabel && onAction && (
-              <Button onClick={onAction}>{actionLabel}</Button>
-            )}
+            {actionLabel && onAction && <Button onClick={onAction}>{actionLabel}</Button>}
             {secondaryActionLabel && onSecondaryAction && (
               <Button variant="outline" onClick={onSecondaryAction}>
                 {secondaryActionLabel}

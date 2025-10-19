@@ -10,10 +10,10 @@ interface PulseEffectProps {
 
 /**
  * PulseEffect - Adds a pulse animation to any element
- * 
+ *
  * Creates a ripple/pulse effect that emanates from the element.
  * Useful for drawing attention to updates or changes.
- * 
+ *
  * @example
  * ```tsx
  * <PulseEffect trigger={statusChanged} color="bg-green-500">
@@ -41,7 +41,7 @@ export function PulseEffect({
             }}
             className={`absolute inset-0 rounded-full ${color} opacity-30`}
           />
-          
+
           {/* Inner pulse */}
           <motion.span
             initial={{ scale: 1, opacity: 0.8 }}
@@ -55,11 +55,15 @@ export function PulseEffect({
           />
         </>
       )}
-      
+
       <motion.div
-        animate={trigger ? {
-          scale: [1, 1.1, 1],
-        } : {}}
+        animate={
+          trigger
+            ? {
+                scale: [1, 1.1, 1],
+              }
+            : {}
+        }
         transition={{
           duration: duration * 0.5,
           ease: 'easeInOut',

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { Check, Copy } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Copy, Check } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useTemplateStore } from '@/stores/templateStore';
 import type { Template } from '@/types/template';
 
@@ -80,9 +80,7 @@ export function TemplateQuickEntry({
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{template.name}</DialogTitle>
-          {template.description && (
-            <DialogDescription>{template.description}</DialogDescription>
-          )}
+          {template.description && <DialogDescription>{template.description}</DialogDescription>}
         </DialogHeader>
 
         <div className="space-y-6">
@@ -114,12 +112,7 @@ export function TemplateQuickEntry({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Preview:</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopy}
-                disabled={!isFormValid}
-              >
+              <Button variant="outline" size="sm" onClick={handleCopy} disabled={!isFormValid}>
                 {copied ? (
                   <>
                     <Check className="mr-2 h-4 w-4" />

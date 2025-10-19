@@ -4,7 +4,7 @@ import type { Activity, ActivityType } from '@/types/activity';
 
 interface ActivityStore {
   activities: Activity[];
-  
+
   // Actions
   addActivity: (activity: Omit<Activity, 'id' | 'timestamp'>) => Activity;
   getActivitiesByEntity: (entityId: string, entityType?: Activity['entityType']) => Activity[];

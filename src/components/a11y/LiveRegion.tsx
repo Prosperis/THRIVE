@@ -11,10 +11,10 @@ interface LiveRegionProps {
  * Announces dynamic content changes to screen readers
  * Use for status updates, notifications, etc.
  */
-export function LiveRegion({ 
-  message, 
+export function LiveRegion({
+  message,
   politeness = 'polite',
-  clearOnUnmount = true 
+  clearOnUnmount = true,
 }: LiveRegionProps) {
   const regionRef = useRef<HTMLOutputElement>(null);
 
@@ -36,14 +36,7 @@ export function LiveRegion({
     };
   }, [message, clearOnUnmount]);
 
-  return (
-    <output
-      ref={regionRef}
-      aria-live={politeness}
-      aria-atomic="true"
-      className="sr-only"
-    />
-  );
+  return <output ref={regionRef} aria-live={politeness} aria-atomic="true" className="sr-only" />;
 }
 
 /**
@@ -72,12 +65,5 @@ export function useAnnouncer() {
  * Place this once in your root layout
  */
 export function GlobalAnnouncer() {
-  return (
-    <output
-      id="global-announcer"
-      aria-live="polite"
-      aria-atomic="true"
-      className="sr-only"
-    />
-  );
+  return <output id="global-announcer" aria-live="polite" aria-atomic="true" className="sr-only" />;
 }

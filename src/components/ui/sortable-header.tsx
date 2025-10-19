@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { Column } from '@tanstack/react-table';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface SortableHeaderProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -11,16 +11,16 @@ interface SortableHeaderProps<TData, TValue> {
 
 /**
  * SortableHeader Component
- * 
+ *
  * A reusable table header with sorting capabilities.
- * 
+ *
  * Features:
  * - Click to toggle between: none → asc → desc → none
  * - Visual indicators: ArrowUp (asc), ArrowDown (desc), ArrowUpDown (none)
  * - Multi-column sorting: Hold Shift while clicking to add secondary sorts
  * - Sort order numbers displayed for multi-sort (e.g., "2" for second sort column)
  * - Hover effects for better UX
- * 
+ *
  * Usage:
  * ```tsx
  * header: ({ column }) => (
@@ -58,9 +58,7 @@ export function SortableHeader<TData, TValue>({
         )}
         {/* Show sort order number for multi-sort */}
         {sorted && sortIndex !== -1 && sortIndex > 0 && (
-          <span className="ml-1 text-xs text-muted-foreground">
-            {sortIndex + 1}
-          </span>
+          <span className="ml-1 text-xs text-muted-foreground">{sortIndex + 1}</span>
         )}
       </div>
     </Button>

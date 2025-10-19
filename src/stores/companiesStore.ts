@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Company } from '@/types';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
+import type { Company } from '@/types';
 
 interface CompaniesState {
   companies: Company[];

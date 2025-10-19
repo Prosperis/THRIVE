@@ -1,21 +1,21 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { formatDistanceToNow } from 'date-fns';
+import { Calendar, Clock, FileText, Plus, TrendingUp } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
-import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AnimatedCard } from '@/components/ui/animated-card';
-import { AnimatedButton } from '@/components/ui/animated-button';
-import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/layout';
-import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { ApplicationFunnelChart } from '@/components/analytics/ApplicationFunnelChart';
 import { ApplicationsTimelineChart } from '@/components/analytics/ApplicationsTimelineChart';
-import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
 import { ResponseMetricsCard } from '@/components/analytics/ResponseMetricsCard';
+import { StatsOverview } from '@/components/analytics/StatsOverview';
+import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
 import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
+import { PageHeader } from '@/components/layout';
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { AnimatedCard } from '@/components/ui/animated-card';
+import { Badge } from '@/components/ui/badge';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
-import { formatDistanceToNow } from 'date-fns';
-import { Plus, Calendar, FileText, TrendingUp, Clock } from 'lucide-react';
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
@@ -33,7 +33,7 @@ function DashboardPage() {
   // Get recent activity (last 5 applications/interviews)
   const recentActivity = useMemo(() => {
     const items = [
-      ...applications.map(app => ({
+      ...applications.map((app) => ({
         id: app.id,
         type: 'application' as const,
         title: `Applied to ${app.position}`,
@@ -41,8 +41,8 @@ function DashboardPage() {
         status: app.status,
         date: app.appliedDate || app.createdAt,
       })),
-      ...interviews.map(interview => {
-        const app = applications.find(a => a.id === interview.applicationId);
+      ...interviews.map((interview) => {
+        const app = applications.find((a) => a.id === interview.applicationId);
         return {
           id: interview.id,
           type: 'interview' as const,
@@ -59,7 +59,9 @@ function DashboardPage() {
       .slice(0, 5);
   }, [applications, interviews]);
 
-  const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusBadgeVariant = (
+    status: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     if (['offer', 'accepted', 'completed'].includes(status)) return 'default';
     if (['rejected', 'cancelled'].includes(status)) return 'destructive';
     return 'secondary';
@@ -71,10 +73,7 @@ function DashboardPage() {
 
   return (
     <>
-      <PageHeader
-        title="Dashboard"
-        description="Overview of your job application progress"
-      />
+      <PageHeader title="Dashboard" description="Overview of your job application progress" />
 
       <div className="space-y-6">
         {/* Stats Overview */}
@@ -118,7 +117,7 @@ function DashboardPage() {
                   </AnimatedButton>
                 }
               />
-              
+
               <InterviewDialog
                 trigger={
                   <AnimatedButton variant="outline" className="w-full justify-start">
@@ -127,7 +126,7 @@ function DashboardPage() {
                   </AnimatedButton>
                 }
               />
-              
+
               <Link to="/analytics">
                 <AnimatedButton variant="outline" className="w-full justify-start">
                   <TrendingUp className="h-4 w-4 mr-2" />
@@ -169,9 +168,7 @@ function DashboardPage() {
                         </div>
                         <div className="flex-1 min-w-0 space-y-1">
                           <p className="text-sm font-medium truncate">{item.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {item.subtitle}
-                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
                           <div className="flex items-center gap-2">
                             <Badge variant={getStatusBadgeVariant(item.status)} className="text-xs">
                               {item.status}
