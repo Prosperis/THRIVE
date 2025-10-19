@@ -1,3 +1,5 @@
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { Calendar, Clock, FileText, Plus, TrendingUp } from 'lucide-react';
@@ -7,6 +9,8 @@ import { ApplicationsTimelineChart } from '@/components/analytics/ApplicationsTi
 import { ResponseMetricsCard } from '@/components/analytics/ResponseMetricsCard';
 import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
+import { DashboardCustomizer } from '@/components/dashboard/DashboardCustomizer';
+import { DashboardWidgetWrapper } from '@/components/dashboard/DashboardWidgetWrapper';
 import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
 import { PageHeader } from '@/components/layout';
@@ -15,6 +19,7 @@ import { AnimatedCard } from '@/components/ui/animated-card';
 import { Badge } from '@/components/ui/badge';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useDashboardStore, type DashboardWidgetType } from '@/stores/dashboardStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 
 export const Route = createFileRoute('/dashboard')({
@@ -71,35 +76,54 @@ function DashboardPage() {
     return type === 'application' ? FileText : Calendar;
   };
 
-  return (
-    <>
-      <PageHeader title="Dashboard" description="Overview of your job application progress" />
+  // Dashboard customization
+  const { widgets, layoutMode, reorderWidgets } = useDashboardStore();
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
-      <div className="space-y-4 md:space-y-6 lg:space-y-8">
-        {/* Stats Overview */}
-        <StatsOverview />
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-        {/* Charts Row */}
-        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-          {/* Application Funnel Chart */}
-          <ApplicationFunnelChart />
+    if (over && active.id !== over.id) {
+      const oldIndex = widgets.findIndex((w) => w.id === active.id);
+      const newIndex = widgets.findIndex((w) => w.id === over.id);
 
-          {/* Applications Timeline Chart */}
-          <ApplicationsTimelineChart />
-        </div>
+      const newWidgets = arrayMove(widgets, oldIndex, newIndex);
+      reorderWidgets(newWidgets);
+    }
+  };
 
-        {/* Second Charts Row */}
-        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-          {/* Status Distribution Chart */}
-          <StatusDistributionChart />
+  const visibleWidgets = useMemo(() => {
+    return widgets
+      .filter((w) => w.visible)
+      .sort((a, b) => a.order - b.order);
+  }, [widgets]);
 
-          {/* Response Metrics */}
-          <ResponseMetricsCard />
-        </div>
-
-        {/* Bottom Row */}
-        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-          {/* Quick Actions */}
+  const renderWidget = (widgetId: DashboardWidgetType) => {
+    switch (widgetId) {
+      case 'stats':
+        return <StatsOverview />;
+      
+      case 'funnel':
+        return <ApplicationFunnelChart />;
+      
+      case 'timeline':
+        return <ApplicationsTimelineChart />;
+      
+      case 'status-distribution':
+        return <StatusDistributionChart />;
+      
+      case 'response-metrics':
+        return <ResponseMetricsCard />;
+      
+      case 'quick-actions':
+        return (
           <AnimatedCard hoverEffect="lift" animateOnMount delay={0.1}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -142,8 +166,10 @@ function DashboardPage() {
               </Link>
             </CardContent>
           </AnimatedCard>
-
-          {/* Recent Activity */}
+        );
+      
+      case 'recent-activity':
+        return (
           <AnimatedCard hoverEffect="lift" animateOnMount delay={0.2}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -185,8 +211,49 @@ function DashboardPage() {
               )}
             </CardContent>
           </AnimatedCard>
-        </div>
-      </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  const getGridClass = (widgetId: DashboardWidgetType) => {
+    // Full width widgets
+    if (widgetId === 'stats') return 'col-span-full';
+    
+    // Half width widgets (2 columns on md+)
+    return 'col-span-full md:col-span-1';
+  };
+
+  return (
+    <>
+      <PageHeader 
+        title="Dashboard" 
+        description="Overview of your job application progress"
+        action={<DashboardCustomizer />}
+      />
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={visibleWidgets.map((w) => w.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="grid gap-4 md:gap-6 md:grid-cols-2">
+            {visibleWidgets.map((widget) => (
+              <div key={widget.id} className={getGridClass(widget.id)}>
+                <DashboardWidgetWrapper id={widget.id} isEditMode={layoutMode === 'edit'}>
+                  {renderWidget(widget.id)}
+                </DashboardWidgetWrapper>
+              </div>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </>
   );
 }
