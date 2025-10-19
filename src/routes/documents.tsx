@@ -1,14 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { FileText, Plus, Upload, Pencil, Download, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { FileText, Plus, Upload, Pencil, Download, Trash2, RotateCcw, Trash, FileCode, Type, FileType, File } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { Document as PDFDocument, Page as PDFPage, pdfjs } from 'react-pdf';
+import { jsPDF } from 'jspdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import { PageHeader } from '@/components/layout';
 import { useDocumentsStore } from '@/stores';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Document } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +28,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+
+// Set up PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export const Route = createFileRoute('/documents')({
   component: DocumentsPage,
@@ -31,11 +49,11 @@ function DocumentsPage() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isNewDocDialogOpen, setIsNewDocDialogOpen] = useState(false);
   const [isCoverLetterDialogOpen, setIsCoverLetterDialogOpen] = useState(false);
-  const [isViewDocDialogOpen, setIsViewDocDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [activeTab, setActiveTab] = useState<'recent' | 'deleted'>('recent');
-  const resumeInputRef = useRef<HTMLInputElement>(null);
+  const [viewFormat, setViewFormat] = useState<'pdf' | 'markdown' | 'richtext' | 'plain'>('markdown');
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Form state for new document dialog
   const [newDocName, setNewDocName] = useState('');
@@ -51,6 +69,72 @@ function DocumentsPage() {
   // Editing state for view/edit dialog
   const [editingContent, setEditingContent] = useState('');
   const [editingName, setEditingName] = useState('');
+
+  // Generate PDF from text content
+  const generatedPdfUrl = useMemo(() => {
+    if (!selectedDocument?.content || viewFormat !== 'pdf') return null;
+    
+    try {
+      // Check if content is already a PDF (starts with %PDF or is base64 PDF)
+      if (selectedDocument.content.startsWith('%PDF') || 
+          selectedDocument.content.startsWith('JVBER') || // base64 of %PDF
+          selectedDocument.mimeType === 'application/pdf') {
+        return `data:application/pdf;base64,${btoa(selectedDocument.content)}`;
+      }
+      
+      // Generate PDF from text content
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Set font and size
+      doc.setFontSize(11);
+      doc.setFont('helvetica');
+      
+      // Add title
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text(selectedDocument.name, 20, 20);
+      
+      // Add content
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      
+      const content = selectedDocument.content;
+      const lines = doc.splitTextToSize(content, 170); // Split text to fit page width
+      
+      let y = 35; // Start position
+      const lineHeight = 7;
+      const pageHeight = 280;
+      
+      for (const line of lines) {
+        if (y > pageHeight) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line, 20, y);
+        y += lineHeight;
+      }
+      
+      // Convert to blob URL
+      const pdfBlob = doc.output('blob');
+      return URL.createObjectURL(pdfBlob);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      return null;
+    }
+  }, [selectedDocument, viewFormat]);
+
+  // Cleanup PDF blob URL on unmount or when it changes
+  useEffect(() => {
+    return () => {
+      if (generatedPdfUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(generatedPdfUrl);
+      }
+    };
+  }, [generatedPdfUrl]);
 
   // Fetch documents on mount
   useEffect(() => {
@@ -125,10 +209,6 @@ function DocumentsPage() {
         });
       }
     }
-  };
-
-  const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    await handleFileUpload(event, 'resume');
   };
 
   const handleNewDocument = async () => {
@@ -206,7 +286,6 @@ Sincerely,
     setEditingName(doc.name);
     setEditingContent(doc.content || '');
     setIsEditMode(false);
-    setIsViewDocDialogOpen(true);
   };
 
   const handleSaveDocument = async () => {
@@ -221,7 +300,6 @@ Sincerely,
       toast.success('Document Updated', {
         description: `${editingName} has been saved`,
       });
-      setIsViewDocDialogOpen(false);
       setIsEditMode(false);
     } catch (error) {
       toast.error('Save Failed', {
@@ -245,8 +323,10 @@ Sincerely,
         description: `${doc.name} moved to recently deleted`,
       });
       
-      if (isViewDocDialogOpen && selectedDocument?.id === doc.id) {
-        setIsViewDocDialogOpen(false);
+      // Clear selection if the deleted document was selected
+      if (selectedDocument?.id === doc.id) {
+        setSelectedDocument(null);
+        setIsEditMode(false);
       }
       
       // Refresh the documents list to ensure UI updates
@@ -341,274 +421,476 @@ Sincerely,
       });
     }
   };
+  
   return (
     <>
       <PageHeader title="Documents" description="Manage your resumes, CVs, and cover letters" />
 
-      <div className="space-y-6">
-        {/* Actions Bar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">{resumeCount} Resumes</Badge>
-            <Badge variant="outline">{coverLetterCount} Cover Letters</Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setIsUploadDialogOpen(true)}>
+      <div className="flex gap-6 h-[calc(100vh-12rem)]">
+        {/* Sidebar */}
+        <div className="w-56 flex flex-col gap-4 shrink-0">
+          {/* Actions */}
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => setIsUploadDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Upload
             </Button>
-            <Button onClick={() => setIsNewDocDialogOpen(true)}>
+            <Button size="sm" className="flex-1" onClick={() => setIsNewDocDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              New Document
+              New
             </Button>
           </div>
-        </div>
 
-        {/* Document Categories */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Resumes</CardTitle>
-                <FileText className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardDescription>Your resume versions and templates</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {resumeCount === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground mb-3">No resumes uploaded yet.</p>
-                  <Button size="sm" variant="outline" onClick={() => resumeInputRef.current?.click()}>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Resume
-                  </Button>
-                  <input
-                    ref={resumeInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    className="hidden"
-                    onChange={handleResumeUpload}
-                  />
+          {/* Document Groups */}
+          <ScrollArea className="flex-1">
+            <div className="space-y-4">
+              {/* Resumes Group */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Resumes
+                  </h3>
+                  <Badge variant="secondary" className="h-5 text-xs">
+                    {resumeCount}
+                  </Badge>
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {resumes.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-sm font-medium">{doc.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            v{doc.version} · {doc.fileName || (doc.content ? 'Text document' : 'No file')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="ghost" onClick={() => handleViewDocument(doc)}>
-                          View
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={(e) => {
-                            console.log('Resume delete button clicked!', doc);
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteDocument(doc);
-                          }}
-                          type="button"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                <div className="space-y-1">
+                  {resumes.length === 0 ? (
+                    <div className="px-2 py-8 text-center">
+                      <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                      <p className="text-xs text-muted-foreground mb-2">No resumes yet</p>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          setNewDocType('resume');
+                          setIsNewDocDialogOpen(true);
+                        }}
+                      >
+                        Create Resume
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Cover Letters</CardTitle>
-                <FileText className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardDescription>Customized cover letters for applications</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {coverLetterCount === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground mb-3">No cover letters yet.</p>
-                  <Button size="sm" variant="outline" onClick={() => setIsCoverLetterDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Cover Letter
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {coverLetters.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-sm font-medium">{doc.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            v{doc.version} · {new Date(doc.createdAt).toLocaleDateString()}
-                          </p>
+                  ) : (
+                    resumes.map((doc) => (
+                      <button
+                        key={doc.id}
+                        type="button"
+                        onClick={() => handleViewDocument(doc)}
+                        className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                          selectedDocument?.id === doc.id
+                            ? 'bg-accent text-accent-foreground'
+                            : 'hover:bg-muted'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{doc.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              v{doc.version} · {new Date(doc.updatedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          {selectedDocument?.id === doc.id && (
+                            <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                          )}
                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="ghost" onClick={() => handleViewDocument(doc)}>
-                          View
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={(e) => {
-                            console.log('Cover letter delete button clicked!', doc);
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteDocument(doc);
-                          }}
-                          type="button"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                      </button>
+                    ))
+                  )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </div>
 
-        {/* Recent Documents */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Documents</CardTitle>
-                <CardDescription>Recently updated and deleted documents</CardDescription>
+              <Separator />
+
+              {/* Cover Letters Group */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Cover Letters
+                  </h3>
+                  <Badge variant="secondary" className="h-5 text-xs">
+                    {coverLetterCount}
+                  </Badge>
+                </div>
+                <div className="space-y-1">
+                  {coverLetters.length === 0 ? (
+                    <div className="px-2 py-8 text-center">
+                      <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                      <p className="text-xs text-muted-foreground mb-2">No cover letters yet</p>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="h-7 text-xs"
+                        onClick={() => setIsCoverLetterDialogOpen(true)}
+                      >
+                        Create Cover Letter
+                      </Button>
+                    </div>
+                  ) : (
+                    coverLetters.map((doc) => (
+                      <button
+                        key={doc.id}
+                        type="button"
+                        onClick={() => handleViewDocument(doc)}
+                        className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                          selectedDocument?.id === doc.id
+                            ? 'bg-accent text-accent-foreground'
+                            : 'hover:bg-muted'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{doc.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              v{doc.version} · {new Date(doc.updatedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          {selectedDocument?.id === doc.id && (
+                            <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                          )}
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={activeTab === 'recent' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setActiveTab('recent')}
-                >
-                  Recent
-                </Button>
-                {recentlyDeleted.length > 0 && (
-                  <Button
-                    variant={activeTab === 'deleted' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setActiveTab('deleted')}
-                  >
-                    Recently Deleted ({recentlyDeleted.length})
-                  </Button>
-                )}
-              </div>
+
+              {/* Recently Deleted Group */}
+              {recentlyDeleted.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between px-2">
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        Recently Deleted
+                      </h3>
+                      <Badge variant="destructive" className="h-5 text-xs">
+                        {recentlyDeleted.length}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1">
+                      {recentlyDeleted.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="px-3 py-2 rounded-md bg-muted/50 opacity-60"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate text-muted-foreground">
+                                {doc.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Deleted {doc.deletedAt ? new Date(doc.deletedAt).toLocaleDateString() : ''}
+                              </p>
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() => handleRestoreDocument(doc)}
+                                title="Restore"
+                              >
+                                <RotateCcw className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                onClick={() => handlePermanentDelete(doc)}
+                                title="Delete Forever"
+                              >
+                                <Trash className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-          </CardHeader>
-          <CardContent>
-            {activeTab === 'recent' ? (
-              // Recent Documents Tab
-              activeDocuments.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No documents to display. Upload or create your first document!
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {activeDocuments
-                    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-                    .slice(0, 5)
-                    .map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm font-medium">{doc.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {doc.type} · Updated {new Date(doc.updatedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="ghost" onClick={() => handleViewDocument(doc)}>
-                            View
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={(e) => {
-                              console.log('Recent document delete button clicked!', doc);
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDeleteDocument(doc);
+          </ScrollArea>
+        </div>
+
+        {/* Preview Area */}
+        <div className="flex-1 min-w-0">
+          {selectedDocument ? (
+            <Card className="h-full flex flex-col">
+              <CardHeader className="py-3 px-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center gap-3">
+                    {isEditMode ? (
+                      <Input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="text-sm font-semibold h-8"
+                      />
+                    ) : (
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-sm font-semibold truncate">{selectedDocument.name}</h2>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedDocument.type} · v{selectedDocument.version} · {new Date(selectedDocument.updatedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    {isEditMode ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2"
+                          onClick={() => {
+                            setIsEditMode(false);
+                            setEditingName(selectedDocument.name);
+                            setEditingContent(selectedDocument.content || '');
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button size="sm" className="h-8" onClick={handleSaveDocument}>
+                          Save
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setIsEditMode(true)} title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        {selectedDocument.content && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            title="Download"
+                            onClick={() => {
+                              const content = selectedDocument.content || '';
+                              let fileName = selectedDocument.name;
+                              let mimeType = 'text/plain';
+                              
+                              // Set file extension based on current view format
+                              if (viewFormat === 'pdf') {
+                                fileName = `${fileName}.pdf`;
+                                mimeType = 'application/pdf';
+                              } else if (viewFormat === 'markdown') {
+                                fileName = `${fileName}.md`;
+                                mimeType = 'text/markdown';
+                              } else if (viewFormat === 'richtext') {
+                                fileName = `${fileName}.html`;
+                                mimeType = 'text/html';
+                              } else {
+                                fileName = `${fileName}.txt`;
+                              }
+                              
+                              const blob = new Blob([content], { type: mimeType });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = fileName;
+                              a.click();
+                              URL.revokeObjectURL(url);
                             }}
-                            type="button"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Download className="h-4 w-4" />
                           </Button>
-                        </div>
-                      </div>
-                    ))}
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          title="Delete"
+                          onClick={() => handleDeleteDocument(selectedDocument)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              )
-            ) : (
-              // Recently Deleted Tab
-              recentlyDeleted.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No recently deleted documents
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {recentlyDeleted
-                    .sort((a, b) => {
-                      const aTime = a.deletedAt ? new Date(a.deletedAt).getTime() : 0;
-                      const bTime = b.deletedAt ? new Date(b.deletedAt).getTime() : 0;
-                      return bTime - aTime;
-                    })
-                    .map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/50">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">{doc.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {doc.type} · Deleted {doc.deletedAt ? new Date(doc.deletedAt).toLocaleDateString() : 'Unknown'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleRestoreDocument(doc)}
-                          >
-                            Restore
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handlePermanentDelete(doc)}
-                          >
-                            Delete Forever
-                          </Button>
-                        </div>
+              </CardHeader>
+              <Separator />
+              <CardContent className="flex-1 p-0 overflow-auto flex flex-col">
+                {selectedDocument.fileName ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center space-y-4">
+                      <FileText className="h-16 w-16 mx-auto text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{selectedDocument.fileName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedDocument.fileSize
+                            ? `${(selectedDocument.fileSize / 1024).toFixed(2)} KB`
+                            : 'File uploaded'}
+                        </p>
                       </div>
-                    ))}
+                      <p className="text-sm text-muted-foreground">
+                        File preview not available. Download to view.
+                      </p>
+                    </div>
+                  </div>
+                ) : isEditMode ? (
+                  <Textarea
+                    value={editingContent}
+                    onChange={(e) => setEditingContent(e.target.value)}
+                    className="w-full h-full min-h-full font-mono text-sm resize-none border-0 rounded-none focus-visible:ring-0"
+                    placeholder="Write your document content here..."
+                  />
+                ) : (
+                  <Tabs value={viewFormat} onValueChange={(value) => setViewFormat(value as 'pdf' | 'markdown' | 'richtext' | 'plain')} className="flex-1 flex flex-col">
+                    <div className="px-6 pt-4 pb-2 border-b">
+                      <TabsList className="grid w-full max-w-2xl grid-cols-4">
+                        <TabsTrigger value="pdf" className="text-xs">
+                          <File className="h-3 w-3 mr-1.5" />
+                          PDF
+                        </TabsTrigger>
+                        <TabsTrigger value="markdown" className="text-xs">
+                          <FileCode className="h-3 w-3 mr-1.5" />
+                          Markdown
+                        </TabsTrigger>
+                        <TabsTrigger value="richtext" className="text-xs">
+                          <Type className="h-3 w-3 mr-1.5" />
+                          Rich Text
+                        </TabsTrigger>
+                        <TabsTrigger value="plain" className="text-xs">
+                          <FileType className="h-3 w-3 mr-1.5" />
+                          Plain Text
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+                    
+                    <TabsContent value="pdf" className="flex-1 m-0 overflow-hidden flex flex-col">
+                      {numPages && numPages > 1 && (
+                        <div className="border-b px-4 py-2 flex items-center justify-center gap-4 bg-muted/30">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            disabled={currentPage <= 1}
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          >
+                            ←
+                          </Button>
+                          <span className="text-xs text-muted-foreground min-w-[80px] text-center">
+                            Page {currentPage} of {numPages}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            disabled={currentPage >= numPages}
+                            onClick={() => setCurrentPage(prev => Math.min(numPages, prev + 1))}
+                          >
+                            →
+                          </Button>
+                        </div>
+                      )}
+                      <ScrollArea className="flex-1">
+                        <div className="flex flex-col items-center p-6 space-y-4 w-full">
+                          {generatedPdfUrl ? (
+                            <PDFDocument
+                              file={generatedPdfUrl}
+                              onLoadSuccess={({ numPages }) => {
+                                setNumPages(numPages);
+                                setCurrentPage(1);
+                              }}
+                              onLoadError={(error) => {
+                                console.error('PDF load error:', error);
+                                toast.error('Failed to load PDF', {
+                                  description: 'Unable to render PDF. Try viewing in another format.',
+                                });
+                              }}
+                              className="w-full flex flex-col items-center"
+                            >
+                              {numPages && Array.from(new Array(numPages), (_, index) => (
+                                <PDFPage
+                                  key={`page_${index + 1}`}
+                                  pageNumber={index + 1}
+                                  className="mb-4 shadow-lg max-w-full"
+                                  renderTextLayer={true}
+                                  renderAnnotationLayer={true}
+                                  scale={0.85}
+                                  width={Math.min(window.innerWidth - 350, 700)}
+                                />
+                              ))}
+                            </PDFDocument>
+                          ) : (
+                            <div className="text-center py-12">
+                              <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {selectedDocument.content 
+                                  ? 'Generating PDF preview...' 
+                                  : 'No content available to display as PDF'}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Try switching to Markdown or Plain Text view
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                    
+                    <TabsContent value="markdown" className="flex-1 m-0 overflow-hidden">
+                      <ScrollArea className="h-full">
+                        <div className="prose prose-sm dark:prose-invert max-w-none p-6">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                          >
+                            {selectedDocument.content || '*No content available*'}
+                          </ReactMarkdown>
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                    
+                    <TabsContent value="richtext" className="flex-1 m-0 overflow-hidden">
+                      <ScrollArea className="h-full">
+                        <div 
+                          className="prose prose-sm dark:prose-invert max-w-none p-6"
+                          dangerouslySetInnerHTML={{ 
+                            __html: selectedDocument.content?.replace(/\n/g, '<br/>') || '<em>No content available</em>' 
+                          }}
+                        />
+                      </ScrollArea>
+                    </TabsContent>
+                    
+                    <TabsContent value="plain" className="flex-1 m-0 overflow-hidden">
+                      <ScrollArea className="h-full">
+                        <pre className="whitespace-pre-wrap font-mono text-sm p-6">
+                          {selectedDocument.content || 'No content available'}
+                        </pre>
+                      </ScrollArea>
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="h-full flex items-center justify-center">
+              <div className="text-center space-y-4 p-8">
+                <FileText className="h-16 w-16 mx-auto text-muted-foreground/50" />
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">No Document Selected</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Select a document from the sidebar to view or edit it
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <Button onClick={() => setIsNewDocDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsUploadDialogOpen(true)}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload File
+                    </Button>
+                  </div>
                 </div>
-              )
-            )}
-          </CardContent>
-        </Card>
+              </div>
+            </Card>
+          )}
+        </div>
       </div>
 
       {/* Upload Dialog */}
@@ -749,101 +1031,6 @@ Sincerely,
               Cancel
             </Button>
             <Button onClick={handleCreateCoverLetter}>Create Cover Letter</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* View/Edit Document Dialog */}
-      <Dialog open={isViewDocDialogOpen} onOpenChange={setIsViewDocDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-          <DialogHeader className="pr-8">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                {isEditMode ? (
-                  <Input
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    className="text-lg font-semibold"
-                  />
-                ) : (
-                  <DialogTitle className="truncate">{selectedDocument?.name}</DialogTitle>
-                )}
-                <DialogDescription className="truncate">
-                  {selectedDocument?.type} · v{selectedDocument?.version}
-                  {selectedDocument?.updatedAt && (
-                    <> · Last updated {new Date(selectedDocument.updatedAt).toLocaleString()}</>
-                  )}
-                </DialogDescription>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                {isEditMode ? (
-                  <>
-                    <Button variant="outline" size="sm" onClick={() => {
-                      setIsEditMode(false);
-                      setEditingName(selectedDocument?.name || '');
-                      setEditingContent(selectedDocument?.content || '');
-                    }}>
-                      Cancel
-                    </Button>
-                    <Button size="sm" onClick={handleSaveDocument}>
-                      Save
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" size="sm" onClick={() => setIsEditMode(true)}>
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                    {selectedDocument?.content && (
-                      <Button variant="outline" size="sm" onClick={() => {
-                        const content = selectedDocument.content || '';
-                        const blob = new Blob([content], { type: 'text/plain' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${selectedDocument.name}.txt`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </DialogHeader>
-          <Separator />
-          <div className="flex-1 overflow-hidden">
-            {selectedDocument?.fileName ? (
-              <div className="text-center py-12 space-y-4">
-                <FileText className="h-16 w-16 mx-auto text-muted-foreground" />
-                <div>
-                  <p className="font-medium">{selectedDocument.fileName}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedDocument.fileSize ? `${(selectedDocument.fileSize / 1024).toFixed(2)} KB` : 'File uploaded'}
-                  </p>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  File preview not available. Download to view.
-                </p>
-              </div>
-            ) : isEditMode ? (
-              <Textarea
-                value={editingContent}
-                onChange={(e) => setEditingContent(e.target.value)}
-                className="w-full h-full min-h-[400px] font-mono text-sm resize-none"
-                placeholder="Write your document content here..."
-              />
-            ) : (
-              <div className="w-full h-full overflow-auto">
-                <pre className="whitespace-pre-wrap font-mono text-sm p-4 bg-muted rounded-lg min-h-[400px]">
-                  {selectedDocument?.content || 'No content available'}
-                </pre>
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>
