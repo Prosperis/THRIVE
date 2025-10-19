@@ -1,9 +1,9 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import {
+  Copy,
   Download,
-  Eye,
+  ExternalLink,
   FileDown,
-  MoreHorizontal,
   Pencil,
   Settings,
   Trash2,
@@ -15,6 +15,13 @@ import { AnimatedStatusBadge } from '@/components/ui/animated-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import { DataTable } from '@/components/ui/data-table';
 import {
   DropdownMenu,
@@ -26,7 +33,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SortableHeader } from '@/components/ui/sortable-header';
 import { exportAndDownloadApplicationsCSV, exportAndDownloadApplicationsJSON } from '@/lib/export';
-import { notify } from '@/lib/notifications';
 import { formatDate } from '@/lib/utils';
 import { useApplicationsStore, useSettingsStore } from '@/stores';
 import type { Application } from '@/types';
@@ -72,6 +78,28 @@ export function ApplicationsTable() {
     setIsEditDialogOpen(false);
     // Small delay before clearing to avoid visual glitches
     setTimeout(() => setEditingApplication(undefined), 200);
+  }, []);
+
+  const handleDuplicate = useCallback((application: Application) => {
+    // Create a copy of the application without id, dates, and status-dependent fields
+    const duplicatedApp: Partial<Application> = {
+      companyName: application.companyName,
+      position: application.position,
+      status: 'target', // Reset to target status
+      location: application.location,
+      workType: application.workType,
+      employmentType: application.employmentType,
+      salary: application.salary,
+      jobUrl: application.jobUrl,
+      jobDescription: application.jobDescription,
+      notes: application.notes,
+      tags: application.tags,
+      priority: application.priority,
+      source: application.source,
+      referralName: application.referralName,
+    };
+    setEditingApplication(duplicatedApp as Application);
+    setIsEditDialogOpen(true);
   }, []);
 
   const columns = useMemo<ColumnDef<Application>[]>(
@@ -209,58 +237,8 @@ export function ApplicationsTable() {
           return formatDate(row.getValue('updatedAt'));
         },
       },
-      {
-        id: 'actions',
-        cell: ({ row }) => {
-          const application = row.original;
-
-          return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(application.id)}>
-                  Copy ID
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Eye className="mr-2 h-4 w-4" />
-                  View details
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleEdit(application)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive"
-                  onClick={() => {
-                    if (
-                      !dataSettings.confirmDelete ||
-                      confirm(`Are you sure you want to delete "${application.position}"?`)
-                    ) {
-                      deleteApplication(application.id);
-                      notify.success(
-                        'Application Deleted',
-                        `${application.position} has been deleted`
-                      );
-                    }
-                  }}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          );
-        },
-      },
     ],
-    [deleteApplication, handleEdit, dataSettings.confirmDelete]
+    []
   );
 
   const handleExportCSV = useCallback(() => {
@@ -305,6 +283,52 @@ export function ApplicationsTable() {
             selectedRows={selectedRows}
             onClearSelection={() => table.resetRowSelection()}
           />
+        )}
+        renderRowContextMenu={(application, rowContent) => (
+          <ContextMenu key={application.id}>
+            <ContextMenuTrigger asChild>
+              {rowContent}
+            </ContextMenuTrigger>
+            <ContextMenuContent className="w-56">
+              <ContextMenuItem onClick={() => handleEdit(application)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                View/Edit Application
+              </ContextMenuItem>
+              <ContextMenuItem onClick={() => handleDuplicate(application)}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate Application
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              {application.jobUrl && (
+                <ContextMenuItem 
+                  onClick={() => {
+                    window.open(application.jobUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Open Job Posting
+                </ContextMenuItem>
+              )}
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => {
+                  if (
+                    !dataSettings.confirmDelete ||
+                    confirm(`Are you sure you want to delete "${application.position}"?`)
+                  ) {
+                    deleteApplication(application.id);
+                    toast.success('Application Deleted', {
+                      description: `${application.position} has been deleted`,
+                    });
+                  }
+                }}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Application
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         )}
         renderToolbarActions={() => (
           <>

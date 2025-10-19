@@ -98,6 +98,9 @@ export function ApplicationForm({
     },
   });
 
+  // Track if form has been modified
+  const isDirty = form.formState.isDirty;
+
   const handleSubmit = (values: ApplicationFormValues) => {
     // Transform form values to Application format
     const applicationData: Partial<Application> = {
@@ -435,9 +438,11 @@ export function ApplicationForm({
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Saving...' : application ? 'Update Application' : 'Create Application'}
-          </Button>
+          {isDirty && (
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : application ? 'Save Changes' : 'Create Application'}
+            </Button>
+          )}
         </div>
       </form>
     </Form>

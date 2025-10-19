@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, MapPin, Phone, Plus, Video } from 'lucide-react';
-import { useEffect } from 'react';
+import { Calendar as CalendarIcon, List, MapPin, Phone, Plus, Video } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { SavedFiltersDialog } from '@/components/features/filters/SavedFiltersDialog';
+import { InterviewCalendarView } from '@/components/features/interviews/InterviewCalendarView';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
 import { InterviewFilters } from '@/components/features/interviews/InterviewFilters';
 import { PageHeader } from '@/components/layout';
@@ -23,6 +24,7 @@ function InterviewsPage() {
   const { fetchInterviews, getUpcomingInterviews, getPastInterviews, filters, setFilters } =
     useInterviewsStore();
   const { applications } = useApplicationsStore();
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   useEffect(() => {
     fetchInterviews();
@@ -95,9 +97,22 @@ function InterviewsPage() {
         {/* Actions Bar */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline">
-              <CalendarIcon className="h-4 w-4 mr-2" />
-              Calendar View
+            <Button 
+              size="sm" 
+              variant={viewMode === 'calendar' ? 'default' : 'outline'}
+              onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')}
+            >
+              {viewMode === 'list' ? (
+                <>
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  Calendar View
+                </>
+              ) : (
+                <>
+                  <List className="h-4 w-4 mr-2" />
+                  List View
+                </>
+              )}
             </Button>
           </div>
           <InterviewDialog
@@ -110,13 +125,25 @@ function InterviewsPage() {
           />
         </div>
 
-        {/* Upcoming Interviews */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Interviews</CardTitle>
-            <CardDescription>Your scheduled interviews and meetings</CardDescription>
-          </CardHeader>
-          <CardContent>
+        {/* Calendar View */}
+        {viewMode === 'calendar' ? (
+          <InterviewCalendarView
+            interviews={[...upcomingInterviews, ...pastInterviews]}
+            applications={applications}
+            onInterviewClick={(interview) => {
+              // Could open edit dialog here
+              console.log('Clicked interview:', interview);
+            }}
+          />
+        ) : (
+          <>
+            {/* Upcoming Interviews */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Upcoming Interviews</CardTitle>
+                <CardDescription>Your scheduled interviews and meetings</CardDescription>
+              </CardHeader>
+              <CardContent>
             {filteredUpcoming.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-sm text-muted-foreground mb-4">
@@ -253,6 +280,8 @@ function InterviewsPage() {
             )}
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
     </>
   );
