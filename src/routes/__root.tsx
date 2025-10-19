@@ -1,5 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { TanStackDevtools } from '@tanstack/react-devtools';
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
+import { TanStackRouterDevtoolsPanel } from '@tanstack/router-devtools';
 import { GlobalAnnouncer } from '@/components/a11y/LiveRegion';
 import { SkipNav } from '@/components/a11y/SkipNav';
 import { CommandPalette } from '@/components/features/command/CommandPalette';
@@ -23,7 +25,20 @@ function RootComponent() {
         <Outlet />
         <Toaster />
         <CommandPalette />
-        {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-right" />}
+        {import.meta.env.DEV && (
+          <TanStackDevtools
+            plugins={[
+              {
+                name: 'TanStack Query',
+                render: <ReactQueryDevtoolsPanel />,
+              },
+              {
+                name: 'TanStack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
       </MainLayout>
     </>
   );
