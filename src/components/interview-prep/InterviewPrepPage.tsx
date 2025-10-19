@@ -1,5 +1,5 @@
 import { BookOpen, Building2, Code, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChallengesTab } from '@/components/interview-prep/ChallengesTab';
 import { CompanyNotesTab } from '@/components/interview-prep/CompanyNotesTab';
 import { PrepStatsOverview } from '@/components/interview-prep/PrepStatsOverview';
@@ -10,7 +10,54 @@ import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
 
 export function InterviewPrepPage() {
   const [activeTab, setActiveTab] = useState('questions');
-  const stats = useInterviewPrepStore((state) => state.getStats());
+  
+  // Get the raw data from the store
+  const questions = useInterviewPrepStore((state) => state.questions);
+  const answers = useInterviewPrepStore((state) => state.answers);
+  const companyNotes = useInterviewPrepStore((state) => state.companyNotes);
+  const challenges = useInterviewPrepStore((state) => state.challenges);
+  const practiceSessions = useInterviewPrepStore((state) => state.practiceSessions);
+  
+  // Calculate stats using useMemo to prevent recalculation on every render
+  const stats = useMemo(() => {
+    const totalQuestions = questions.length;
+    const answeredQuestions = new Set(answers.map((a) => a.questionId)).size;
+    const practiceSessionsCount = practiceSessions.length;
+
+    const sessionsWithRating = practiceSessions.filter((s) => s.rating);
+    const averageRating =
+      sessionsWithRating.length > 0
+        ? sessionsWithRating.reduce((sum, s) => sum + (s.rating || 0), 0) /
+          sessionsWithRating.length
+        : 0;
+
+    const questionsByCategory = questions.reduce(
+      (acc, q) => {
+        acc[q.category] = (acc[q.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    const companiesResearched = companyNotes.filter((n) => n.researched).length;
+    const challengesCompleted = challenges.filter(
+      (c) => c.status === 'completed' || c.status === 'submitted'
+    ).length;
+    const challengesPending = challenges.filter(
+      (c) => c.status === 'not-started' || c.status === 'in-progress'
+    ).length;
+
+    return {
+      totalQuestions,
+      answeredQuestions,
+      practiceSessionsCount,
+      averageRating,
+      questionsByCategory,
+      companiesResearched,
+      challengesCompleted,
+      challengesPending,
+    };
+  }, [questions, answers, companyNotes, challenges, practiceSessions]);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
