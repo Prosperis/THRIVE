@@ -16,7 +16,15 @@ export function DashboardWidgetWrapper({
   isEditMode,
   children,
 }: DashboardWidgetWrapperProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { 
+    attributes, 
+    listeners, 
+    setNodeRef, 
+    transform, 
+    transition, 
+    isDragging,
+    isOver 
+  } = useSortable({
     id,
     disabled: !isEditMode,
   });
@@ -35,11 +43,17 @@ export function DashboardWidgetWrapper({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'relative group',
+        'relative group transition-all',
         isDragging && 'opacity-30',
+        isOver && 'ring-2 ring-dashed ring-primary ring-offset-4 ring-offset-background rounded-lg scale-[1.02]',
         isEditMode && 'cursor-grab active:cursor-grabbing'
       )}
     >
+      {/* Drop indicator overlay */}
+      {isOver && (
+        <div className="absolute inset-0 bg-primary/5 rounded-lg pointer-events-none z-0" />
+      )}
+      
       {isEditMode && (
         <div
           {...attributes}
@@ -49,7 +63,7 @@ export function DashboardWidgetWrapper({
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
       )}
-      <div className={cn(isEditMode && 'pointer-events-none select-none')}>{children}</div>
+      <div className={cn(isEditMode && 'pointer-events-none select-none', 'relative z-[1]')}>{children}</div>
     </div>
   );
 }
