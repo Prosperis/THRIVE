@@ -135,7 +135,7 @@ export function CompanyResearchHub() {
       employeeReviews: (formData.get('employeeReviews') as string) || undefined,
       newsAndUpdates: (formData.get('newsAndUpdates') as string) || undefined,
       competitorComparison: (formData.get('competitorComparison') as string) || undefined,
-      remotePolicy: (formData.get('remotePolicy') as string) || undefined,
+      remotePolicy: (formData.get('remotePolicy') as 'full-remote' | 'hybrid' | 'on-site' | 'flexible') || undefined,
       companySize: (formData.get('companySize') as string) || undefined,
       founded: (formData.get('founded') as string) || undefined,
       industry,
@@ -360,7 +360,7 @@ export function CompanyResearchHub() {
                             <SelectItem value="">None</SelectItem>
                             {applications.map((app) => (
                               <SelectItem key={app.id} value={app.id}>
-                                {app.positionTitle} at {app.companyName}
+                                {app.position} at {app.companyName}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -775,7 +775,7 @@ export function CompanyResearchHub() {
                       <div className="space-y-1">
                         {linkedApps.map((app) => (
                           <div key={app.id} className="text-sm text-muted-foreground">
-                            • {app.positionTitle} - <Badge variant="outline" className="text-xs">{app.status}</Badge>
+                            • {app.position} - <Badge variant="outline" className="text-xs">{app.status}</Badge>
                           </div>
                         ))}
                       </div>

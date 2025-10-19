@@ -53,14 +53,16 @@ export function CalendarView({
 
     // Add interviews
     for (const interview of interviews) {
-      evts.push({
-        id: interview.id,
-        title: interview.type,
-        date: new Date(interview.scheduledAt),
-        type: 'interview',
-        status: interview.status,
-        color: interview.status === 'completed' ? 'bg-green-500' : 'bg-blue-500',
-      });
+      if (interview.scheduledAt) {
+        evts.push({
+          id: interview.id,
+          title: interview.type,
+          date: new Date(interview.scheduledAt),
+          type: 'interview',
+          status: interview.status,
+          color: interview.status === 'completed' ? 'bg-green-500' : 'bg-blue-500',
+        });
+      }
     }
 
     // Add application deadlines

@@ -127,10 +127,6 @@ export function ChallengesTab() {
 
   const editingChallenge = editingId ? challenges.find(c => c.id === editingId) : null;
 
-  const _getStatusColor = (status: ChallengeStatus) => {
-    return CHALLENGE_STATUSES.find(s => s.value === status)?.color || 'bg-gray-500';
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}

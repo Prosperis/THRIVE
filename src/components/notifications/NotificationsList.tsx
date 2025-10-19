@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, CheckCheck, Clock, X, SnoozeIcon as Snooze, AlertTriangle } from 'lucide-react';
+import { Bell, CheckCheck, Clock, X, Timer as Snooze, AlertTriangle } from 'lucide-react';
 import { useNotificationsStore } from '@/stores/notificationsStore';
 import type { Notification, NotificationPriority } from '@/types/notifications';
 import { formatRelativeTime } from '@/lib/utils';

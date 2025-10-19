@@ -35,7 +35,6 @@ export function QuestionsTab() {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
 
   const questions = useInterviewPrepStore((state) => state.questions);
-  const _answers = useInterviewPrepStore((state) => state.answers);
   const addQuestion = useInterviewPrepStore((state) => state.addQuestion);
   const deleteQuestion = useInterviewPrepStore((state) => state.deleteQuestion);
   const addAnswer = useInterviewPrepStore((state) => state.addAnswer);

@@ -7,9 +7,6 @@ import { useNotificationsStore } from '@/stores/notificationsStore';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
-import { RemindersList } from '@/components/notifications/RemindersList';
-import { NotificationSettings as NotificationSettingsComponent } from '@/components/notifications/NotificationSettings';
-import { SmartSuggestions } from '@/components/notifications/SmartSuggestions';
 
 export function NotificationsPage() {
   const [activeTab, setActiveTab] = useState('notifications');
@@ -113,9 +110,10 @@ export function NotificationsPage() {
       </div>
 
       {/* Smart Suggestions */}
-      {smartSuggestions.length > 0 && (
+      {/* TODO: Implement SmartSuggestions component */}
+      {/* {smartSuggestions.length > 0 && (
         <SmartSuggestions />
-      )}
+      )} */}
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -144,11 +142,27 @@ export function NotificationsPage() {
         </TabsContent>
 
         <TabsContent value="reminders" className="space-y-4">
-          <RemindersList />
+          {/* TODO: Implement RemindersList component */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Reminders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Reminders feature coming soon</p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
-          <NotificationSettingsComponent />
+          {/* TODO: Implement NotificationSettings component */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Notification Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Settings feature coming soon</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

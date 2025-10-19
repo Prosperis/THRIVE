@@ -48,6 +48,7 @@ export interface StatusDistribution {
   count: number;
   percentage: number;
   color: string;
+  [key: string]: string | number;
 }
 
 export interface CompanyStats {
