@@ -4,10 +4,12 @@
 
 A comprehensive, accessible, and performant job application tracking system built with modern web technologies. Manage your entire job search journey from application to offer, with powerful analytics, interview preparation tools, and document management.
 
-![Status](https://img.shields.io/badge/status-ready%20for%20deployment-green)
+![Status](https://img.shields.io/badge/status-deployed-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)
+
+🌐 **Live Demo**: [https://adriandarian.github.io/thrive/](https://adriandarian.github.io/thrive/)
 
 ## ✨ Features
 
@@ -59,6 +61,8 @@ A comprehensive, accessible, and performant job application tracking system buil
 
 ## 🚀 Quick Start
 
+### Development
+
 ```bash
 # Install dependencies
 bun install
@@ -79,14 +83,28 @@ bun run lint
 bun run type-check
 ```
 
+### Deployment
+
+```bash
+# Deploy to GitHub Pages
+bun run deploy
+
+# Or push to main branch for automatic deployment via GitHub Actions
+git push origin main
+```
+
+See [Deployment Guide](./docs/deployment.md) for detailed instructions.
+
 ## 📋 Project Status
 
-**Status**: ✅ Ready for Production Deployment
+**Status**: 🚀 Deployed to Production
 
-All 13 phases complete:
+All phases complete:
 - ✅ Phase 0-12: Core features, advanced features, testing
 - ✅ Phase 13: Polish, accessibility, documentation
-- 🚀 Ready for Phase 13.5: Production Deployment
+- ✅ Phase 13.5: Production deployment with CI/CD
+
+**Live Site**: [https://adriandarian.github.io/thrive/](https://adriandarian.github.io/thrive/)
 
 ## 📚 Documentation
 
@@ -98,7 +116,8 @@ All 13 phases complete:
 ### Developer Documentation
 - **[Developer Guide](./docs/DEVELOPER_GUIDE.md)** - Technical documentation
 - **[API Reference](./docs/API_REFERENCE.md)** - Complete API docs
-- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Deploy to production
+- **[Deployment Guide](./docs/deployment.md)** - Deploy to production
+- **[Monitoring & Analytics](./docs/monitoring-analytics.md)** - Setup tracking
 - **[Project Plan](./docs/PROJECT_PLAN.md)** - Full development roadmap
 
 ### Technical Documentation
