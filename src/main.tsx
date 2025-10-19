@@ -8,8 +8,11 @@ import { QueryProvider } from '@/lib/queryClient';
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
-// Create a new router instance
-const router = createRouter({ routeTree });
+// Create a new router instance with basepath for GitHub Pages
+const router = createRouter({ 
+  routeTree,
+  basepath: '/thrive'
+});
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
