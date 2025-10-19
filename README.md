@@ -108,21 +108,18 @@ All phases complete:
 
 ## 📚 Documentation
 
-📖 **[Visit the Wiki](https://github.com/adriandarian/thrive/wiki)** for complete documentation:
+📖 **[Full Documentation Site](https://adriandarian.github.io/thrive/docs/)** - Beautiful VitePress documentation with search, dark mode, and more!
 
-### For Users
-- **[User Guide](https://github.com/adriandarian/thrive/wiki/User-Guide)** - Complete guide to using Thrive
-- **[Quick Start](https://github.com/adriandarian/thrive/wiki/Quick-Start)** - Get started immediately
+### Quick Links
 
-### For Developers
-- **[Developer Guide](https://github.com/adriandarian/thrive/wiki/Developer-Guide)** - Technical documentation
-- **[API Reference](https://github.com/adriandarian/thrive/wiki/API-Reference)** - Complete API docs
-- **[Deployment Guide](https://github.com/adriandarian/thrive/wiki/Deployment-Guide)** - Deploy to production
-- **[Monitoring & Analytics](https://github.com/adriandarian/thrive/wiki/Monitoring-and-Analytics)** - Setup tracking
+- 🚀 **[Quick Start](https://adriandarian.github.io/thrive/docs/getting-started/quick-start)** - Get up and running in 5 minutes
+- 👥 **[User Guide](https://adriandarian.github.io/thrive/docs/user-guide/overview)** - Complete user manual
+- 💻 **[Developer Guide](https://adriandarian.github.io/thrive/docs/developer-guide/overview)** - Technical documentation
+- 📖 **[API Reference](https://adriandarian.github.io/thrive/docs/api-reference/complete-api)** - Complete API docs
+- 🚀 **[Deployment](https://adriandarian.github.io/thrive/docs/deployment/github-pages)** - Deploy to production
+- 🔧 **[Troubleshooting](https://adriandarian.github.io/thrive/docs/troubleshooting/common-issues)** - Common issues & fixes
 
-### Reference
-- **[Troubleshooting](https://github.com/adriandarian/thrive/wiki/Troubleshooting)** - Common issues & fixes
-- **[Development History](https://github.com/adriandarian/thrive/wiki/Development-History)** - Project evolution
+> **Note**: Documentation is also available on the [GitHub Wiki](https://github.com/adriandarian/thrive/wiki)
 
 ## 🎯 Key Features Detail
 
