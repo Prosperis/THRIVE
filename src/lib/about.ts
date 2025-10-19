@@ -156,44 +156,112 @@ export const CREDITS = [
   {
     category: 'Libraries & Frameworks',
     items: [
-      { name: 'React', description: 'UI Framework', url: 'https://react.dev' },
+      { 
+        name: 'React', 
+        description: 'UI Framework', 
+        url: 'https://github.com/facebook/react',
+        licenseUrl: 'https://github.com/facebook/react/blob/main/LICENSE'
+      },
       {
         name: 'TypeScript',
         description: 'Type-safe JavaScript',
-        url: 'https://typescriptlang.org',
+        url: 'https://github.com/microsoft/TypeScript',
+        licenseUrl: 'https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt'
       },
-      { name: 'Vite', description: 'Build tool', url: 'https://vitejs.dev' },
+      { 
+        name: 'Vite', 
+        description: 'Build tool', 
+        url: 'https://github.com/vitejs/vite',
+        licenseUrl: 'https://github.com/vitejs/vite/blob/main/LICENSE'
+      },
       {
         name: 'TanStack Router',
         description: 'Type-safe routing',
-        url: 'https://tanstack.com/router',
+        url: 'https://github.com/TanStack/router',
+        licenseUrl: 'https://github.com/TanStack/router/blob/main/LICENSE'
       },
       {
         name: 'TanStack Table',
         description: 'Headless table library',
-        url: 'https://tanstack.com/table',
+        url: 'https://github.com/TanStack/table',
+        licenseUrl: 'https://github.com/TanStack/table/blob/main/LICENSE'
       },
-      { name: 'Zustand', description: 'State management', url: 'https://zustand-demo.pmnd.rs' },
-      { name: 'Dexie.js', description: 'IndexedDB wrapper', url: 'https://dexie.org' },
-      { name: 'Framer Motion', description: 'Animation library', url: 'https://framer.com/motion' },
+      { 
+        name: 'Zustand', 
+        description: 'State management', 
+        url: 'https://github.com/pmndrs/zustand',
+        licenseUrl: 'https://github.com/pmndrs/zustand/blob/main/LICENSE'
+      },
+      { 
+        name: 'Dexie.js', 
+        description: 'IndexedDB wrapper', 
+        url: 'https://github.com/dexie/Dexie.js',
+        licenseUrl: 'https://github.com/dexie/Dexie.js/blob/master/LICENSE'
+      },
+      { 
+        name: 'Framer Motion', 
+        description: 'Animation library', 
+        url: 'https://github.com/framer/motion',
+        licenseUrl: 'https://github.com/framer/motion/blob/main/LICENSE'
+      },
     ],
   },
   {
     category: 'UI Components',
     items: [
-      { name: 'Radix UI', description: 'Accessible components', url: 'https://radix-ui.com' },
-      { name: 'Shadcn/ui', description: 'Component collection', url: 'https://ui.shadcn.com' },
-      { name: 'Lucide Icons', description: 'Icon library', url: 'https://lucide.dev' },
-      { name: 'Sonner', description: 'Toast notifications', url: 'https://sonner.emilkowal.ski' },
-      { name: 'Recharts', description: 'Charting library', url: 'https://recharts.org' },
+      { 
+        name: 'Radix UI', 
+        description: 'Accessible components', 
+        url: 'https://github.com/radix-ui/primitives',
+        licenseUrl: 'https://github.com/radix-ui/primitives/blob/main/LICENSE'
+      },
+      { 
+        name: 'Shadcn/ui', 
+        description: 'Component collection', 
+        url: 'https://github.com/shadcn-ui/ui',
+        licenseUrl: 'https://github.com/shadcn-ui/ui/blob/main/LICENSE.md'
+      },
+      { 
+        name: 'Lucide Icons', 
+        description: 'Icon library', 
+        url: 'https://github.com/lucide-icons/lucide',
+        licenseUrl: 'https://github.com/lucide-icons/lucide/blob/main/LICENSE'
+      },
+      { 
+        name: 'Sonner', 
+        description: 'Toast notifications', 
+        url: 'https://github.com/emilkowalski/sonner',
+        licenseUrl: 'https://github.com/emilkowalski/sonner/blob/main/LICENSE'
+      },
+      { 
+        name: 'Recharts', 
+        description: 'Charting library', 
+        url: 'https://github.com/recharts/recharts',
+        licenseUrl: 'https://github.com/recharts/recharts/blob/master/LICENSE'
+      },
     ],
   },
   {
     category: 'Development Tools',
     items: [
-      { name: 'Bun', description: 'JavaScript runtime', url: 'https://bun.sh' },
-      { name: 'Biome', description: 'Linter and formatter', url: 'https://biomejs.dev' },
-      { name: '@dnd-kit', description: 'Drag and drop', url: 'https://dndkit.com' },
+      { 
+        name: 'Bun', 
+        description: 'JavaScript runtime', 
+        url: 'https://github.com/oven-sh/bun',
+        licenseUrl: 'https://github.com/oven-sh/bun/blob/main/LICENSE.md'
+      },
+      { 
+        name: 'Biome', 
+        description: 'Linter and formatter', 
+        url: 'https://github.com/biomejs/biome',
+        licenseUrl: 'https://github.com/biomejs/biome/blob/main/LICENSE-MIT'
+      },
+      { 
+        name: '@dnd-kit', 
+        description: 'Drag and drop', 
+        url: 'https://github.com/clauderic/dnd-kit',
+        licenseUrl: 'https://github.com/clauderic/dnd-kit/blob/master/LICENSE'
+      },
     ],
   },
 ];
