@@ -1,0 +1,58 @@
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ❓ Ask questions about Thrive and get help from the community!
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: Ask your question in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context or background
+      placeholder: What are you trying to accomplish? What have you tried so far?
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Examples
+      description: If applicable, add screenshots or examples
+      placeholder: Drag and drop images here
+
+  - type: checkboxes
+    id: areas
+    attributes:
+      label: Related Areas
+      description: Which areas is your question about?
+      options:
+        - label: Getting Started
+        - label: Applications Management
+        - label: Documents & Files
+        - label: Contacts
+        - label: Calendar & Scheduling
+        - label: Analytics & Reporting
+        - label: Settings & Configuration
+        - label: Data Import/Export
+        - label: Keyboard Shortcuts
+        - label: Customization
+        - label: Technical/Development
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing discussions and issues
+          required: true
+        - label: I have checked the documentation
+          required: false

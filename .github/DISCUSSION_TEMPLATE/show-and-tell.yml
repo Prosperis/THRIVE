@@ -1,0 +1,44 @@
+title: "[Show & Tell]: "
+labels: ["show-and-tell"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        🎉 Show off what you've built or how you're using Thrive!
+
+  - type: textarea
+    id: showcase
+    attributes:
+      label: What are you sharing?
+      description: Tell us about your project, workflow, or customization
+      placeholder: Describe what you've built or accomplished...
+    validations:
+      required: true
+
+  - type: textarea
+    id: images
+    attributes:
+      label: Screenshots or Demo
+      description: Share screenshots, GIFs, or links to demos
+      placeholder: Drag and drop images here or paste links
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details
+      description: Share technical implementation details if applicable
+      placeholder: Technologies used, integrations, custom features...
+
+  - type: textarea
+    id: learnings
+    attributes:
+      label: What did you learn?
+      description: Share any interesting learnings or challenges you overcame
+      placeholder: Key takeaways...
+
+  - type: textarea
+    id: tips
+    attributes:
+      label: Tips for Others
+      description: Any tips or advice for others trying to do something similar?
+      placeholder: Share your wisdom...

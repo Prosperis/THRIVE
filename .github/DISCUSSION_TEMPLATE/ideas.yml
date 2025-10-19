@@ -1,0 +1,47 @@
+title: "[Idea]: "
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        💡 Share your ideas for Thrive! This is a space for brainstorming and gathering feedback.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your Idea
+      description: Describe your idea in detail
+      placeholder: Share your thoughts...
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Potential Benefits
+      description: How would this idea benefit users?
+      placeholder: List the benefits...
+
+  - type: textarea
+    id: considerations
+    attributes:
+      label: Considerations
+      description: What challenges or considerations should be kept in mind?
+      placeholder: Any technical or UX considerations...
+
+  - type: checkboxes
+    id: areas
+    attributes:
+      label: Relevant Areas
+      description: Which areas does this idea relate to?
+      options:
+        - label: Applications Management
+        - label: Documents & Files
+        - label: Contacts
+        - label: Calendar & Scheduling
+        - label: Analytics & Reporting
+        - label: Settings & Preferences
+        - label: UI/UX Design
+        - label: Performance
+        - label: Accessibility
+        - label: Mobile Experience
