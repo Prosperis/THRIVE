@@ -7,8 +7,7 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   // Base path for GitHub Pages deployment
-  // Use '/thrive/' for production, '/' for local development
-  base: process.env.NODE_ENV === 'production' ? '/thrive/' : '/',
+  base: '/thrive/',
   
   plugins: [devtools(), tanstackRouter(), react()],
   
