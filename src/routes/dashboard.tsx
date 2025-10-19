@@ -127,14 +127,14 @@ function DashboardPage() {
                 }
               />
 
-              <Link to="/analytics">
+              <Link to="/analytics" className="cursor-pointer">
                 <AnimatedButton variant="outline" className="w-full justify-start">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   View Analytics
                 </AnimatedButton>
               </Link>
 
-              <Link to="/applications">
+              <Link to="/applications" className="cursor-pointer">
                 <AnimatedButton variant="outline" className="w-full justify-start">
                   <FileText className="h-4 w-4 mr-2" />
                   View All Applications

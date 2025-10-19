@@ -17,96 +17,96 @@ export default function Header() {
             <Menu className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Toggle menu</span>
           </Button>
-          <Link to="/" className="mr-4 flex items-center space-x-2 sm:mr-6" aria-label="Thrive home">
+          <Link to="/" className="mr-4 flex items-center space-x-2 sm:mr-6 cursor-pointer" aria-label="Thrive home">
             <span className="text-lg font-bold sm:text-xl">THRIVE</span>
           </Link>
           <nav id="main-nav" className="hidden md:flex md:gap-4 lg:gap-6" aria-label="Main navigation">
             <Link
               to="/dashboard"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Dashboard
             </Link>
             <Link
               to="/applications"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Applications
             </Link>
             <Link
               to="/interviews"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Interviews
             </Link>
             <Link
               to="/documents"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Documents
             </Link>
             <Link
               to="/companies"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Companies
             </Link>
             <Link
               to="/analytics"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Analytics
             </Link>
             <Link
               to="/interviewprep"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Prep
             </Link>
             <Link
               to="/export"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Export
             </Link>
             <Link
               to="/settings"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
               }}
             >
               Settings

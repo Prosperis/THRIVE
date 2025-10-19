@@ -582,7 +582,7 @@ function SettingsPage() {
                   href={resource.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group"
+                  className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group cursor-pointer"
                 >
                   <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                     <BookOpen className="w-4 h-4 text-primary" />
@@ -626,7 +626,7 @@ function SettingsPage() {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group text-sm"
+                        className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group text-sm cursor-pointer"
                       >
                         <div>
                           <div className="font-medium">{item.name}</div>
