@@ -75,12 +75,12 @@ function DashboardPage() {
     <>
       <PageHeader title="Dashboard" description="Overview of your job application progress" />
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6 lg:space-y-8">
         {/* Stats Overview */}
         <StatsOverview />
 
         {/* Charts Row */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
           {/* Application Funnel Chart */}
           <ApplicationFunnelChart />
 
@@ -89,7 +89,7 @@ function DashboardPage() {
         </div>
 
         {/* Second Charts Row */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
           {/* Status Distribution Chart */}
           <StatusDistributionChart />
 
@@ -98,7 +98,7 @@ function DashboardPage() {
         </div>
 
         {/* Bottom Row */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
           {/* Quick Actions */}
           <AnimatedCard hoverEffect="lift" animateOnMount delay={0.1}>
             <CardHeader>

@@ -6,8 +6,8 @@ import ThemeToggle from './ThemeToggle';
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 flex md:mr-6">
+      <div className="container flex h-14 sm:h-16 max-w-screen-2xl items-center">
+        <div className="mr-2 flex sm:mr-4 md:mr-6">
           <Button
             variant="ghost"
             size="icon"
@@ -17,10 +17,10 @@ export default function Header() {
             <Menu className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Toggle menu</span>
           </Button>
-          <Link to="/" className="mr-6 flex items-center space-x-2" aria-label="Thrive home">
-            <span className="text-xl font-bold">THRIVE</span>
+          <Link to="/" className="mr-4 flex items-center space-x-2 sm:mr-6" aria-label="Thrive home">
+            <span className="text-lg font-bold sm:text-xl">THRIVE</span>
           </Link>
-          <nav id="main-nav" className="hidden md:flex md:gap-6" aria-label="Main navigation">
+          <nav id="main-nav" className="hidden md:flex md:gap-4 lg:gap-6" aria-label="Main navigation">
             <Link
               to="/dashboard"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
