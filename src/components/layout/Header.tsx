@@ -26,7 +26,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Applications
@@ -36,7 +36,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Interviews
@@ -46,7 +46,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Documents
@@ -56,7 +56,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Companies
@@ -66,7 +66,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Analytics
@@ -76,7 +76,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Prep
@@ -86,7 +86,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Export
@@ -96,7 +96,7 @@ export default function Header() {
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
                 className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
+                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
               }}
             >
               Settings

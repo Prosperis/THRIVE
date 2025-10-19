@@ -10,7 +10,7 @@ import { Document as PDFDocument, Page as PDFPage, pdfjs } from 'react-pdf';
 import { jsPDF } from 'jspdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import { PageHeader } from '@/components/layout';
+
 import { useDocumentsStore } from '@/stores';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Document } from '@/types';
@@ -424,8 +424,6 @@ Sincerely,
   
   return (
     <>
-      <PageHeader title="Documents" description="Manage your resumes, CVs, and cover letters" />
-
       <div className="flex gap-6 h-[calc(100vh-12rem)]">
         {/* Sidebar */}
         <div className="w-56 flex flex-col gap-4 shrink-0">

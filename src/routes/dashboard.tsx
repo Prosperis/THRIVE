@@ -14,7 +14,7 @@ import { DashboardWidgetWrapper } from '@/components/dashboard/DashboardWidgetWr
 import { CustomWidgetRenderer } from '@/components/dashboard/CustomWidgetRenderer';
 import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
-import { PageHeader } from '@/components/layout';
+
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { AnimatedCard } from '@/components/ui/animated-card';
 import { Badge } from '@/components/ui/badge';
@@ -573,11 +573,9 @@ function DashboardPage() {
 
   return (
     <>
-      <PageHeader 
-        title="Dashboard" 
-        description="Overview of your job application progress"
-        action={<DashboardCustomizer />}
-      />
+      <div className="flex items-center justify-end mb-6">
+        <DashboardCustomizer />
+      </div>
 
       <DndContext
         sensors={sensors}

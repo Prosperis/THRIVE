@@ -6,7 +6,7 @@ import { SavedFiltersDialog } from '@/components/features/filters/SavedFiltersDi
 import { InterviewCalendarView } from '@/components/features/interviews/InterviewCalendarView';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
 import { InterviewFilters } from '@/components/features/interviews/InterviewFilters';
-import { PageHeader } from '@/components/layout';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,8 +73,6 @@ function InterviewsPage() {
 
   return (
     <>
-      <PageHeader title="Interviews" description="Schedule and track your interviews" />
-
       <div className="space-y-6">
         {/* Search and Filters */}
         <div className="space-y-4">

@@ -7,7 +7,7 @@ import { ApplicationsTable } from '@/components/features/applications/Applicatio
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { SavedFiltersDialog } from '@/components/features/filters/SavedFiltersDialog';
 import { PageTransition } from '@/components/layout';
-import PageHeader from '@/components/layout/PageHeader';
+
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
@@ -32,38 +32,32 @@ function ApplicationsPage() {
 
   return (
     <PageTransition>
-      <PageHeader
-        title="Applications"
-        description="Track and manage your job applications"
-        action={
-          <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-lg border">
-              <Button
-                variant={activeView === 'table' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('table')}
-              >
-                <TableIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={activeView === 'kanban' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('kanban')}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-            </div>
-            <ApplicationDialog
-              trigger={
-                <AnimatedButton>
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Application
-                </AnimatedButton>
-              }
-            />
-          </div>
-        }
-      />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center rounded-lg border">
+          <Button
+            variant={activeView === 'table' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveView('table')}
+          >
+            <TableIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={activeView === 'kanban' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveView('kanban')}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </Button>
+        </div>
+        <ApplicationDialog
+          trigger={
+            <AnimatedButton>
+              <Plus className="mr-2 h-4 w-4" />
+              New Application
+            </AnimatedButton>
+          }
+        />
+      </div>
 
       <div className="p-6">
         {isLoading ? (
