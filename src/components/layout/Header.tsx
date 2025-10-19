@@ -22,16 +22,6 @@ export default function Header() {
           </Link>
           <nav id="main-nav" className="hidden md:flex md:gap-4 lg:gap-6" aria-label="Main navigation">
             <Link
-              to="/dashboard"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
-              activeProps={{
-                className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer',
-              }}
-            >
-              Dashboard
-            </Link>
-            <Link
               to="/applications"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
               activeProps={{
