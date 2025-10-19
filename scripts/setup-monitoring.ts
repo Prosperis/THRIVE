@@ -5,8 +5,8 @@
  * Run with: bun run scripts/setup-monitoring.ts
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 const COLORS = {
   reset: '\x1b[0m',
