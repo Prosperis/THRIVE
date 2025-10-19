@@ -8,7 +8,12 @@ export type DashboardWidgetType =
   | 'status-distribution'
   | 'response-metrics'
   | 'quick-actions'
-  | 'recent-activity';
+  | 'recent-activity'
+  | 'upcoming-interviews'
+  | 'application-goals'
+  | 'company-insights'
+  | 'salary-tracker'
+  | 'networking-tracker';
 
 export interface DashboardWidget {
   id: DashboardWidgetType;
@@ -74,6 +79,41 @@ const defaultWidgets: DashboardWidget[] = [
     description: 'Latest updates and changes',
     visible: true,
     order: 6,
+  },
+  {
+    id: 'upcoming-interviews',
+    title: 'Upcoming Interviews',
+    description: 'Schedule and prepare for interviews',
+    visible: false,
+    order: 7,
+  },
+  {
+    id: 'application-goals',
+    title: 'Application Goals',
+    description: 'Track weekly and monthly targets',
+    visible: false,
+    order: 8,
+  },
+  {
+    id: 'company-insights',
+    title: 'Company Insights',
+    description: 'Research and notes on companies',
+    visible: false,
+    order: 9,
+  },
+  {
+    id: 'salary-tracker',
+    title: 'Salary Tracker',
+    description: 'Compare salary ranges and offers',
+    visible: false,
+    order: 10,
+  },
+  {
+    id: 'networking-tracker',
+    title: 'Networking Tracker',
+    description: 'Track connections and referrals',
+    visible: false,
+    order: 11,
   },
 ];
 

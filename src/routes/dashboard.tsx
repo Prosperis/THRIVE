@@ -220,6 +220,81 @@ function DashboardPage() {
           </AnimatedCard>
         );
       
+      case 'upcoming-interviews':
+        return (
+          <AnimatedCard hoverEffect="lift">
+            <CardHeader>
+              <CardTitle>Upcoming Interviews</CardTitle>
+              <CardDescription>Scheduled and upcoming interviews</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No upcoming interviews scheduled
+              </p>
+            </CardContent>
+          </AnimatedCard>
+        );
+      
+      case 'application-goals':
+        return (
+          <AnimatedCard hoverEffect="lift">
+            <CardHeader>
+              <CardTitle>Application Goals</CardTitle>
+              <CardDescription>Track your weekly and monthly targets</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Set your application goals to track progress
+              </p>
+            </CardContent>
+          </AnimatedCard>
+        );
+      
+      case 'company-insights':
+        return (
+          <AnimatedCard hoverEffect="lift">
+            <CardHeader>
+              <CardTitle>Company Insights</CardTitle>
+              <CardDescription>Research notes and company information</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Add notes and insights about companies you're targeting
+              </p>
+            </CardContent>
+          </AnimatedCard>
+        );
+      
+      case 'salary-tracker':
+        return (
+          <AnimatedCard hoverEffect="lift">
+            <CardHeader>
+              <CardTitle>Salary Tracker</CardTitle>
+              <CardDescription>Compare salary ranges and offers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Track and compare salary information
+              </p>
+            </CardContent>
+          </AnimatedCard>
+        );
+      
+      case 'networking-tracker':
+        return (
+          <AnimatedCard hoverEffect="lift">
+            <CardHeader>
+              <CardTitle>Networking Tracker</CardTitle>
+              <CardDescription>Track connections and referrals</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Manage your professional connections and referrals
+              </p>
+            </CardContent>
+          </AnimatedCard>
+        );
+      
       default:
         return null;
     }

@@ -124,6 +124,80 @@ const WidgetPreview = ({ type }: { type: DashboardWidgetType }) => {
         </div>
       );
     
+    case 'upcoming-interviews':
+      return (
+        <div className={baseClass}>
+          <div className="flex flex-col gap-1 w-full">
+            <div className="flex items-center gap-1 p-1 bg-primary/20 rounded">
+              <div className="w-1.5 h-1.5 rounded-sm bg-primary" />
+              <div className="flex-1 h-0.5 bg-primary/40 rounded-sm" />
+            </div>
+            <div className="flex items-center gap-1 p-1 bg-primary/10 rounded">
+              <div className="w-1.5 h-1.5 rounded-sm bg-primary/60" />
+              <div className="flex-1 h-0.5 bg-primary/30 rounded-sm" />
+            </div>
+          </div>
+        </div>
+      );
+    
+    case 'application-goals':
+      return (
+        <div className={baseClass}>
+          <div className="flex flex-col gap-1 w-full items-center justify-center">
+            <div className="text-[10px] font-bold text-primary">12/20</div>
+            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+              <div className="h-full w-[60%] bg-primary rounded-full" />
+            </div>
+          </div>
+        </div>
+      );
+    
+    case 'company-insights':
+      return (
+        <div className={baseClass}>
+          <div className="grid grid-cols-3 gap-1 w-full h-full p-1">
+            <div className="bg-primary/30 rounded flex items-center justify-center text-[8px] font-bold text-primary">A</div>
+            <div className="bg-primary/20 rounded flex items-center justify-center text-[8px] font-bold text-primary/70">B</div>
+            <div className="bg-primary/30 rounded flex items-center justify-center text-[8px] font-bold text-primary">C</div>
+            <div className="bg-primary/20 rounded flex items-center justify-center text-[8px] font-bold text-primary/70">D</div>
+            <div className="bg-primary/30 rounded flex items-center justify-center text-[8px] font-bold text-primary">E</div>
+            <div className="bg-primary/20 rounded flex items-center justify-center text-[8px] font-bold text-primary/70">F</div>
+          </div>
+        </div>
+      );
+    
+    case 'salary-tracker':
+      return (
+        <div className={baseClass}>
+          <div className="flex flex-col gap-0.5 w-full items-center justify-center">
+            <div className="text-[8px] text-primary font-bold">$120K</div>
+            <div className="w-full flex items-end justify-around h-8 gap-1">
+              <div className="w-2 bg-primary/40 h-[40%] rounded-t" />
+              <div className="w-2 bg-primary/60 h-[60%] rounded-t" />
+              <div className="w-2 bg-primary h-[80%] rounded-t" />
+              <div className="w-2 bg-primary/60 h-[50%] rounded-t" />
+            </div>
+          </div>
+        </div>
+      );
+    
+    case 'networking-tracker':
+      return (
+        <div className={baseClass}>
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="absolute w-8 h-8">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary" />
+              <div className="absolute top-1/2 left-0 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/60" />
+              <div className="absolute top-1/2 right-0 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/60" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary/40" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/80" />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    
     default:
       return (
         <div className={baseClass}>
