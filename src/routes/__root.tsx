@@ -4,7 +4,6 @@ import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/router-devtools';
 import { GlobalAnnouncer } from '@/components/a11y/LiveRegion';
 import { SkipNav } from '@/components/a11y/SkipNav';
-import { DexieDevtoolsPanel } from '@/components/devtools/DexieDevtoolsPanel';
 import { ZustandDevtoolsPanel } from '@/components/devtools/ZustandDevtoolsPanel';
 import { CommandPalette } from '@/components/features/command/CommandPalette';
 import { MainLayout } from '@/components/layout';
@@ -42,10 +41,6 @@ function RootComponent() {
               {
                 name: 'Zustand Stores',
                 render: <ZustandDevtoolsPanel />,
-              },
-              {
-                name: 'Dexie (IndexedDB)',
-                render: <DexieDevtoolsPanel />,
               },
             ]}
           />
