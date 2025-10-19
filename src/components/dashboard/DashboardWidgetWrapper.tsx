@@ -45,7 +45,7 @@ export function DashboardWidgetWrapper({
       className={cn(
         'relative group transition-all',
         isDragging && 'opacity-30',
-        isOver && 'ring-2 ring-dashed ring-primary ring-offset-4 ring-offset-background rounded-lg scale-[1.02]',
+        isOver && 'border-2 border-dashed border-primary rounded-lg scale-[1.02]',
         isEditMode && 'cursor-grab active:cursor-grabbing'
       )}
     >
