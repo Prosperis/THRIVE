@@ -1,9 +1,9 @@
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { Calendar, Clock, FileText, Plus, TrendingUp } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ApplicationFunnelChart } from '@/components/analytics/ApplicationFunnelChart';
 import { ApplicationsTimelineChart } from '@/components/analytics/ApplicationsTimelineChart';
 import { ResponseMetricsCard } from '@/components/analytics/ResponseMetricsCard';
@@ -78,6 +78,7 @@ function DashboardPage() {
 
   // Dashboard customization
   const { widgets, layoutMode, reorderWidgets } = useDashboardStore();
+  const [activeId, setActiveId] = useState<DashboardWidgetType | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -86,6 +87,10 @@ function DashboardPage() {
       },
     })
   );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as DashboardWidgetType);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -97,6 +102,8 @@ function DashboardPage() {
       const newWidgets = arrayMove(widgets, oldIndex, newIndex);
       reorderWidgets(newWidgets);
     }
+    
+    setActiveId(null);
   };
 
   const visibleWidgets = useMemo(() => {
@@ -237,6 +244,7 @@ function DashboardPage() {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
@@ -253,6 +261,14 @@ function DashboardPage() {
             ))}
           </div>
         </SortableContext>
+        
+        <DragOverlay>
+          {activeId ? (
+            <div className="shadow-2xl ring-2 ring-primary/20 rounded-lg">
+              {renderWidget(activeId)}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </>
   );

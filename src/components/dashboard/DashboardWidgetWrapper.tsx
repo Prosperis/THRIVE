@@ -36,7 +36,7 @@ export function DashboardWidgetWrapper({
       style={style}
       className={cn(
         'relative group',
-        isDragging && 'opacity-50 z-50',
+        isDragging && 'opacity-30',
         isEditMode && 'cursor-grab active:cursor-grabbing'
       )}
     >
