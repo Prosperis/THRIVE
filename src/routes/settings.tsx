@@ -180,7 +180,7 @@ function SettingsPage() {
                 </div>
                 <Select
                   value={display.language}
-                  onValueChange={(value: 'en' | 'es' | 'fr' | 'de') => {
+                  onValueChange={(value: 'en' | 'es' | 'fr' | 'de' | 'fa') => {
                     updateDisplay({ language: value });
                     toast.success('Language Updated');
                   }}
@@ -193,6 +193,33 @@ function SettingsPage() {
                     <SelectItem value="es">Español</SelectItem>
                     <SelectItem value="fr">Français</SelectItem>
                     <SelectItem value="de">Deutsch</SelectItem>
+                    <SelectItem value="fa">فارسی (Persian)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Calendar Type */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Calendar Type
+                  </Label>
+                  <p className="text-sm text-muted-foreground">Choose calendar system</p>
+                </div>
+                <Select
+                  value={display.calendarType}
+                  onValueChange={(value: 'gregorian' | 'persian') => {
+                    updateDisplay({ calendarType: value });
+                    toast.success('Calendar Type Updated');
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gregorian">Gregorian</SelectItem>
+                    <SelectItem value="persian">Persian (Jalali)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

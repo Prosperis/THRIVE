@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { useApplicationsStore } from '@/stores/applicationsStore';
@@ -201,6 +202,8 @@ export function InterviewForm({
         </div>
       </div>
 
+      <Separator />
+
       {/* Scheduling */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Scheduling</h3>
@@ -275,6 +278,8 @@ export function InterviewForm({
         </form.Subscribe>
       </div>
 
+      <Separator />
+
       {/* Notes */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Notes</h3>
@@ -322,8 +327,10 @@ export function InterviewForm({
         </form.Subscribe>
       </div>
 
+      <Separator />
+
       {/* Form Actions */}
-      <div className="flex justify-end gap-3 pt-4">
+      <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>

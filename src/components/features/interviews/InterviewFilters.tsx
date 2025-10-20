@@ -1,24 +1,28 @@
-import { Calendar, Filter, X } from 'lucide-react';
-import { useId, useState } from 'react';
+import { Calendar as CalendarIcon, Filter, X, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import type { DateRange } from 'react-day-picker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 
-export function InterviewFilters() {
+interface InterviewFiltersProps {
+  savedFiltersButton?: React.ReactNode;
+}
+
+export function InterviewFilters({ savedFiltersButton }: InterviewFiltersProps) {
   const { filters, setFilters } = useInterviewsStore();
   const [isOpen, setIsOpen] = useState(false);
-  const dateFromId = useId();
-  const dateToId = useId();
 
   // Extract current filter values
   const typeFilters = filters.type || [];
@@ -52,7 +56,11 @@ export function InterviewFilters() {
   };
 
   const clearAllFilters = () => {
-    setFilters({});
+    setFilters({
+      type: undefined,
+      status: undefined,
+      dateRange: undefined,
+    });
   };
 
   // Count active filters
@@ -61,227 +69,200 @@ export function InterviewFilters() {
   const totalActiveFilters = activeFilterCount + (hasDateFilters ? 1 : 0);
 
   return (
-    <div className="space-y-3">
-      {/* Filter Buttons */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Type Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(typeFilters.length > 0 && 'border-primary')}
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Type
-              {typeFilters.length > 0 && (
-                <Badge variant="secondary" className="ml-2 h-5">
-                  {typeFilters.length}
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {INTERVIEW_TYPES.map((type) => (
-              <DropdownMenuCheckboxItem
-                key={type.value}
-                checked={typeFilters.includes(type.value)}
-                onCheckedChange={() => toggleTypeFilter(type.value)}
-              >
-                {type.label}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Status Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(statusFilters.length > 0 && 'border-primary')}
-            >
-              Status
-              {statusFilters.length > 0 && (
-                <Badge variant="secondary" className="ml-2 h-5">
-                  {statusFilters.length}
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {INTERVIEW_STATUSES.map((status) => (
-              <DropdownMenuCheckboxItem
-                key={status.value}
-                checked={statusFilters.includes(status.value)}
-                onCheckedChange={() => toggleStatusFilter(status.value)}
-              >
-                {status.label}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Date Range Filter */}
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className={cn(hasDateFilters && 'border-primary')}>
-              <Calendar className="mr-2 h-4 w-4" />
-              Date Range
-              {hasDateFilters && (
-                <Badge variant="secondary" className="ml-2 h-5">
-                  1
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="w-72 p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="space-y-4">
-              <div>
-                <DropdownMenuLabel className="px-0">Scheduled Date Range</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor={dateFromId} className="text-sm font-medium mb-1 block">
-                    From
-                  </label>
-                  <input
-                    id={dateFromId}
-                    type="date"
-                    className="w-full px-3 py-2 text-sm border rounded-md bg-background"
-                    value={
-                      filters.dateRange?.start
-                        ? new Date(filters.dateRange.start).toISOString().split('T')[0]
-                        : ''
-                    }
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setFilters({
-                        dateRange: {
-                          ...filters.dateRange,
-                          start: value ? new Date(value) : undefined,
-                        },
-                      });
-                    }}
-                  />
-                </div>
-                <div>
-                  <label htmlFor={dateToId} className="text-sm font-medium mb-1 block">
-                    To
-                  </label>
-                  <input
-                    id={dateToId}
-                    type="date"
-                    className="w-full px-3 py-2 text-sm border rounded-md bg-background"
-                    value={
-                      filters.dateRange?.end
-                        ? new Date(filters.dateRange.end).toISOString().split('T')[0]
-                        : ''
-                    }
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setFilters({
-                        dateRange: {
-                          ...filters.dateRange,
-                          end: value ? new Date(value) : undefined,
-                        },
-                      });
-                    }}
-                  />
-                </div>
-                {hasDateFilters && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      setFilters({ dateRange: undefined });
-                    }}
-                  >
-                    Clear Date Range
-                  </Button>
-                )}
-              </div>
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Clear All Filters */}
-        {totalActiveFilters > 0 && (
-          <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-            <X className="mr-2 h-4 w-4" />
-            Clear All ({totalActiveFilters})
-          </Button>
-        )}
-      </div>
-
-      {/* Active Filter Badges */}
-      {totalActiveFilters > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
-
-          {/* Type badges */}
-          {typeFilters.map((type) => {
-            const typeConfig = INTERVIEW_TYPES.find((t) => t.value === type);
-            return (
-              <Badge key={type} variant="secondary" className="gap-1">
-                {typeConfig?.label}
-                <button
-                  type="button"
-                  onClick={() => toggleTypeFilter(type)}
-                  className="ml-1 hover:bg-muted rounded-full"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            );
-          })}
-
-          {/* Status badges */}
-          {statusFilters.map((status) => {
-            const statusConfig = INTERVIEW_STATUSES.find((s) => s.value === status);
-            return (
-              <Badge key={status} variant="secondary" className="gap-1">
-                {statusConfig?.label}
-                <button
-                  type="button"
-                  onClick={() => toggleStatusFilter(status)}
-                  className="ml-1 hover:bg-muted rounded-full"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            );
-          })}
-
-          {/* Date range badge */}
-          {hasDateFilters && (
-            <Badge variant="secondary" className="gap-1">
-              {filters.dateRange?.start && new Date(filters.dateRange.start).toLocaleDateString()} -{' '}
-              {filters.dateRange?.end
-                ? new Date(filters.dateRange.end).toLocaleDateString()
-                : 'Now'}
-              <button
-                type="button"
-                onClick={() => setFilters({ dateRange: undefined })}
-                className="ml-1 hover:bg-muted rounded-full"
-              >
-                <X className="h-3 w-3" />
-              </button>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn('h-9', totalActiveFilters > 0 && 'border-primary bg-primary/5')}
+        >
+          <Filter className="mr-2 h-3.5 w-3.5" />
+          Filters
+          {totalActiveFilters > 0 && (
+            <Badge variant="secondary" className="ml-2 h-4 px-1 text-xs">
+              {totalActiveFilters}
             </Badge>
           )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[600px] p-0" align="start">
+        <div className="p-3 space-y-3">
+          {/* Header with Saved Filters */}
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-semibold text-sm">Filter Interviews</h4>
+            <div className="flex items-center gap-1">
+              {savedFiltersButton}
+              {totalActiveFilters > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-6 text-xs">
+                  <X className="mr-1 h-3 w-3" />
+                  Clear All
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Interview Type with Dropdown */}
+          <div className="space-y-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="flex items-center justify-between w-full px-2 py-1.5 -mx-2 rounded-md hover:bg-accent text-left group">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
+                      Interview Type
+                    </span>
+                    {typeFilters.length > 0 && (
+                      <Badge variant="secondary" className="h-4 px-1.5 text-xs">
+                        {typeFilters.length}
+                      </Badge>
+                    )}
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                {INTERVIEW_TYPES.map((type) => (
+                  <DropdownMenuItem
+                    key={type.value}
+                    onClick={() => toggleTypeFilter(type.value)}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span>{type.label}</span>
+                      {typeFilters.includes(type.value) && (
+                        <X className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {typeFilters.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 px-2">
+                {typeFilters.map((type) => {
+                  const typeConfig = INTERVIEW_TYPES.find((t) => t.value === type);
+                  return (
+                    <Badge
+                      key={type}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-destructive/10"
+                      onClick={() => toggleTypeFilter(type)}
+                    >
+                      {typeConfig?.label}
+                      <X className="ml-1 h-3 w-3" />
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Status with Dropdown */}
+          <div className="space-y-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="flex items-center justify-between w-full px-2 py-1.5 -mx-2 rounded-md hover:bg-accent text-left group">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
+                      Status
+                    </span>
+                    {statusFilters.length > 0 && (
+                      <Badge variant="secondary" className="h-4 px-1.5 text-xs">
+                        {statusFilters.length}
+                      </Badge>
+                    )}
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                {INTERVIEW_STATUSES.map((status) => (
+                  <DropdownMenuItem
+                    key={status.value}
+                    onClick={() => toggleStatusFilter(status.value)}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span>{status.label}</span>
+                      {statusFilters.includes(status.value) && (
+                        <X className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {statusFilters.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 px-2">
+                {statusFilters.map((status) => {
+                  const statusConfig = INTERVIEW_STATUSES.find((s) => s.value === status);
+                  return (
+                    <Badge
+                      key={status}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-destructive/10"
+                      onClick={() => toggleStatusFilter(status)}
+                    >
+                      {statusConfig?.label}
+                      <X className="ml-1 h-3 w-3" />
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Date Range with Calendar */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-medium text-muted-foreground">Scheduled Date Range</div>
+              {hasDateFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFilters({ dateRange: undefined })}
+                  className="h-5 text-xs px-2"
+                >
+                  <X className="mr-1 h-2.5 w-2.5" />
+                  Clear
+                </Button>
+              )}
+            </div>
+            <div className="flex justify-center">
+              <Calendar
+                mode="range"
+                selected={
+                  filters.dateRange?.start && filters.dateRange?.end
+                    ? {
+                        from: filters.dateRange.start,
+                        to: filters.dateRange.end,
+                      }
+                    : filters.dateRange?.start
+                    ? { from: filters.dateRange.start, to: undefined }
+                    : undefined
+                }
+                onSelect={(range) => {
+                  if (range?.from) {
+                    setFilters({
+                      dateRange: {
+                        start: range.from,
+                        end: range.to,
+                      },
+                    });
+                  } else {
+                    setFilters({ dateRange: undefined });
+                  }
+                }}
+                numberOfMonths={2}
+                className="rounded-md border-0"
+              />
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

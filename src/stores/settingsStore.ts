@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type Theme = 'light' | 'dark' | 'system';
-export type Language = 'en' | 'es' | 'fr' | 'de';
+export type Language = 'en' | 'es' | 'fr' | 'de' | 'fa';
+export type CalendarType = 'gregorian' | 'persian';
 export type DateFormat = 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
 export type TimeFormat = '12h' | '24h';
 
@@ -17,6 +18,7 @@ export interface NotificationSettings {
 export interface DisplaySettings {
   theme: Theme;
   language: Language;
+  calendarType: CalendarType;
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
   compactMode: boolean;
@@ -52,6 +54,7 @@ interface SettingsState {
 const DEFAULT_DISPLAY: DisplaySettings = {
   theme: 'system',
   language: 'en',
+  calendarType: 'gregorian',
   dateFormat: 'MM/DD/YYYY',
   timeFormat: '12h',
   compactMode: false,
