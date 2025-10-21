@@ -18,7 +18,7 @@ interface ApplicationsState {
   fetchApplications: () => Promise<void>;
   addApplication: (
     application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>
-  ) => Promise<void>;
+  ) => Promise<Application>;
   updateApplication: (id: string, updates: Partial<Application>) => Promise<void>;
   deleteApplication: (id: string) => Promise<void>;
   clearApplications: () => Promise<void>;
@@ -125,6 +125,8 @@ export const useApplicationsStore = create<ApplicationsState>()(
               applications: [...state.applications, newApplication],
               isLoading: false,
             }));
+            
+            return newApplication;
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : 'Failed to add application',
