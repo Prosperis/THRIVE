@@ -140,11 +140,13 @@ export function CompanyResearchHub() {
     const salaryMax = formData.get('salaryMax') as string;
     const salaryCurrency = formData.get('salaryCurrency') as string;
 
+    const applicationIdValue = formData.get('applicationId') as string;
+    
     const noteData = {
       companyName: formData.get('companyName') as string,
       notes: formData.get('notes') as string,
       researched: formData.get('researched') === 'true',
-      applicationId: (formData.get('applicationId') as string) || undefined,
+      applicationId: applicationIdValue && applicationIdValue !== 'none' ? applicationIdValue : undefined,
       companyLinks: {
         website: (formData.get('website') as string) || undefined,
         linkedin: (formData.get('linkedin') as string) || undefined,
@@ -423,12 +425,12 @@ export function CompanyResearchHub() {
                     {applications.length > 0 && (
                       <div className="space-y-2">
                         <Label htmlFor="applicationId">Link to Application (Optional)</Label>
-                        <Select name="applicationId" defaultValue={editingNote?.applicationId}>
+                        <Select name="applicationId" defaultValue={editingNote?.applicationId || 'none'}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select an application" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {applications.map((app) => (
                               <SelectItem key={app.id} value={app.id}>
                                 {app.position} at {app.companyName}

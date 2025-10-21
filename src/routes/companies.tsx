@@ -7,7 +7,7 @@ export const Route = createFileRoute('/companies')({
 
 function CompaniesRoute() {
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto py-6">
       <CompanyResearchHub />
     </div>
   );
