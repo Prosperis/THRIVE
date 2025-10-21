@@ -1,20 +1,15 @@
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Table } from '@tanstack/react-table';
 import {
   Copy,
-  Download,
   ExternalLink,
-  FileDown,
   Pencil,
-  Settings,
   Trash2,
-  Upload,
   FileText,
 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimatedStatusBadge } from '@/components/ui/animated-status-badge';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   ContextMenu,
@@ -24,25 +19,13 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { DataTable } from '@/components/ui/data-table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { SortableHeader } from '@/components/ui/sortable-header';
-import { exportAndDownloadApplicationsCSV, exportAndDownloadApplicationsJSON } from '@/lib/export';
 import { formatDate } from '@/lib/utils';
 import { useApplicationsStore, useSettingsStore } from '@/stores';
 import { useDocumentsStore } from '@/stores';
 import type { Application } from '@/types';
 import { ApplicationDialog } from './ApplicationDialog';
-import { BackupManagementDialog } from './BackupManagementDialog';
 import { BulkActions } from './BulkActions';
-import { CSVImportDialog } from './CSVImportDialog';
-import { JSONImportDialog } from './JSONImportDialog';
 import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
 
 const statusColors: Record<Application['status'], string> = {
@@ -62,16 +45,17 @@ const priorityColors: Record<NonNullable<Application['priority']>, string> = {
   high: 'bg-orange-500',
 };
 
-export function ApplicationsTable() {
+interface ApplicationsTableProps {
+  onTableReady?: (table: Table<Application>) => void;
+}
+
+export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {}) {
   const { getFilteredApplications, deleteApplication } = useApplicationsStore();
   const { data: dataSettings } = useSettingsStore();
   const { documents, linkDocumentToApplications } = useDocumentsStore();
   const applications = getFilteredApplications();
   const [editingApplication, setEditingApplication] = useState<Application | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isCSVImportDialogOpen, setIsCSVImportDialogOpen] = useState(false);
-  const [isJSONImportDialogOpen, setIsJSONImportDialogOpen] = useState(false);
-  const [isBackupDialogOpen, setIsBackupDialogOpen] = useState(false);
   const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
 
   const handleEdit = useCallback((application: Application) => {
@@ -379,43 +363,15 @@ export function ApplicationsTable() {
     [documents]
   );
 
-  const handleExportCSV = useCallback(() => {
-    try {
-      exportAndDownloadApplicationsCSV(applications);
-      toast.success('Export Successful', {
-        description: `Exported ${applications.length} applications to CSV`,
-      });
-    } catch (error) {
-      toast.error('Export Failed', {
-        description: 'Failed to export applications to CSV',
-      });
-      console.error('Export error:', error);
-    }
-  }, [applications]);
-
-  const handleExportJSON = useCallback(() => {
-    try {
-      exportAndDownloadApplicationsJSON(applications);
-      toast.success('Export Successful', {
-        description: `Exported ${applications.length} applications to JSON`,
-      });
-    } catch (error) {
-      toast.error('Export Failed', {
-        description: 'Failed to export applications to JSON',
-      });
-      console.error('Export error:', error);
-    }
-  }, [applications]);
-
   return (
     <>
       <DataTable
         columns={columns}
         data={applications}
-        searchKey="position"
-        searchPlaceholder="Search positions..."
         storageKey="thrive-applications-table"
         initialPageSize={dataSettings.itemsPerPage}
+        hideToolbar={true}
+        onTableReady={onTableReady}
         renderBulkActions={({ selectedRows, table }) => (
           <BulkActions
             selectedRows={selectedRows}
@@ -478,56 +434,6 @@ export function ApplicationsTable() {
           </ContextMenu>
           );
         }}
-        renderToolbarActions={() => (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Import Options</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsCSVImportDialogOpen(true)}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Import from CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsJSONImportDialogOpen(true)}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Import from JSON
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Export Options</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleExportCSV}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Export as CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportJSON}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Export as JSON
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsBackupDialogOpen(true)}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Backup Settings
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        )}
       />
 
       <ApplicationDialog
@@ -535,12 +441,6 @@ export function ApplicationsTable() {
         open={isEditDialogOpen}
         onOpenChange={handleEditDialogClose}
       />
-
-      <CSVImportDialog open={isCSVImportDialogOpen} onOpenChange={setIsCSVImportDialogOpen} />
-
-      <JSONImportDialog open={isJSONImportDialogOpen} onOpenChange={setIsJSONImportDialogOpen} />
-
-      <BackupManagementDialog open={isBackupDialogOpen} onOpenChange={setIsBackupDialogOpen} />
     </>
   );
 }
