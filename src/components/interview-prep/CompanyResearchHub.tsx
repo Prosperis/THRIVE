@@ -227,16 +227,6 @@ export function CompanyResearchHub() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Company Research Hub</h1>
-          <p className="text-muted-foreground mt-1">
-            Deep dive into companies you're interested in
-          </p>
-        </div>
-      </div>
-
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
