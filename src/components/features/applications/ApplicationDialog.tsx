@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useDocumentsStore } from '@/stores';
 import type { Application } from '@/types';
 import { ApplicationForm } from './ApplicationForm';
 
@@ -28,21 +29,58 @@ export function ApplicationDialog({
   const [isLoading, setIsLoading] = useState(false);
 
   const { addApplication, updateApplication } = useApplicationsStore();
+  const { linkDocumentToApplications, unlinkDocumentFromApplication, documents } = useDocumentsStore();
 
   // Use controlled or uncontrolled state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange !== undefined ? controlledOnOpenChange : setInternalOpen;
 
-  const handleSubmit = async (data: Partial<Application>) => {
+  const handleSubmit = async (data: Partial<Application> & { linkedDocumentIds?: string[] }) => {
     setIsLoading(true);
 
     try {
+      const linkedDocumentIds = data.linkedDocumentIds || [];
+      
+      // Remove linkedDocumentIds from application data as it's not part of the Application type
+      const { linkedDocumentIds: _, ...applicationData } = data;
+      
+      let applicationId: string;
+      
       if (application) {
         // Update existing application
-        await updateApplication(application.id, data);
+        await updateApplication(application.id, applicationData);
+        applicationId = application.id;
       } else {
         // Create new application
-        await addApplication(data as Omit<Application, 'id' | 'createdAt' | 'updatedAt'>);
+        const newApp = await addApplication(applicationData as Omit<Application, 'id' | 'createdAt' | 'updatedAt'>);
+        applicationId = newApp.id;
+      }
+
+      // Link documents to the application
+      // First, unlink all previously linked documents that are no longer selected
+      if (application) {
+        const previouslyLinkedDocs = documents.filter((doc) =>
+          doc.usedInApplicationIds?.includes(application.id)
+        );
+        
+        for (const doc of previouslyLinkedDocs) {
+          if (!linkedDocumentIds.includes(doc.id)) {
+            // Use the proper unlink function
+            await unlinkDocumentFromApplication(doc.id, application.id);
+          }
+        }
+      }
+
+      // Link the selected documents
+      for (const docId of linkedDocumentIds) {
+        const doc = documents.find((d) => d.id === docId);
+        if (doc) {
+          const currentAppIds = doc.usedInApplicationIds || [];
+          if (!currentAppIds.includes(applicationId)) {
+            // Just pass the new application ID - linkDocumentToApplications will merge it
+            await linkDocumentToApplications(docId, [applicationId]);
+          }
+        }
       }
 
       setOpen(false);
@@ -61,8 +99,8 @@ export function ApplicationDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
 
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide p-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle>{application ? 'Edit Application' : 'Create New Application'}</DialogTitle>
           <DialogDescription>
             {application
@@ -71,12 +109,14 @@ export function ApplicationDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ApplicationForm
-          application={application}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isLoading={isLoading}
-        />
+        <div className="px-6 pb-6 overflow-y-auto scrollbar-hide flex-1">
+          <ApplicationForm
+            application={application}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            isLoading={isLoading}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

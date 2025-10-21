@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
@@ -11,6 +12,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  FileText,
 } from 'lucide-react';
 import { AnimatedBadge } from '@/components/ui/animated-badge';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +28,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn, formatDate } from '@/lib/utils';
 import { useApplicationsStore } from '@/stores';
+import { useDocumentsStore } from '@/stores';
 import type { Application } from '@/types';
+import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
+import { toast } from 'sonner';
 
 interface KanbanCardProps {
   application: Application;
@@ -47,6 +52,13 @@ const workTypeIcons: Record<NonNullable<Application['workType']>, string> = {
 
 export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) {
   const { deleteApplication } = useApplicationsStore();
+  const { documents, linkDocumentToApplications } = useDocumentsStore();
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Get linked documents for this application
+  const linkedDocuments = documents.filter((doc) =>
+    doc.usedInApplicationIds?.includes(application.id)
+  );
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: application.id,
@@ -58,6 +70,108 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    // Check if this is a document being dragged OR files from file system
+    if (e.dataTransfer.types.includes('application/x-document-id') || e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'link';
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    // Check if it's a document from within the app
+    const documentId = e.dataTransfer.getData('application/x-document-id');
+    if (documentId) {
+      // Handle existing document linking
+      const isAlreadyLinked = linkedDocuments.some(doc => doc.id === documentId);
+      if (isAlreadyLinked) {
+        toast.info('Document already linked to this application');
+        return;
+      }
+
+      try {
+        await linkDocumentToApplications(documentId, [application.id]);
+        const docData = JSON.parse(e.dataTransfer.getData('text/plain'));
+        toast.success(`${docData.name} linked to ${application.position}`);
+      } catch (error) {
+        toast.error('Failed to link document');
+        console.error('Error linking document:', error);
+      }
+      return;
+    }
+
+    // Handle file system drops
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    // Filter for supported file types
+    const supportedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'text/html',
+    ];
+
+    const validFiles = files.filter(file => supportedTypes.includes(file.type));
+    
+    if (validFiles.length === 0) {
+      toast.error('Unsupported file type. Please drop PDF, Word, or text files.');
+      return;
+    }
+
+    toast.info(`Processing ${validFiles.length} file(s)...`);
+
+    // Process each file
+    for (const file of validFiles) {
+      try {
+        const content = await file.text();
+        
+        // Detect document type based on filename
+        const fileName = file.name.toLowerCase();
+        let type: 'resume' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other' = 'other';
+        
+        if (fileName.includes('resume') || fileName.includes('cv')) {
+          type = 'resume';
+        } else if (fileName.includes('cover') || fileName.includes('letter')) {
+          type = 'cover-letter';
+        } else if (fileName.includes('portfolio')) {
+          type = 'portfolio';
+        } else if (fileName.includes('transcript')) {
+          type = 'transcript';
+        } else if (fileName.includes('cert')) {
+          type = 'certification';
+        }
+
+        // Create the document
+        const { addDocument } = useDocumentsStore.getState();
+        const newDocument = await addDocument({
+          name: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+          type,
+          content,
+          tags: [application.companyName, application.position],
+          version: 1,
+        });
+
+        // Link to this application
+        await linkDocumentToApplications(newDocument.id, [application.id]);
+        
+        toast.success(`${file.name} uploaded and linked`);
+      } catch (error) {
+        toast.error(`Failed to process ${file.name}`);
+        console.error('Error processing file:', error);
+      }
+    }
+  };
+
   const cardContent = (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -67,10 +181,14 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
       <Card
         ref={setNodeRef}
         style={style}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         className={cn(
-          'cursor-grab active:cursor-grabbing',
+          'cursor-grab active:cursor-grabbing transition-all',
           isOverlay && 'rotate-3 shadow-lg',
-          isDragging && 'opacity-50'
+          isDragging && 'opacity-50',
+          isDragOver && 'ring-2 ring-primary ring-offset-2 scale-105'
         )}
       >
         <CardHeader className="p-3 pb-2">
@@ -190,6 +308,23 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
                 </Badge>
               )}
             </div>
+          )}
+
+          {/* Linked Documents */}
+          {linkedDocuments.length > 0 && (
+            <LinkedDocumentsPopover 
+              documents={linkedDocuments}
+              applicationId={application.id}
+            >
+              <button
+                type="button"
+                className="w-full flex items-center gap-1 text-xs text-muted-foreground pt-1 border-t hover:text-foreground transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FileText className="h-3 w-3" />
+                <span>{linkedDocuments.length} document{linkedDocuments.length > 1 ? 's' : ''}</span>
+              </button>
+            </LinkedDocumentsPopover>
           )}
 
           {/* Drag Handle */}

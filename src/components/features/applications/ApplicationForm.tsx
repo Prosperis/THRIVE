@@ -3,6 +3,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { FileText, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -22,13 +25,24 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   APPLICATION_STATUSES,
   EMPLOYMENT_TYPES,
   PRIORITY_LEVELS,
   WORK_TYPES,
 } from '@/lib/constants';
-import type { Application } from '@/types';
+import { useDocumentsStore, useApplicationsStore } from '@/stores';
+import type { Application, Document } from '@/types';
 
 // Form schema based on application schema
 const applicationFormSchema = z.object({
@@ -56,6 +70,7 @@ const applicationFormSchema = z.object({
   appliedDate: z.string().optional(),
   notes: z.string().optional(),
   tags: z.string().optional(), // Comma-separated tags
+  linkedDocumentIds: z.array(z.string()).optional(), // Document IDs to link
 });
 
 type ApplicationFormValues = z.infer<typeof applicationFormSchema>;
@@ -73,6 +88,17 @@ export function ApplicationForm({
   onCancel,
   isLoading = false,
 }: ApplicationFormProps) {
+  const { documents, addDocument } = useDocumentsStore();
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<{ file: File; content: string } | null>(null);
+  const [selectedDocType, setSelectedDocType] = useState<Document['type']>('resume');
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Get currently linked documents if editing
+  const currentlyLinkedDocuments = application
+    ? documents.filter((doc) => doc.usedInApplicationIds?.includes(application.id))
+    : [];
+
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationFormSchema),
     defaultValues: {
@@ -95,11 +121,133 @@ export function ApplicationForm({
         : '',
       notes: application?.notes || '',
       tags: application?.tags?.join(', ') || '',
+      linkedDocumentIds: currentlyLinkedDocuments.map((doc) => doc.id),
     },
   });
 
   // Track if form has been modified
   const isDirty = form.formState.isDirty;
+
+  // Get suggested documents based on position, company, and document type
+  const getSuggestedDocuments = () => {
+    const position = form.watch('position')?.toLowerCase() || '';
+    const companyName = form.watch('companyName')?.toLowerCase() || '';
+    const selectedIds = form.watch('linkedDocumentIds') || [];
+    
+    if (!position && !companyName) return [];
+    
+    return documents
+      .filter((doc) => !selectedIds.includes(doc.id)) // Exclude already selected
+      .map((doc) => {
+        let score = 0;
+        const docName = doc.name.toLowerCase();
+        
+        // Higher score for resume/CV for any application
+        if (doc.type === 'resume' || doc.type === 'cv') {
+          score += 10;
+        }
+        
+        // Score based on previous usage with same company
+        if (companyName && doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0) {
+          // Check if this document was used for applications at the same company
+          const usedForSameCompany = doc.usedInApplicationIds.some((appId) => {
+            const app = useApplicationsStore.getState().applications.find((a) => a.id === appId);
+            return app?.companyName?.toLowerCase().includes(companyName);
+          });
+          if (usedForSameCompany) score += 15;
+        }
+        
+        // Score based on position keywords in document name
+        const positionWords = position.split(' ').filter((word) => word.length > 2);
+        positionWords.forEach((word) => {
+          if (docName.includes(word)) score += 5;
+        });
+        
+        // Bonus for recently used documents
+        if (doc.lastUsedDate) {
+          const daysSinceUsed = (Date.now() - new Date(doc.lastUsedDate).getTime()) / (1000 * 60 * 60 * 24);
+          if (daysSinceUsed < 30) score += 3;
+        }
+        
+        return { doc, score };
+      })
+      .filter((item) => item.score > 0) // Only show documents with relevance
+      .sort((a, b) => b.score - a.score) // Sort by relevance
+      .slice(0, 3) // Top 3 suggestions
+      .map((item) => item.doc);
+  };
+
+  const suggestedDocuments = getSuggestedDocuments();
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const content = await file.text();
+      
+      // Auto-detect document type from filename
+      const fileName = file.name.toLowerCase();
+      let detectedType: Document['type'] = 'resume';
+      if (fileName.includes('cv')) detectedType = 'cv';
+      else if (fileName.includes('cover')) detectedType = 'cover-letter';
+      else if (fileName.includes('portfolio')) detectedType = 'portfolio';
+      else if (fileName.includes('transcript')) detectedType = 'transcript';
+      else if (fileName.includes('cert')) detectedType = 'certification';
+      
+      setUploadedFile({ file, content });
+      setSelectedDocType(detectedType);
+      setUploadDialogOpen(true);
+      
+      // Reset the file input
+      e.target.value = '';
+    } catch (error) {
+      console.error('Failed to read file:', error);
+      toast.error('Failed to read file', {
+        description: 'Please try again with a different file.',
+      });
+    }
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!uploadedFile) return;
+
+    setIsUploading(true);
+    try {
+      const fileExtension = uploadedFile.file.name.split('.').pop()?.toLowerCase();
+      
+      // Determine format
+      let format: 'pdf' | 'markdown' | 'text' = 'text';
+      if (fileExtension === 'pdf') format = 'pdf';
+      else if (fileExtension === 'md') format = 'markdown';
+      
+      const newDoc = await addDocument({
+        name: uploadedFile.file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+        type: selectedDocType,
+        format,
+        content: uploadedFile.content,
+        version: 1,
+      });
+      
+      // Auto-select the newly uploaded document
+      const currentIds = form.getValues('linkedDocumentIds') || [];
+      form.setValue('linkedDocumentIds', [...currentIds, newDoc.id], { shouldDirty: true });
+      
+      toast.success('Document uploaded', {
+        description: `${newDoc.name} has been added and linked to this application`,
+      });
+      
+      setUploadDialogOpen(false);
+      setUploadedFile(null);
+    } catch (error) {
+      console.error('Failed to upload document:', error);
+      toast.error('Upload failed', {
+        description: 'Failed to upload document. Please try again.',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSubmit = (values: ApplicationFormValues) => {
     // Transform form values to Application format
@@ -129,6 +277,8 @@ export function ApplicationForm({
             .map((tag) => tag.trim())
             .filter(Boolean)
         : undefined,
+      // Pass linkedDocumentIds for parent component to handle
+      linkedDocumentIds: values.linkedDocumentIds || [],
     };
 
     onSubmit(applicationData);
@@ -427,6 +577,178 @@ export function ApplicationForm({
                     {...field}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Documents */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Documents</h3>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {form.watch('linkedDocumentIds')?.length || 0} selected
+              </Badge>
+              <input
+                type="file"
+                id="document-upload"
+                accept=".pdf,.md,.txt"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => document.getElementById('document-upload')?.click()}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Upload
+              </Button>
+            </div>
+          </div>
+
+          {/* Upload Confirmation Dialog */}
+          <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Upload Document</DialogTitle>
+                <DialogDescription>
+                  Select the type of document you're uploading
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">File</p>
+                  <p className="text-sm text-muted-foreground">
+                    {uploadedFile?.file.name}
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Document Type</p>
+                  <Select value={selectedDocType} onValueChange={(value) => setSelectedDocType(value as Document['type'])}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="resume">Resume</SelectItem>
+                      <SelectItem value="cv">CV</SelectItem>
+                      <SelectItem value="cover-letter">Cover Letter</SelectItem>
+                      <SelectItem value="portfolio">Portfolio</SelectItem>
+                      <SelectItem value="transcript">Transcript</SelectItem>
+                      <SelectItem value="certification">Certification</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setUploadDialogOpen(false);
+                    setUploadedFile(null);
+                  }}
+                  disabled={isUploading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleConfirmUpload}
+                  disabled={isUploading}
+                >
+                  {isUploading ? 'Uploading...' : 'Upload & Link'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <FormField
+            control={form.control}
+            name="linkedDocumentIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link Documents</FormLabel>
+                <FormDescription>
+                  Select documents to link with this application (resume, cover letter, etc.)
+                </FormDescription>
+                
+                {/* Document Suggestions */}
+                {suggestedDocuments.length > 0 && (
+                  <div className="mb-3 p-3 bg-accent/30 border border-accent rounded-md space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                      💡 Suggested documents
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {suggestedDocuments.map((doc) => (
+                        <Button
+                          key={doc.id}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            const currentIds = field.value || [];
+                            if (!currentIds.includes(doc.id)) {
+                              field.onChange([...currentIds, doc.id]);
+                            }
+                          }}
+                        >
+                          <FileText className="h-3 w-3 mr-1" />
+                          {doc.name}
+                          <Badge variant="secondary" className="ml-1 text-[9px] h-4 px-1">
+                            {doc.type}
+                          </Badge>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="border rounded-md p-3 max-h-[300px] overflow-y-auto scrollbar-hide space-y-2">
+                  {documents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No documents available. Create documents first to link them.
+                    </p>
+                  ) : (
+                    documents.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center space-x-2 p-2 rounded hover:bg-accent/50 transition-colors"
+                      >
+                        <Checkbox
+                          checked={field.value?.includes(doc.id)}
+                          onCheckedChange={(checked) => {
+                            const currentIds = field.value || [];
+                            if (checked) {
+                              field.onChange([...currentIds, doc.id]);
+                            } else {
+                              field.onChange(currentIds.filter((id) => id !== doc.id));
+                            }
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-sm font-medium truncate">{doc.name}</span>
+                            <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
+                              {doc.type}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">v{doc.version}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
                 <FormMessage />
               </FormItem>
             )}

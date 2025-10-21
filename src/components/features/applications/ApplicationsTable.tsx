@@ -8,8 +8,9 @@ import {
   Settings,
   Trash2,
   Upload,
+  FileText,
 } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimatedStatusBadge } from '@/components/ui/animated-status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -35,12 +36,14 @@ import { SortableHeader } from '@/components/ui/sortable-header';
 import { exportAndDownloadApplicationsCSV, exportAndDownloadApplicationsJSON } from '@/lib/export';
 import { formatDate } from '@/lib/utils';
 import { useApplicationsStore, useSettingsStore } from '@/stores';
+import { useDocumentsStore } from '@/stores';
 import type { Application } from '@/types';
 import { ApplicationDialog } from './ApplicationDialog';
 import { BackupManagementDialog } from './BackupManagementDialog';
 import { BulkActions } from './BulkActions';
 import { CSVImportDialog } from './CSVImportDialog';
 import { JSONImportDialog } from './JSONImportDialog';
+import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
 
 const statusColors: Record<Application['status'], string> = {
   target: 'bg-gray-500',
@@ -62,12 +65,14 @@ const priorityColors: Record<NonNullable<Application['priority']>, string> = {
 export function ApplicationsTable() {
   const { getFilteredApplications, deleteApplication } = useApplicationsStore();
   const { data: dataSettings } = useSettingsStore();
+  const { documents, linkDocumentToApplications } = useDocumentsStore();
   const applications = getFilteredApplications();
   const [editingApplication, setEditingApplication] = useState<Application | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCSVImportDialogOpen, setIsCSVImportDialogOpen] = useState(false);
   const [isJSONImportDialogOpen, setIsJSONImportDialogOpen] = useState(false);
   const [isBackupDialogOpen, setIsBackupDialogOpen] = useState(false);
+  const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
 
   const handleEdit = useCallback((application: Application) => {
     setEditingApplication(application);
@@ -101,6 +106,111 @@ export function ApplicationsTable() {
     setEditingApplication(duplicatedApp as Application);
     setIsEditDialogOpen(true);
   }, []);
+
+  const handleRowDragOver = useCallback((e: React.DragEvent, applicationId: string) => {
+    // Check if this is a document being dragged OR files from file system
+    if (e.dataTransfer.types.includes('application/x-document-id') || e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'link';
+      setDragOverRowId(applicationId);
+    }
+  }, []);
+
+  const handleRowDragLeave = useCallback(() => {
+    setDragOverRowId(null);
+  }, []);
+
+  const handleRowDrop = useCallback(async (e: React.DragEvent, application: Application) => {
+    e.preventDefault();
+    setDragOverRowId(null);
+
+    // Check if it's a document from within the app
+    const documentId = e.dataTransfer.getData('application/x-document-id');
+    if (documentId) {
+      // Handle existing document linking
+      const isAlreadyLinked = documents.some(
+        doc => doc.id === documentId && doc.usedInApplicationIds?.includes(application.id)
+      );
+      
+      if (isAlreadyLinked) {
+        toast.info('Document already linked to this application');
+        return;
+      }
+
+      try {
+        await linkDocumentToApplications(documentId, [application.id]);
+        const docData = JSON.parse(e.dataTransfer.getData('text/plain'));
+        toast.success(`${docData.name} linked to ${application.position}`);
+      } catch (error) {
+        toast.error('Failed to link document');
+        console.error('Error linking document:', error);
+      }
+      return;
+    }
+
+    // Handle file system drops
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    // Filter for supported file types
+    const supportedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'text/html',
+    ];
+
+    const validFiles = files.filter(file => supportedTypes.includes(file.type));
+    
+    if (validFiles.length === 0) {
+      toast.error('Unsupported file type. Please drop PDF, Word, or text files.');
+      return;
+    }
+
+    toast.info(`Processing ${validFiles.length} file(s)...`);
+
+    // Process each file
+    for (const file of validFiles) {
+      try {
+        const content = await file.text();
+        
+        // Detect document type based on filename
+        const fileName = file.name.toLowerCase();
+        let type: 'resume' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other' = 'other';
+        
+        if (fileName.includes('resume') || fileName.includes('cv')) {
+          type = 'resume';
+        } else if (fileName.includes('cover') || fileName.includes('letter')) {
+          type = 'cover-letter';
+        } else if (fileName.includes('portfolio')) {
+          type = 'portfolio';
+        } else if (fileName.includes('transcript')) {
+          type = 'transcript';
+        } else if (fileName.includes('cert')) {
+          type = 'certification';
+        }
+
+        // Create the document
+        const { addDocument } = useDocumentsStore.getState();
+        const newDocument = await addDocument({
+          name: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+          type,
+          content,
+          tags: [application.companyName, application.position],
+          version: 1,
+        });
+
+        // Link to this application
+        await linkDocumentToApplications(newDocument.id, [application.id]);
+        
+        toast.success(`${file.name} uploaded and linked`);
+      } catch (error) {
+        toast.error(`Failed to process ${file.name}`);
+        console.error('Error processing file:', error);
+      }
+    }
+  }, [documents, linkDocumentToApplications]);
 
   const columns = useMemo<ColumnDef<Application>[]>(
     () => [
@@ -237,8 +347,36 @@ export function ApplicationsTable() {
           return formatDate(row.getValue('updatedAt'));
         },
       },
+      {
+        id: 'documents',
+        header: 'Documents',
+        cell: ({ row }) => {
+          const linkedDocs = documents.filter((doc) =>
+            doc.usedInApplicationIds?.includes(row.original.id)
+          );
+          
+          if (linkedDocs.length === 0) {
+            return <span className="text-xs text-muted-foreground">—</span>;
+          }
+          
+          return (
+            <LinkedDocumentsPopover 
+              documents={linkedDocs}
+              applicationId={row.original.id}
+            >
+              <button
+                type="button"
+                className="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                <FileText className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs">{linkedDocs.length}</span>
+              </button>
+            </LinkedDocumentsPopover>
+          );
+        },
+      },
     ],
-    []
+    [documents]
   );
 
   const handleExportCSV = useCallback(() => {
@@ -284,11 +422,20 @@ export function ApplicationsTable() {
             onClearSelection={() => table.resetRowSelection()}
           />
         )}
-        renderRowContextMenu={(application, rowContent) => (
-          <ContextMenu key={application.id}>
-            <ContextMenuTrigger asChild>
-              {rowContent}
-            </ContextMenuTrigger>
+        renderRowContextMenu={(application, rowContent) => {
+          return (
+            <ContextMenu key={application.id}>
+              <ContextMenuTrigger asChild>
+                <tr
+                  onDragOver={(e) => handleRowDragOver(e, application.id)}
+                  onDragLeave={handleRowDragLeave}
+                  onDrop={(e) => handleRowDrop(e, application)}
+                  className={dragOverRowId === application.id ? 'bg-primary/10' : ''}
+                >
+                  {/* Extract cells from the original row */}
+                  {React.isValidElement(rowContent) && (rowContent as React.ReactElement<{children: React.ReactNode}>).props.children}
+                </tr>
+              </ContextMenuTrigger>
             <ContextMenuContent className="w-56">
               <ContextMenuItem onClick={() => handleEdit(application)}>
                 <Pencil className="mr-2 h-4 w-4" />
@@ -329,7 +476,8 @@ export function ApplicationsTable() {
               </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>
-        )}
+          );
+        }}
         renderToolbarActions={() => (
           <>
             <DropdownMenu>
