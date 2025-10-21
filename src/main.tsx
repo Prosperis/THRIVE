@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { ThemeProvider } from '@/components/layout';
 import { QueryProvider } from '@/lib/queryClient';
+import { autoMigrateOnLoad } from '@/lib/migrate-companies';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -23,6 +24,9 @@ declare module '@tanstack/react-router' {
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element not found');
+
+// Run company data migration on app load
+autoMigrateOnLoad();
 
 createRoot(rootElement).render(
   <StrictMode>
