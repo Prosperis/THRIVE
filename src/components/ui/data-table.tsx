@@ -11,8 +11,9 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table';
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ScrollIndicator } from '@/components/ui/scroll-indicator';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -37,6 +38,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   storageKey?: string; // Key for localStorage persistence
   initialPageSize?: number; // Initial page size from settings
+  hideToolbar?: boolean; // Hide the internal toolbar (search, help, columns)
   renderBulkActions?: (props: {
     selectedRows: TData[];
     table: ReturnType<typeof useReactTable<TData>>;
@@ -45,6 +47,7 @@ interface DataTableProps<TData, TValue> {
     table: ReturnType<typeof useReactTable<TData>>;
   }) => React.ReactNode;
   renderRowContextMenu?: (row: TData, rowContent: React.ReactNode) => React.ReactNode;
+  onTableReady?: (table: ReturnType<typeof useReactTable<TData>>) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -54,9 +57,11 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = 'Search...',
   storageKey,
   initialPageSize = 10,
+  hideToolbar = false,
   renderBulkActions,
   renderToolbarActions,
   renderRowContextMenu,
+  onTableReady,
 }: DataTableProps<TData, TValue>) {
   // Load initial sorting from localStorage if available
   const [sorting, setSorting] = useState<SortingState>(() => {
@@ -109,6 +114,14 @@ export function DataTable<TData, TValue>({
   });
 
   const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => row.original);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Notify parent component when table is ready
+  useEffect(() => {
+    if (onTableReady) {
+      onTableReady(table);
+    }
+  }, [table, onTableReady]);
 
   return (
     <div className="space-y-4">
@@ -120,60 +133,40 @@ export function DataTable<TData, TValue>({
           table,
         })}
 
-      {/* Active Filters/Sort Summary */}
-      {(columnFilters.length > 0 || sorting.length > 0) && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
-          <span className="font-medium">Active:</span>
-          {columnFilters.length > 0 && (
-            <span>
-              {columnFilters.length} filter{columnFilters.length > 1 ? 's' : ''}
-            </span>
-          )}
-          {columnFilters.length > 0 && sorting.length > 0 && <span>•</span>}
-          {sorting.length > 0 && (
-            <span>
-              {sorting.length} sort{sorting.length > 1 ? 's' : ''}
-            </span>
-          )}
-          <span className="ml-auto">
-            {table.getFilteredRowModel().rows.length} of {data.length} rows shown
-          </span>
-        </div>
-      )}
-
       {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-1 items-center space-x-2">
-          {searchKey && (
-            <Input
-              placeholder={searchPlaceholder}
-              value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-              onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
-              className="h-8 w-[150px] lg:w-[250px]"
-            />
-          )}
-          {/* Clear Sorting Button */}
-          {sorting.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSorting([]);
-                if (storageKey) {
-                  localStorage.removeItem(`${storageKey}-sorting`);
-                }
-              }}
-              className="h-8 px-2 lg:px-3"
-            >
-              Clear sorting ({sorting.length})
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {renderToolbarActions?.({ table })}
-          <TableHelpDialog />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+      {!hideToolbar && (
+        <div className="flex items-center justify-between">
+          <div className="flex flex-1 items-center space-x-2">
+            {searchKey && (
+              <Input
+                placeholder={searchPlaceholder}
+                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
+                onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+                className="h-8 w-[150px] lg:w-[250px]"
+              />
+            )}
+            {/* Clear Sorting Button */}
+            {sorting.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSorting([]);
+                  if (storageKey) {
+                    localStorage.removeItem(`${storageKey}-sorting`);
+                  }
+                }}
+                className="h-8 px-2 lg:px-3"
+              >
+                Clear sorting ({sorting.length})
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {renderToolbarActions?.({ table })}
+            <TableHelpDialog />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="ml-auto">
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
@@ -196,13 +189,15 @@ export function DataTable<TData, TValue>({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
+      <div className="relative">
+        <div className="rounded-md border">
+          <Table containerRef={tableContainerRef}>
+            <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -246,6 +241,8 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
+        </div>
+        <ScrollIndicator containerRef={tableContainerRef} />
       </div>
 
       {/* Pagination */}
@@ -322,14 +319,6 @@ export function DataTable<TData, TValue>({
             </select>
           </div>
         </div>
-
-        {/* Helpful Tips */}
-        {table.getRowModel().rows?.length > 0 && (
-          <div className="text-xs text-muted-foreground text-center px-2">
-            💡 Tip: Hold <kbd className="px-1.5 py-0.5 text-xs border rounded bg-muted">Shift</kbd>{' '}
-            while clicking column headers to sort by multiple columns
-          </div>
-        )}
       </div>
     </div>
   );
