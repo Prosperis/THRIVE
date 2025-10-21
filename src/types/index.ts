@@ -41,7 +41,8 @@ export interface Application {
   // Relationships
   contacts?: Contact[];
   interviews?: Interview[];
-  documentIds?: string[]; // IDs of documents used
+  documentIds?: string[]; // IDs of documents used (deprecated - use linkedDocuments)
+  linkedDocuments?: DocumentVersionLink[]; // Version-tracked document links
 
   // Notes and tracking
   notes?: string;
@@ -150,6 +151,7 @@ export interface Document {
 
   // Versioning
   version: number;
+  versionName?: string; // User-defined name for this version (e.g., "Tech Company Version", "Final Draft")
   baseDocumentId?: string; // If this is a version of another doc
 
   // Tracking
@@ -166,6 +168,19 @@ export interface Document {
 
   createdAt: Date;
   updatedAt: Date;
+}
+
+/**
+ * Tracks which version of a document was used for a specific application
+ */
+export interface DocumentVersionLink {
+  documentId: string;
+  documentName: string;
+  documentType: Document['type'];
+  version: number;
+  versionName?: string; // User-defined name for this version
+  linkedAt: Date;
+  content?: string; // Snapshot of content at time of linking (optional)
 }
 
 /**
