@@ -190,23 +190,69 @@ export interface Company {
   id: string;
   name: string;
   website?: string;
-  industry?: string;
+  industry?: string[];
   size?: string;
   location?: string;
+  founded?: string; // Year or date
+  remotePolicy?: 'full-remote' | 'hybrid' | 'on-site' | 'flexible';
 
-  // Research
+  // Research & Description
   description?: string;
   culture?: string;
+  cultureNotes?: string;
   techStack?: string[];
   benefits?: string[];
 
-  // Notes
+  // Analysis & Notes
   pros?: string[];
   cons?: string[];
   notes?: string;
+  employeeReviews?: string; // Summary of employee reviews
+  newsAndUpdates?: string; // Recent company news
+  competitorComparison?: string; // How they compare to competitors
 
-  // Tracking
+  // Company Links
+  companyLinks?: {
+    website?: string;
+    linkedin?: string;
+    glassdoor?: string;
+    careers?: string;
+    news?: string;
+  };
+
+  // Ratings (1-5 scale)
+  ratings?: {
+    overall?: number;
+    workLifeBalance?: number;
+    compensation?: number;
+    careerGrowth?: number;
+    management?: number;
+    culture?: number;
+  };
+
+  // Interview Information
+  interviewProcess?: string;
+  interviewDifficulty?: 'easy' | 'medium' | 'hard';
+  interviewExperience?: 'positive' | 'neutral' | 'negative';
+
+  // Compensation
+  salaryRange?: {
+    min?: number;
+    max?: number;
+    currency?: string;
+  };
+
+  // Tracking & Status
+  status?: 'target' | 'researching' | 'applied' | 'interviewing' | 'rejected' | 'not-interested';
+  priority?: 'low' | 'medium' | 'high';
+  researched: boolean;
+  tags?: string[];
+
+  // Relationships
   applicationIds: string[]; // Applications to this company
+  contactIds?: string[]; // Contacts at this company
+  documentIds?: string[]; // Research documents
+  interviewIds?: string[]; // Interviews with this company
 
   createdAt: Date;
   updatedAt: Date;
