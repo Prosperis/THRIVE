@@ -36,26 +36,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
-
-const REMOTE_POLICIES = [
-  { value: 'full-remote', label: 'Full Remote', icon: '🌍' },
-  { value: 'hybrid', label: 'Hybrid', icon: '🏢' },
-  { value: 'on-site', label: 'On-Site', icon: '🏛️' },
-  { value: 'flexible', label: 'Flexible', icon: '🔄' },
-] as const;
-
-const INTERVIEW_DIFFICULTIES = [
-  { value: 'easy', label: 'Easy', color: 'text-green-600' },
-  { value: 'medium', label: 'Medium', color: 'text-yellow-600' },
-  { value: 'hard', label: 'Hard', color: 'text-red-600' },
-] as const;
-
-const INTERVIEW_EXPERIENCES = [
-  { value: 'positive', label: 'Positive', color: 'bg-green-500' },
-  { value: 'neutral', label: 'Neutral', color: 'bg-gray-500' },
-  { value: 'negative', label: 'Negative', color: 'bg-red-500' },
-] as const;
+import { useCompaniesStore } from '@/stores/companiesStore';
+import { REMOTE_POLICIES, INTERVIEW_DIFFICULTIES, INTERVIEW_EXPERIENCES } from '@/lib/constants';
 
 export function CompanyResearchHub() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -65,31 +47,31 @@ export function CompanyResearchHub() {
     'all'
   );
 
-  const companyNotes = useInterviewPrepStore((state) => state.companyNotes);
-  const addCompanyNote = useInterviewPrepStore((state) => state.addCompanyNote);
-  const updateCompanyNote = useInterviewPrepStore((state) => state.updateCompanyNote);
-  const deleteCompanyNote = useInterviewPrepStore((state) => state.deleteCompanyNote);
+  const companies = useCompaniesStore((state) => state.companies);
+  const addCompany = useCompaniesStore((state) => state.addCompany);
+  const updateCompany = useCompaniesStore((state) => state.updateCompany);
+  const deleteCompany = useCompaniesStore((state) => state.deleteCompany);
   const applications = useApplicationsStore((state) => state.applications);
 
-  const filteredNotes = companyNotes.filter((note) => {
+  const filteredCompanies = companies.filter((company) => {
     const matchesSearch =
       searchQuery === '' ||
-      note.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.industry?.some((ind) => ind.toLowerCase().includes(searchQuery.toLowerCase()));
+      company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      company.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      company.industry?.some((ind) => ind.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesResearched =
       filterResearched === 'all' ||
-      (filterResearched === 'researched' && note.researched) ||
-      (filterResearched === 'not-researched' && !note.researched);
+      (filterResearched === 'researched' && company.researched) ||
+      (filterResearched === 'not-researched' && !company.researched);
 
     return matchesSearch && matchesResearched;
   });
 
   // Sort by researched first, then by name
-  const sortedNotes = [...filteredNotes].sort((a, b) => {
+  const sortedCompanies = [...filteredCompanies].sort((a, b) => {
     if (a.researched !== b.researched) return a.researched ? -1 : 1;
-    return a.companyName.localeCompare(b.companyName);
+    return a.name.localeCompare(b.name);
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -142,11 +124,12 @@ export function CompanyResearchHub() {
 
     const applicationIdValue = formData.get('applicationId') as string;
     
-    const noteData = {
-      companyName: formData.get('companyName') as string,
-      notes: formData.get('notes') as string,
+    const companyData = {
+      name: formData.get('companyName') as string,
+      notes: (formData.get('notes') as string) || undefined,
       researched: formData.get('researched') === 'true',
-      applicationId: applicationIdValue && applicationIdValue !== 'none' ? applicationIdValue : undefined,
+      applicationIds: applicationIdValue && applicationIdValue !== 'none' ? [applicationIdValue] : [],
+      website: (formData.get('website') as string) || undefined,
       companyLinks: {
         website: (formData.get('website') as string) || undefined,
         linkedin: (formData.get('linkedin') as string) || undefined,
@@ -197,17 +180,17 @@ export function CompanyResearchHub() {
       remotePolicy:
         (formData.get('remotePolicy') as 'full-remote' | 'hybrid' | 'on-site' | 'flexible') ||
         undefined,
-      companySize: (formData.get('companySize') as string) || undefined,
+      size: (formData.get('companySize') as string) || undefined,
       founded: (formData.get('founded') as string) || undefined,
       industry,
       benefits,
     };
 
     if (editingId) {
-      updateCompanyNote(editingId, noteData);
+      updateCompany(editingId, companyData);
       setEditingId(null);
     } else {
-      addCompanyNote(noteData);
+      addCompany(companyData);
     }
 
     setShowAddDialog(false);
@@ -219,7 +202,7 @@ export function CompanyResearchHub() {
     setShowAddDialog(true);
   };
 
-  const editingNote = editingId ? companyNotes.find((n) => n.id === editingId) : null;
+  const editingCompany = editingId ? companies.find((c) => c.id === editingId) : null;
 
   const getApplicationsForCompany = (companyName: string) => {
     return applications.filter(
@@ -262,7 +245,7 @@ export function CompanyResearchHub() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{companyNotes.length}</div>
+            <div className="text-2xl font-bold">{companies.length}</div>
           </CardContent>
         </Card>
 
@@ -273,11 +256,11 @@ export function CompanyResearchHub() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {companyNotes.filter((n) => n.researched).length}
+              {companies.filter((c) => c.researched).length}
             </div>
             <p className="text-xs text-muted-foreground">
-              {companyNotes.length > 0
-                ? `${Math.round((companyNotes.filter((n) => n.researched).length / companyNotes.length) * 100)}%`
+              {companies.length > 0
+                ? `${Math.round((companies.filter((c) => c.researched).length / companies.length) * 100)}%`
                 : '0%'}
             </p>
           </CardContent>
@@ -291,8 +274,8 @@ export function CompanyResearchHub() {
           <CardContent>
             <div className="text-2xl font-bold">
               {
-                companyNotes.filter(
-                  (n) => n.applicationId || getApplicationsForCompany(n.companyName).length > 0
+                companies.filter(
+                  (c) => (c.applicationIds && c.applicationIds.length > 0) || getApplicationsForCompany(c.name).length > 0
                 ).length
               }
             </div>
@@ -306,10 +289,10 @@ export function CompanyResearchHub() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {companyNotes.filter((n) => n.ratings?.overall).length > 0
+              {companies.filter((c) => c.ratings?.overall).length > 0
                 ? (
-                    companyNotes.reduce((sum, n) => sum + (n.ratings?.overall || 0), 0) /
-                    companyNotes.filter((n) => n.ratings?.overall).length
+                    companies.reduce((sum, c) => sum + (c.ratings?.overall || 0), 0) /
+                    companies.filter((c) => c.ratings?.overall).length
                   ).toFixed(1)
                 : 'N/A'}
             </div>
@@ -376,7 +359,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="companyName"
                             required
-                            defaultValue={editingNote?.companyName}
+                            defaultValue={editingCompany?.name}
                           />
                         </div>
                         <div className="space-y-2">
@@ -384,7 +367,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="founded"
                             placeholder="2015"
-                            defaultValue={editingNote?.founded}
+                            defaultValue={editingCompany?.founded}
                           />
                         </div>
                         <div className="space-y-2">
@@ -392,7 +375,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="companySize"
                             placeholder="1000-5000 employees"
-                            defaultValue={editingNote?.companySize}
+                            defaultValue={editingCompany?.size}
                           />
                         </div>
                         <div className="space-y-2">
@@ -400,12 +383,12 @@ export function CompanyResearchHub() {
                           <Input
                             name="industry"
                             placeholder="Technology, SaaS, Cloud Computing"
-                            defaultValue={editingNote?.industry?.join(', ')}
+                            defaultValue={editingCompany?.industry?.join(', ')}
                           />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="remotePolicy">Remote Policy</Label>
-                          <Select name="remotePolicy" defaultValue={editingNote?.remotePolicy}>
+                          <Select name="remotePolicy" defaultValue={editingCompany?.remotePolicy}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select policy" />
                             </SelectTrigger>
@@ -425,7 +408,7 @@ export function CompanyResearchHub() {
                     {applications.length > 0 && (
                       <div className="space-y-2">
                         <Label htmlFor="applicationId">Link to Application (Optional)</Label>
-                        <Select name="applicationId" defaultValue={editingNote?.applicationId || 'none'}>
+                        <Select name="applicationId" defaultValue={editingCompany?.applicationIds?.[0] || 'none'}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select an application" />
                           </SelectTrigger>
@@ -446,7 +429,7 @@ export function CompanyResearchHub() {
                       <Checkbox
                         name="researched"
                         value="true"
-                        defaultChecked={editingNote?.researched}
+                        defaultChecked={editingCompany?.researched}
                       />
                       <Label htmlFor="researched" className="text-sm font-normal">
                         Mark as fully researched
@@ -461,7 +444,7 @@ export function CompanyResearchHub() {
                         required
                         rows={3}
                         placeholder="What does this company do? What makes them unique?"
-                        defaultValue={editingNote?.notes}
+                        defaultValue={editingCompany?.notes}
                       />
                     </div>
 
@@ -476,7 +459,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="website"
                             placeholder="https://company.com"
-                            defaultValue={editingNote?.companyLinks?.website}
+                            defaultValue={editingCompany?.companyLinks?.website}
                           />
                         </div>
                         <div className="space-y-2">
@@ -486,7 +469,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="linkedin"
                             placeholder="https://linkedin.com/company/..."
-                            defaultValue={editingNote?.companyLinks?.linkedin}
+                            defaultValue={editingCompany?.companyLinks?.linkedin}
                           />
                         </div>
                         <div className="space-y-2">
@@ -496,7 +479,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="glassdoor"
                             placeholder="https://glassdoor.com/..."
-                            defaultValue={editingNote?.companyLinks?.glassdoor}
+                            defaultValue={editingCompany?.companyLinks?.glassdoor}
                           />
                         </div>
                         <div className="space-y-2">
@@ -506,7 +489,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="careers"
                             placeholder="https://company.com/careers"
-                            defaultValue={editingNote?.companyLinks?.careers}
+                            defaultValue={editingCompany?.companyLinks?.careers}
                           />
                         </div>
                         <div className="space-y-2 col-span-2">
@@ -516,7 +499,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="news"
                             placeholder="https://company.com/news"
-                            defaultValue={editingNote?.companyLinks?.news}
+                            defaultValue={editingCompany?.companyLinks?.news}
                           />
                         </div>
                       </div>
@@ -537,7 +520,7 @@ export function CompanyResearchHub() {
                             min="1"
                             max="5"
                             placeholder="4.5"
-                            defaultValue={editingNote?.ratings?.overall}
+                            defaultValue={editingCompany?.ratings?.overall}
                           />
                         </div>
                         <div className="space-y-2">
@@ -551,7 +534,7 @@ export function CompanyResearchHub() {
                             min="1"
                             max="5"
                             placeholder="4.0"
-                            defaultValue={editingNote?.ratings?.workLifeBalance}
+                            defaultValue={editingCompany?.ratings?.workLifeBalance}
                           />
                         </div>
                         <div className="space-y-2">
@@ -565,7 +548,7 @@ export function CompanyResearchHub() {
                             min="1"
                             max="5"
                             placeholder="4.2"
-                            defaultValue={editingNote?.ratings?.compensation}
+                            defaultValue={editingCompany?.ratings?.compensation}
                           />
                         </div>
                         <div className="space-y-2">
@@ -579,7 +562,7 @@ export function CompanyResearchHub() {
                             min="1"
                             max="5"
                             placeholder="3.8"
-                            defaultValue={editingNote?.ratings?.careerGrowth}
+                            defaultValue={editingCompany?.ratings?.careerGrowth}
                           />
                         </div>
                         <div className="space-y-2">
@@ -593,7 +576,7 @@ export function CompanyResearchHub() {
                             min="1"
                             max="5"
                             placeholder="4.0"
-                            defaultValue={editingNote?.ratings?.management}
+                            defaultValue={editingCompany?.ratings?.management}
                           />
                         </div>
                         <div className="space-y-2">
@@ -607,7 +590,7 @@ export function CompanyResearchHub() {
                             min="1"
                             max="5"
                             placeholder="4.5"
-                            defaultValue={editingNote?.ratings?.culture}
+                            defaultValue={editingCompany?.ratings?.culture}
                           />
                         </div>
                       </div>
@@ -620,7 +603,7 @@ export function CompanyResearchHub() {
                         name="cultureNotes"
                         rows={3}
                         placeholder="Company culture, values, work environment, team dynamics..."
-                        defaultValue={editingNote?.cultureNotes}
+                        defaultValue={editingCompany?.cultureNotes}
                       />
                     </div>
 
@@ -632,7 +615,7 @@ export function CompanyResearchHub() {
                           name="pros"
                           rows={4}
                           placeholder="Great benefits&#10;Strong engineering culture&#10;Innovative projects"
-                          defaultValue={editingNote?.pros?.join('\n')}
+                          defaultValue={editingCompany?.pros?.join('\n')}
                         />
                       </div>
                       <div className="space-y-2">
@@ -641,7 +624,7 @@ export function CompanyResearchHub() {
                           name="cons"
                           rows={4}
                           placeholder="Long hours sometimes&#10;Bureaucratic processes&#10;Limited remote options"
-                          defaultValue={editingNote?.cons?.join('\n')}
+                          defaultValue={editingCompany?.cons?.join('\n')}
                         />
                       </div>
                     </div>
@@ -652,7 +635,7 @@ export function CompanyResearchHub() {
                       <Input
                         name="techStack"
                         placeholder="React, Node.js, PostgreSQL, AWS, Docker, Kubernetes..."
-                        defaultValue={editingNote?.techStack?.join(', ')}
+                        defaultValue={editingCompany?.techStack?.join(', ')}
                       />
                     </div>
 
@@ -662,7 +645,7 @@ export function CompanyResearchHub() {
                       <Input
                         name="benefits"
                         placeholder="Health insurance, 401k matching, Unlimited PTO, Stock options..."
-                        defaultValue={editingNote?.benefits?.join(', ')}
+                        defaultValue={editingCompany?.benefits?.join(', ')}
                       />
                     </div>
 
@@ -674,7 +657,7 @@ export function CompanyResearchHub() {
                           <Label htmlFor="interviewDifficulty">Interview Difficulty</Label>
                           <Select
                             name="interviewDifficulty"
-                            defaultValue={editingNote?.interviewDifficulty}
+                            defaultValue={editingCompany?.interviewDifficulty}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select difficulty" />
@@ -692,7 +675,7 @@ export function CompanyResearchHub() {
                           <Label htmlFor="interviewExperience">Interview Experience</Label>
                           <Select
                             name="interviewExperience"
-                            defaultValue={editingNote?.interviewExperience}
+                            defaultValue={editingCompany?.interviewExperience}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select experience" />
@@ -713,7 +696,7 @@ export function CompanyResearchHub() {
                           name="interviewProcess"
                           rows={3}
                           placeholder="Number of rounds, types of interviews, what to expect, typical timeline..."
-                          defaultValue={editingNote?.interviewProcess}
+                          defaultValue={editingCompany?.interviewProcess}
                         />
                       </div>
                     </div>
@@ -728,7 +711,7 @@ export function CompanyResearchHub() {
                             name="salaryMin"
                             type="number"
                             placeholder="80000"
-                            defaultValue={editingNote?.salaryRange?.min}
+                            defaultValue={editingCompany?.salaryRange?.min}
                           />
                         </div>
                         <div className="space-y-2">
@@ -737,7 +720,7 @@ export function CompanyResearchHub() {
                             name="salaryMax"
                             type="number"
                             placeholder="120000"
-                            defaultValue={editingNote?.salaryRange?.max}
+                            defaultValue={editingCompany?.salaryRange?.max}
                           />
                         </div>
                         <div className="space-y-2">
@@ -745,7 +728,7 @@ export function CompanyResearchHub() {
                           <Input
                             name="salaryCurrency"
                             placeholder="USD"
-                            defaultValue={editingNote?.salaryRange?.currency || 'USD'}
+                            defaultValue={editingCompany?.salaryRange?.currency || 'USD'}
                           />
                         </div>
                       </div>
@@ -758,7 +741,7 @@ export function CompanyResearchHub() {
                         name="employeeReviews"
                         rows={3}
                         placeholder="Summary of what employees are saying on Glassdoor, Blind, etc..."
-                        defaultValue={editingNote?.employeeReviews}
+                        defaultValue={editingCompany?.employeeReviews}
                       />
                     </div>
 
@@ -769,7 +752,7 @@ export function CompanyResearchHub() {
                         name="newsAndUpdates"
                         rows={3}
                         placeholder="Recent funding, product launches, acquisitions, layoffs, etc..."
-                        defaultValue={editingNote?.newsAndUpdates}
+                        defaultValue={editingCompany?.newsAndUpdates}
                       />
                     </div>
 
@@ -780,7 +763,7 @@ export function CompanyResearchHub() {
                         name="competitorComparison"
                         rows={3}
                         placeholder="How does this company compare to competitors? What makes them different?"
-                        defaultValue={editingNote?.competitorComparison}
+                        defaultValue={editingCompany?.competitorComparison}
                       />
                     </div>
                   </div>
@@ -795,14 +778,14 @@ export function CompanyResearchHub() {
       </Card>
 
       {/* Companies List */}
-      {sortedNotes.length > 0 ? (
+      {sortedCompanies.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2">
-          {sortedNotes.map((note) => {
-            const linkedApps = getApplicationsForCompany(note.companyName);
+          {sortedCompanies.map((company) => {
+            const linkedApps = getApplicationsForCompany(company.name);
 
             return (
-              <Card key={note.id} className="relative">
-                {note.researched && (
+              <Card key={company.id} className="relative">
+                {company.researched && (
                   <div className="absolute top-4 right-4">
                     <Badge variant="default" className="gap-1">
                       <CheckCircle2 className="h-3 w-3" />
@@ -815,45 +798,45 @@ export function CompanyResearchHub() {
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
                         <Building2 className="h-5 w-5" />
-                        <CardTitle>{note.companyName}</CardTitle>
+                        <CardTitle>{company.name}</CardTitle>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        {note.founded && (
+                        {company.founded && (
                           <div className="flex items-center gap-1">
                             <TrendingUp className="h-3 w-3" />
-                            Founded {note.founded}
+                            Founded {company.founded}
                           </div>
                         )}
-                        {note.companySize && (
+                        {company.size && (
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            {note.companySize}
+                            {company.size}
                           </div>
                         )}
-                        {note.remotePolicy && (
+                        {company.remotePolicy && (
                           <div className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {REMOTE_POLICIES.find((p) => p.value === note.remotePolicy)?.label}
+                            {REMOTE_POLICIES.find((p) => p.value === company.remotePolicy)?.label}
                           </div>
                         )}
                       </div>
-                      {note.ratings?.overall && <div>{renderStarRating(note.ratings.overall)}</div>}
+                      {company.ratings?.overall && <div>{renderStarRating(company.ratings.overall)}</div>}
                     </div>
                   </div>
                   <div className="absolute top-4 right-4 flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(note.id)}>
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(company.id)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => deleteCompanyNote(note.id)}>
+                    <Button size="sm" variant="outline" onClick={() => deleteCompany(company.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Industries */}
-                  {note.industry && note.industry.length > 0 && (
+                  {company.industry && company.industry.length > 0 && (
                     <div className="flex gap-2 flex-wrap">
-                      {note.industry.map((ind) => (
+                      {company.industry.map((ind) => (
                         <Badge key={ind} variant="secondary" className="text-xs">
                           {ind}
                         </Badge>
@@ -862,7 +845,7 @@ export function CompanyResearchHub() {
                   )}
 
                   {/* Notes */}
-                  <p className="text-sm text-muted-foreground">{note.notes}</p>
+                  <p className="text-sm text-muted-foreground">{company.notes}</p>
 
                   {/* Linked Applications */}
                   {linkedApps.length > 0 && (
@@ -874,7 +857,7 @@ export function CompanyResearchHub() {
                       <div className="space-y-1">
                         {linkedApps.map((app) => (
                           <div key={app.id} className="text-sm text-muted-foreground">
-                            • {app.position} -{' '}
+                            �?{app.position} -{' '}
                             <Badge variant="outline" className="text-xs">
                               {app.status}
                             </Badge>
@@ -885,12 +868,12 @@ export function CompanyResearchHub() {
                   )}
 
                   {/* Links */}
-                  {note.companyLinks && Object.values(note.companyLinks).some(Boolean) && (
+                  {company.companyLinks && Object.values(company.companyLinks).some(Boolean) && (
                     <div className="flex gap-2 flex-wrap">
-                      {note.companyLinks.website && (
+                      {company.companyLinks.website && (
                         <Button size="sm" variant="outline" asChild>
                           <a
-                            href={note.companyLinks.website}
+                            href={company.companyLinks.website}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -899,10 +882,10 @@ export function CompanyResearchHub() {
                           </a>
                         </Button>
                       )}
-                      {note.companyLinks.linkedin && (
+                      {company.companyLinks.linkedin && (
                         <Button size="sm" variant="outline" asChild>
                           <a
-                            href={note.companyLinks.linkedin}
+                            href={company.companyLinks.linkedin}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -911,10 +894,10 @@ export function CompanyResearchHub() {
                           </a>
                         </Button>
                       )}
-                      {note.companyLinks.glassdoor && (
+                      {company.companyLinks.glassdoor && (
                         <Button size="sm" variant="outline" asChild>
                           <a
-                            href={note.companyLinks.glassdoor}
+                            href={company.companyLinks.glassdoor}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -923,10 +906,10 @@ export function CompanyResearchHub() {
                           </a>
                         </Button>
                       )}
-                      {note.companyLinks.careers && (
+                      {company.companyLinks.careers && (
                         <Button size="sm" variant="outline" asChild>
                           <a
-                            href={note.companyLinks.careers}
+                            href={company.companyLinks.careers}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -939,70 +922,65 @@ export function CompanyResearchHub() {
                   )}
 
                   {/* Detailed Ratings */}
-                  {note.ratings &&
-                    Object.values(note.ratings).some((v) => v !== undefined && v > 0) && (
+                  {company.ratings &&
+                    Object.values(company.ratings).some((v) => v !== undefined && v > 0) && (
                       <div className="space-y-2 pt-2 border-t">
                         <h4 className="text-sm font-medium">Detailed Ratings</h4>
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          {note.ratings.workLifeBalance && (
+                          {company.ratings.workLifeBalance && (
                             <div>
                               <span className="text-muted-foreground">Work-Life:</span>{' '}
-                              {note.ratings.workLifeBalance.toFixed(1)} ⭐
-                            </div>
+                              {company.ratings.workLifeBalance.toFixed(1)} �?                            </div>
                           )}
-                          {note.ratings.compensation && (
+                          {company.ratings.compensation && (
                             <div>
                               <span className="text-muted-foreground">Compensation:</span>{' '}
-                              {note.ratings.compensation.toFixed(1)} ⭐
-                            </div>
+                              {company.ratings.compensation.toFixed(1)} �?                            </div>
                           )}
-                          {note.ratings.careerGrowth && (
+                          {company.ratings.careerGrowth && (
                             <div>
                               <span className="text-muted-foreground">Career Growth:</span>{' '}
-                              {note.ratings.careerGrowth.toFixed(1)} ⭐
-                            </div>
+                              {company.ratings.careerGrowth.toFixed(1)} �?                            </div>
                           )}
-                          {note.ratings.management && (
+                          {company.ratings.management && (
                             <div>
                               <span className="text-muted-foreground">Management:</span>{' '}
-                              {note.ratings.management.toFixed(1)} ⭐
-                            </div>
+                              {company.ratings.management.toFixed(1)} �?                            </div>
                           )}
-                          {note.ratings.culture && (
+                          {company.ratings.culture && (
                             <div>
                               <span className="text-muted-foreground">Culture:</span>{' '}
-                              {note.ratings.culture.toFixed(1)} ⭐
-                            </div>
+                              {company.ratings.culture.toFixed(1)} �?                            </div>
                           )}
                         </div>
                       </div>
                     )}
 
                   {/* Pros and Cons */}
-                  {((note.pros && note.pros.length > 0) || (note.cons && note.cons.length > 0)) && (
+                  {((company.pros && company.pros.length > 0) || (company.cons && company.cons.length > 0)) && (
                     <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-                      {note.pros && note.pros.length > 0 && (
+                      {company.pros && company.pros.length > 0 && (
                         <div className="space-y-1">
                           <h4 className="text-sm font-medium text-green-600">Pros</h4>
                           <ul className="text-xs space-y-1 text-muted-foreground">
-                            {note.pros.slice(0, 3).map((pro) => (
-                              <li key={pro}>✓ {pro}</li>
+                            {company.pros.slice(0, 3).map((pro) => (
+                              <li key={pro}>�?{pro}</li>
                             ))}
-                            {note.pros.length > 3 && (
-                              <li className="italic">+{note.pros.length - 3} more</li>
+                            {company.pros.length > 3 && (
+                              <li className="italic">+{company.pros.length - 3} more</li>
                             )}
                           </ul>
                         </div>
                       )}
-                      {note.cons && note.cons.length > 0 && (
+                      {company.cons && company.cons.length > 0 && (
                         <div className="space-y-1">
                           <h4 className="text-sm font-medium text-red-600">Cons</h4>
                           <ul className="text-xs space-y-1 text-muted-foreground">
-                            {note.cons.slice(0, 3).map((con) => (
-                              <li key={con}>✗ {con}</li>
+                            {company.cons.slice(0, 3).map((con) => (
+                              <li key={con}>�?{con}</li>
                             ))}
-                            {note.cons.length > 3 && (
-                              <li className="italic">+{note.cons.length - 3} more</li>
+                            {company.cons.length > 3 && (
+                              <li className="italic">+{company.cons.length - 3} more</li>
                             )}
                           </ul>
                         </div>
@@ -1011,18 +989,18 @@ export function CompanyResearchHub() {
                   )}
 
                   {/* Tech Stack */}
-                  {note.techStack && note.techStack.length > 0 && (
+                  {company.techStack && company.techStack.length > 0 && (
                     <div className="space-y-2 pt-2 border-t">
                       <h4 className="text-sm font-medium">Tech Stack</h4>
                       <div className="flex gap-2 flex-wrap">
-                        {note.techStack.slice(0, 6).map((tech) => (
+                        {company.techStack.slice(0, 6).map((tech) => (
                           <Badge key={tech} variant="secondary" className="text-xs">
                             {tech}
                           </Badge>
                         ))}
-                        {note.techStack.length > 6 && (
+                        {company.techStack.length > 6 && (
                           <Badge variant="outline" className="text-xs">
-                            +{note.techStack.length - 6} more
+                            +{company.techStack.length - 6} more
                           </Badge>
                         )}
                       </div>
@@ -1030,36 +1008,36 @@ export function CompanyResearchHub() {
                   )}
 
                   {/* Interview Info */}
-                  {(note.interviewDifficulty ||
-                    note.interviewExperience ||
-                    note.interviewProcess) && (
+                  {(company.interviewDifficulty ||
+                    company.interviewExperience ||
+                    company.interviewProcess) && (
                     <div className="space-y-2 pt-2 border-t">
                       <h4 className="text-sm font-medium">Interview Information</h4>
                       <div className="space-y-2">
-                        {(note.interviewDifficulty || note.interviewExperience) && (
+                        {(company.interviewDifficulty || company.interviewExperience) && (
                           <div className="flex gap-2">
-                            {note.interviewDifficulty && (
+                            {company.interviewDifficulty && (
                               <Badge
                                 variant="outline"
                                 className={
                                   INTERVIEW_DIFFICULTIES.find(
-                                    (d) => d.value === note.interviewDifficulty
+                                    (d) => d.value === company.interviewDifficulty
                                   )?.color
                                 }
                               >
-                                Difficulty: {note.interviewDifficulty}
+                                Difficulty: {company.interviewDifficulty}
                               </Badge>
                             )}
-                            {note.interviewExperience && (
+                            {company.interviewExperience && (
                               <Badge variant="outline">
-                                Experience: {note.interviewExperience}
+                                Experience: {company.interviewExperience}
                               </Badge>
                             )}
                           </div>
                         )}
-                        {note.interviewProcess && (
+                        {company.interviewProcess && (
                           <p className="text-xs text-muted-foreground line-clamp-2">
-                            {note.interviewProcess}
+                            {company.interviewProcess}
                           </p>
                         )}
                       </div>
@@ -1067,15 +1045,15 @@ export function CompanyResearchHub() {
                   )}
 
                   {/* Salary Range */}
-                  {note.salaryRange && (note.salaryRange.min || note.salaryRange.max) && (
+                  {company.salaryRange && (company.salaryRange.min || company.salaryRange.max) && (
                     <div className="pt-2 border-t">
                       <h4 className="text-sm font-medium mb-1">Compensation Range</h4>
                       <p className="text-sm text-muted-foreground">
-                        {note.salaryRange.min &&
-                          `${note.salaryRange.currency || 'USD'} ${note.salaryRange.min.toLocaleString()}`}
-                        {note.salaryRange.min && note.salaryRange.max && ' - '}
-                        {note.salaryRange.max &&
-                          `${note.salaryRange.currency || 'USD'} ${note.salaryRange.max.toLocaleString()}`}
+                        {company.salaryRange.min &&
+                          `${company.salaryRange.currency || 'USD'} ${company.salaryRange.min.toLocaleString()}`}
+                        {company.salaryRange.min && company.salaryRange.max && ' - '}
+                        {company.salaryRange.max &&
+                          `${company.salaryRange.currency || 'USD'} ${company.salaryRange.max.toLocaleString()}`}
                       </p>
                     </div>
                   )}
