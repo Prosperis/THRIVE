@@ -44,7 +44,16 @@ export function SortableHeader<TData, TValue>({
   return (
     <Button
       variant="ghost"
-      onClick={() => column.toggleSorting(sorted === 'asc', true)} // true for multi-sort with Shift
+      onClick={(e) => {
+        // Implement three-state sorting: unsorted → asc → desc → unsorted
+        if (!sorted) {
+          column.toggleSorting(false, e.shiftKey); // Set to asc
+        } else if (sorted === 'asc') {
+          column.toggleSorting(true, e.shiftKey); // Set to desc
+        } else {
+          column.clearSorting(); // Clear sort
+        }
+      }}
       className={cn('hover:bg-accent', className)}
     >
       {children}
