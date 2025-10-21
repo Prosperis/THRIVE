@@ -1755,12 +1755,9 @@ Sincerely,
                     
                     <TabsContent value="richtext" className="flex-1 m-0 overflow-hidden">
                       <ScrollArea className="h-full scrollbar-hide">
-                        <div 
-                          className="prose prose-sm dark:prose-invert max-w-none p-6"
-                          dangerouslySetInnerHTML={{ 
-                            __html: selectedDocument.content?.replace(/\n/g, '<br/>') || '<em>No content available</em>' 
-                          }}
-                        />
+                        <div className="prose prose-sm dark:prose-invert max-w-none p-6 whitespace-pre-wrap">
+                          {selectedDocument.content || <em>No content available</em>}
+                        </div>
                       </ScrollArea>
                     </TabsContent>
                     
