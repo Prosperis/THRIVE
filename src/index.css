@@ -59,6 +59,17 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    overflow: hidden;
+  }
+  main {
+    overflow-y: auto;
+  }
+  main::-webkit-scrollbar {
+    display: none;
+  }
+  main {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
