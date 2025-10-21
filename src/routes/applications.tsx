@@ -12,7 +12,7 @@ import { AnimatedButton } from '@/components/ui/animated-button';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
 import { seedDatabase } from '@/lib/seed';
-import { useApplicationsStore, useUIStore } from '@/stores';
+import { useApplicationsStore, useUIStore, useDocumentsStore } from '@/stores';
 import type { ApplicationFilters as ApplicationFiltersType } from '@/types';
 
 export const Route = createFileRoute('/applications')({
@@ -22,13 +22,15 @@ export const Route = createFileRoute('/applications')({
 function ApplicationsPage() {
   const { fetchApplications, isLoading, filters, setFilters } = useApplicationsStore();
   const { activeView, setActiveView } = useUIStore();
+  const { fetchDocuments } = useDocumentsStore();
 
   useEffect(() => {
     // Seed database with sample data on first load
     seedDatabase().then(() => {
       fetchApplications();
+      fetchDocuments();
     });
-  }, [fetchApplications]);
+  }, [fetchApplications, fetchDocuments]);
 
   return (
     <PageTransition>
