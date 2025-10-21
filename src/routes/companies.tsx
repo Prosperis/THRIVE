@@ -81,7 +81,7 @@ function CompaniesRoute() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-6">
       <CompaniesToolbar
         table={table}
         activeView={activeView}
