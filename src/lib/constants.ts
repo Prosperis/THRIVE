@@ -185,6 +185,99 @@ export const CURRENCIES = [
   { value: 'GBP', label: 'GBP (£)', symbol: '£' },
   { value: 'CAD', label: 'CAD ($)', symbol: 'C$' },
   { value: 'AUD', label: 'AUD ($)', symbol: 'A$' },
+  { value: 'JPY', label: 'JPY (¥)', symbol: '¥' },
+  { value: 'CHF', label: 'CHF (Fr)', symbol: 'Fr' },
+  { value: 'CNY', label: 'CNY (¥)', symbol: '¥' },
+  { value: 'INR', label: 'INR (₹)', symbol: '₹' },
+  { value: 'SGD', label: 'SGD ($)', symbol: 'S$' },
+  { value: 'HKD', label: 'HKD ($)', symbol: 'HK$' },
+  { value: 'NZD', label: 'NZD ($)', symbol: 'NZ$' },
+  { value: 'SEK', label: 'SEK (kr)', symbol: 'kr' },
+  { value: 'NOK', label: 'NOK (kr)', symbol: 'kr' },
+  { value: 'DKK', label: 'DKK (kr)', symbol: 'kr' },
+  { value: 'MXN', label: 'MXN ($)', symbol: 'Mex$' },
+] as const;
+
+/**
+ * Company statuses for tracking research progress
+ */
+export const COMPANY_STATUSES = [
+  {
+    value: 'target',
+    label: 'Target',
+    description: 'Identified as potential opportunity',
+    color: 'gray',
+  },
+  {
+    value: 'researching',
+    label: 'Researching',
+    description: 'Actively gathering information',
+    color: 'blue',
+  },
+  {
+    value: 'applied',
+    label: 'Applied',
+    description: 'Application submitted to this company',
+    color: 'yellow',
+  },
+  {
+    value: 'interviewing',
+    label: 'Interviewing',
+    description: 'In interview process',
+    color: 'purple',
+  },
+  {
+    value: 'rejected',
+    label: 'Rejected',
+    description: 'Not selected or passed',
+    color: 'red',
+  },
+  {
+    value: 'not-interested',
+    label: 'Not Interested',
+    description: 'Not pursuing opportunities here',
+    color: 'slate',
+  },
+] as const;
+
+/**
+ * Remote work policies
+ */
+export const REMOTE_POLICIES = [
+  { value: 'full-remote', label: 'Full Remote', icon: '🌍' },
+  { value: 'hybrid', label: 'Hybrid', icon: '🏢' },
+  { value: 'on-site', label: 'On-Site', icon: '🏛️' },
+  { value: 'flexible', label: 'Flexible', icon: '🔄' },
+] as const;
+
+/**
+ * Interview difficulty levels
+ */
+export const INTERVIEW_DIFFICULTIES = [
+  { value: 'easy', label: 'Easy', color: 'text-green-600' },
+  { value: 'medium', label: 'Medium', color: 'text-yellow-600' },
+  { value: 'hard', label: 'Hard', color: 'text-red-600' },
+] as const;
+
+/**
+ * Interview experience ratings
+ */
+export const INTERVIEW_EXPERIENCES = [
+  { value: 'positive', label: 'Positive', color: 'bg-green-500', emoji: '😊' },
+  { value: 'neutral', label: 'Neutral', color: 'bg-gray-500', emoji: '😐' },
+  { value: 'negative', label: 'Negative', color: 'bg-red-500', emoji: '😞' },
+] as const;
+
+/**
+ * Company rating categories
+ */
+export const COMPANY_RATING_CATEGORIES = [
+  { key: 'overall', label: 'Overall', description: 'Overall company rating' },
+  { key: 'workLifeBalance', label: 'Work-Life Balance', description: 'Balance between work and personal life' },
+  { key: 'compensation', label: 'Compensation', description: 'Salary and benefits package' },
+  { key: 'careerGrowth', label: 'Career Growth', description: 'Opportunities for advancement' },
+  { key: 'management', label: 'Management', description: 'Quality of leadership and management' },
+  { key: 'culture', label: 'Culture', description: 'Company culture and values' },
 ] as const;
 
 /**
