@@ -3,10 +3,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { FileText, Plus } from 'lucide-react';
+import { FileText, Plus, Search, X, CalendarIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TagInput } from '@/components/ui/tag-input';
 import {
   Form,
   FormControl,
@@ -94,6 +98,10 @@ export function ApplicationForm({
   const [selectedDocType, setSelectedDocType] = useState<Document['type']>('resume');
   const [isUploading, setIsUploading] = useState(false);
   
+  // Document search and filter state
+  const [documentSearch, setDocumentSearch] = useState('');
+  const [documentTypeFilter, setDocumentTypeFilter] = useState<Document['type'] | 'all'>('all');
+  
   // Get currently linked documents if editing
   const currentlyLinkedDocuments = application
     ? documents.filter((doc) => doc.usedInApplicationIds?.includes(application.id))
@@ -178,6 +186,24 @@ export function ApplicationForm({
   };
 
   const suggestedDocuments = getSuggestedDocuments();
+  
+  // Filter documents based on search and type
+  const filteredDocuments = documents.filter((doc) => {
+    // Filter by search query
+    if (documentSearch.trim()) {
+      const searchLower = documentSearch.toLowerCase();
+      const matchesName = doc.name.toLowerCase().includes(searchLower);
+      const matchesType = doc.type.toLowerCase().includes(searchLower);
+      if (!matchesName && !matchesType) return false;
+    }
+    
+    // Filter by document type
+    if (documentTypeFilter !== 'all' && doc.type !== documentTypeFilter) {
+      return false;
+    }
+    
+    return true;
+  });
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -323,26 +349,42 @@ export function ApplicationForm({
             <FormField
               control={form.control}
               name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {APPLICATION_STATUSES.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const selectedStatus = APPLICATION_STATUSES.find(s => s.value === field.value);
+                return (
+                  <FormItem>
+                    <FormLabel>Status *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status">
+                            {selectedStatus?.label}
+                          </SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent 
+                        position="popper"
+                        side="bottom"
+                        align="start"
+                        sideOffset={4}
+                        className="max-h-[300px]"
+                      >
+                        {APPLICATION_STATUSES.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{status.label}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {status.description}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
@@ -497,9 +539,31 @@ export function ApplicationForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Currency</FormLabel>
-                  <FormControl>
-                    <Input placeholder="USD" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-[300px] overflow-y-auto">
+                      <SelectItem value="USD">USD - US Dollar</SelectItem>
+                      <SelectItem value="EUR">EUR - Euro</SelectItem>
+                      <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                      <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                      <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
+                      <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
+                      <SelectItem value="CNY">CNY - Chinese Yuan</SelectItem>
+                      <SelectItem value="INR">INR - Indian Rupee</SelectItem>
+                      <SelectItem value="CHF">CHF - Swiss Franc</SelectItem>
+                      <SelectItem value="SGD">SGD - Singapore Dollar</SelectItem>
+                      <SelectItem value="HKD">HKD - Hong Kong Dollar</SelectItem>
+                      <SelectItem value="NZD">NZD - New Zealand Dollar</SelectItem>
+                      <SelectItem value="SEK">SEK - Swedish Krona</SelectItem>
+                      <SelectItem value="NOK">NOK - Norwegian Krone</SelectItem>
+                      <SelectItem value="MXN">MXN - Mexican Peso</SelectItem>
+                      <SelectItem value="BRL">BRL - Brazilian Real</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -516,11 +580,37 @@ export function ApplicationForm({
               control={form.control}
               name="targetDate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Target Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={`w-full pl-3 text-left font-normal ${
+                            !field.value && "text-muted-foreground"
+                          }`}
+                        >
+                          {field.value ? (
+                            format(new Date(field.value), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? new Date(field.value) : undefined}
+                        onSelect={(date) => {
+                          field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormDescription>When you identified this opportunity</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -531,11 +621,37 @@ export function ApplicationForm({
               control={form.control}
               name="appliedDate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Applied Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={`w-full pl-3 text-left font-normal ${
+                            !field.value && "text-muted-foreground"
+                          }`}
+                        >
+                          {field.value ? (
+                            format(new Date(field.value), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? new Date(field.value) : undefined}
+                        onSelect={(date) => {
+                          field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormDescription>When you submitted your application</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -555,9 +671,13 @@ export function ApplicationForm({
               <FormItem>
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
-                  <Input placeholder="react, typescript, remote" {...field} />
+                  <TagInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Type tags and press comma or enter..."
+                  />
                 </FormControl>
-                <FormDescription>Comma-separated tags for organization</FormDescription>
+                <FormDescription>Add tags and press comma or enter</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -713,13 +833,115 @@ export function ApplicationForm({
                   </div>
                 )}
                 
+                {/* Search and Filter */}
+                <div className="space-y-2 mb-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Search documents..."
+                      value={documentSearch}
+                      onChange={(e) => setDocumentSearch(e.target.value)}
+                      className="pl-9 h-9"
+                    />
+                    {documentSearch && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                        onClick={() => setDocumentSearch('')}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'all' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('all')}
+                    >
+                      All Types
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'resume' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('resume')}
+                    >
+                      Resume
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'cv' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('cv')}
+                    >
+                      CV
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'cover-letter' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('cover-letter')}
+                    >
+                      Cover Letter
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'portfolio' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('portfolio')}
+                    >
+                      Portfolio
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'transcript' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('transcript')}
+                    >
+                      Transcript
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'certification' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('certification')}
+                    >
+                      Certification
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={documentTypeFilter === 'other' ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setDocumentTypeFilter('other')}
+                    >
+                      Other
+                    </Button>
+                  </div>
+                </div>
+                
                 <div className="border rounded-md p-3 max-h-[300px] overflow-y-auto scrollbar-hide space-y-2">
-                  {documents.length === 0 ? (
+                  {filteredDocuments.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
-                      No documents available. Create documents first to link them.
+                      {documentSearch || documentTypeFilter !== 'all' 
+                        ? 'No documents match your search or filter.'
+                        : 'No documents available. Create documents first to link them.'}
                     </p>
                   ) : (
-                    documents.map((doc) => (
+                    filteredDocuments.map((doc) => (
                       <div
                         key={doc.id}
                         className="flex items-center space-x-2 p-2 rounded hover:bg-accent/50 transition-colors"
