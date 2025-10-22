@@ -1,7 +1,8 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { createRootRoute, Outlet, useRouterState } from '@tanstack/react-router';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/router-devtools';
+import { AnimatePresence, motion } from 'framer-motion';
 import { GlobalAnnouncer } from '@/components/a11y/LiveRegion';
 import { SkipNav } from '@/components/a11y/SkipNav';
 import { ZustandDevtoolsPanel } from '@/components/devtools/ZustandDevtoolsPanel';
@@ -17,13 +18,25 @@ export const Route = createRootRoute({
 function RootComponent() {
   // Enable navigation shortcuts globally
   useNavigationShortcuts();
+  const routerState = useRouterState();
+  const location = routerState.location.pathname;
 
   return (
     <>
       <SkipNav />
       <GlobalAnnouncer />
       <MainLayout>
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
         <Toaster />
         <CommandPalette />
         {import.meta.env.DEV && (
