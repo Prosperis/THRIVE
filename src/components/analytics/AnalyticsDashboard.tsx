@@ -54,6 +54,7 @@ import { AdditionalInsights } from './AdditionalInsights';
 import { GeographicDistribution } from './GeographicDistribution';
 import { SalaryAnalytics } from './SalaryAnalytics';
 import { CompanyComparison } from './CompanyComparison';
+import { PeriodComparison } from './PeriodComparison';
 import {
   AnalyticsFiltersPanel,
   applyAnalyticsFilters,
@@ -282,6 +283,7 @@ export function AnalyticsDashboard() {
           <TabsTrigger value="status">Status Distribution</TabsTrigger>
           <TabsTrigger value="companies">Top Companies</TabsTrigger>
           <TabsTrigger value="comparison">Compare Companies</TabsTrigger>
+          <TabsTrigger value="periods">Time Periods</TabsTrigger>
           <TabsTrigger value="geographic">Geographic</TabsTrigger>
           <TabsTrigger value="salary">Salary</TabsTrigger>
           <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
@@ -473,6 +475,11 @@ export function AnalyticsDashboard() {
         {/* Company Comparison */}
         <TabsContent value="comparison" className="space-y-4">
           <CompanyComparison applications={filteredApplications} interviews={interviews} />
+        </TabsContent>
+
+        {/* Period Comparison */}
+        <TabsContent value="periods" className="space-y-4">
+          <PeriodComparison applications={filteredApplications} interviews={interviews} />
         </TabsContent>
 
         {/* Geographic Distribution */}
