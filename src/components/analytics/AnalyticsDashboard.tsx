@@ -53,12 +53,30 @@ import { InterviewStageChart } from './InterviewStageChart';
 import { AdditionalInsights } from './AdditionalInsights';
 import { GeographicDistribution } from './GeographicDistribution';
 import { SalaryAnalytics } from './SalaryAnalytics';
+import {
+  AnalyticsFiltersPanel,
+  applyAnalyticsFilters,
+  type AnalyticsFilters,
+} from './AnalyticsFilters';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
   const [showComparison, setShowComparison] = useState(false);
+  const [filters, setFilters] = useState<AnalyticsFilters>({
+    statuses: [],
+    companyNames: [],
+    workTypes: [],
+    priorities: [],
+    tags: [],
+  });
   const { applications } = useApplicationsStore();
   const { interviews } = useInterviewsStore();
+
+  // Apply filters to applications
+  const filteredApplications = useMemo(
+    () => applyAnalyticsFilters(applications, filters),
+    [applications, filters]
+  );
 
   // Calculate period dates
   const period = useMemo(() => {
@@ -90,16 +108,16 @@ export function AnalyticsDashboard() {
     return periodConfig?.days || 365; // Default to 365 for 'all time'
   }, [selectedPeriod]);
 
-  // Calculate analytics
+  // Calculate analytics with filtered data
   const metrics = useMemo(
-    () => calculateAnalytics(applications, interviews, period),
-    [applications, interviews, period]
+    () => calculateAnalytics(filteredApplications, interviews, period),
+    [filteredApplications, interviews, period]
   );
 
   // Calculate previous period metrics for comparison
   const previousMetrics = useMemo(
-    () => previousPeriod ? calculateAnalytics(applications, interviews, previousPeriod) : null,
-    [applications, interviews, previousPeriod]
+    () => previousPeriod ? calculateAnalytics(filteredApplications, interviews, previousPeriod) : null,
+    [filteredApplications, interviews, previousPeriod]
   );
 
   // Calculate trends
@@ -124,14 +142,24 @@ export function AnalyticsDashboard() {
   );
 
   const companyStats = useMemo(
-    () => calculateCompanyStats(applications, interviews, period),
-    [applications, interviews, period]
+    () => calculateCompanyStats(filteredApplications, interviews, period),
+    [filteredApplications, interviews, period]
   );
 
   const monthlyTrends = useMemo(
-    () => calculateMonthlyTrends(applications, interviews, 6, period),
-    [applications, interviews, period]
+    () => calculateMonthlyTrends(filteredApplications, interviews, 6, period),
+    [filteredApplications, interviews, period]
   );
+
+  const resetFilters = () => {
+    setFilters({
+      statuses: [],
+      companyNames: [],
+      workTypes: [],
+      priorities: [],
+      tags: [],
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -170,6 +198,14 @@ export function AnalyticsDashboard() {
           </Select>
         </div>
       </div>
+
+      {/* Filters */}
+      <AnalyticsFiltersPanel
+        applications={applications}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onReset={resetFilters}
+      />
 
       {/* Key Metrics */}
       <MetricGrid>
@@ -439,7 +475,7 @@ export function AnalyticsDashboard() {
 
         {/* Salary Analytics */}
         <TabsContent value="salary" className="space-y-4">
-          <SalaryAnalytics applications={applications} period={period} />
+          <SalaryAnalytics applications={filteredApplications} period={period} />
         </TabsContent>
 
         {/* Monthly Trends */}
