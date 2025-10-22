@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   COMPANY_SIZES, 
   INDUSTRIES, 
@@ -190,6 +191,15 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+            <TabsTrigger value="links">Links & Research</TabsTrigger>
+            <TabsTrigger value="ratings">Ratings & Salary</TabsTrigger>
+            <TabsTrigger value="analysis">Analysis</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="basic" className="space-y-6 mt-6">
         {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -403,7 +413,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
             />
           </div>
         </div>
+          </TabsContent>
 
+          <TabsContent value="links" className="space-y-6 mt-6">
         {/* Company Links */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Company Links</h3>
@@ -465,8 +477,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
               )}
             />
           </div>
-        </div>
 
+        {/* Company Research section stays here */}
+        </div>
+          </TabsContent>
+
+          <TabsContent value="ratings" className="space-y-6 mt-6">
         {/* Ratings */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Ratings</h3>
@@ -750,7 +766,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
             )}
           />
         </div>
+          </TabsContent>
 
+          <TabsContent value="analysis" className="space-y-6 mt-6">
         {/* Analysis */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Analysis</h3>
@@ -810,6 +828,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
             )}
           />
         </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Form Actions */}
         <div className="flex justify-end gap-3 pt-4">
