@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   Star,
 } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { formatDate } from '@/lib/utils';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import type { Company } from '@/types';
 import { COMPANY_STATUSES, REMOTE_POLICIES } from '@/lib/constants';
+import { CompanyDetailDrawer } from './CompanyDetailDrawer';
 
 const statusColors: Record<string, string> = {
   target: 'bg-gray-500',
@@ -36,6 +37,8 @@ interface CompaniesTableProps {
 
 export function CompaniesTable({ companies, onTableReady, onEditCompany }: CompaniesTableProps) {
   const { deleteCompany } = useCompaniesStore();
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleDelete = useCallback((company: Company) => {
     if (confirm(`Are you sure you want to delete ${company.name}?`)) {
@@ -43,6 +46,11 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
       toast.success(`${company.name} deleted`);
     }
   }, [deleteCompany]);
+
+  const handleRowClick = useCallback((company: Company) => {
+    setSelectedCompany(company);
+    setDrawerOpen(true);
+  }, []);
 
   const getStatusLabel = useCallback((status?: string) => {
     if (!status) return null;
@@ -90,7 +98,11 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
         header: ({ column }) => <SortableHeader column={column}>Company Name</SortableHeader>,
         cell: ({ row }) => {
           return (
-            <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 -m-2 p-2 rounded w-full text-left"
+              onClick={() => handleRowClick(row.original)}
+            >
               <Building2 className="h-4 w-4 text-muted-foreground" />
               <div>
                 <div className="font-medium">{row.getValue('name')}</div>
@@ -106,7 +118,7 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
                   </a>
                 )}
               </div>
-            </div>
+            </button>
           );
         },
       },
@@ -273,14 +285,23 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
         enableHiding: false,
       },
     ],
-    [onEditCompany, handleDelete, getStatusLabel, getStatusColor, getRemotePolicyLabel]
+    [onEditCompany, handleDelete, handleRowClick, getStatusLabel, getStatusColor, getRemotePolicyLabel]
   );
 
   return (
-    <DataTable
-      columns={columns}
-      data={companies}
-      onTableReady={onTableReady}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={companies}
+        onTableReady={onTableReady}
+      />
+
+      <CompanyDetailDrawer
+        company={selectedCompany}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onDelete={handleDelete}
+      />
+    </>
   );
 }
