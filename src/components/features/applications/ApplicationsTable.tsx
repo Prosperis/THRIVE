@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { AnimatedStatusBadge } from '@/components/ui/animated-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -27,6 +26,7 @@ import type { Application } from '@/types';
 import { ApplicationDialog } from './ApplicationDialog';
 import { BulkActions } from './BulkActions';
 import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
+import { DraggableStatusBadge } from './DraggableStatusBadge';
 
 const statusColors: Record<Application['status'], string> = {
   target: 'bg-gray-500',
@@ -243,11 +243,11 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
         accessorKey: 'status',
         header: ({ column }) => <SortableHeader column={column}>Status</SortableHeader>,
         cell: ({ row }) => {
-          const status = row.getValue('status') as Application['status'];
           return (
-            <AnimatedStatusBadge status={status} className={statusColors[status]}>
-              {status.replace('-', ' ')}
-            </AnimatedStatusBadge>
+            <DraggableStatusBadge
+              application={row.original}
+              statusColors={statusColors}
+            />
           );
         },
         filterFn: (row, id, value) => {
