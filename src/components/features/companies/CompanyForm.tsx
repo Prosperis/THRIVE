@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
+import { useEffect, useMemo } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +23,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle2, AlertCircle, Star } from 'lucide-react';
 import { 
   COMPANY_SIZES, 
   INDUSTRIES, 
@@ -79,6 +83,44 @@ interface CompanyFormProps {
   isLoading?: boolean;
 }
 
+// Helper function to calculate average rating
+function calculateAverageRating(ratings: {
+  workLifeBalance?: number;
+  compensation?: number;
+  careerGrowth?: number;
+  management?: number;
+  culture?: number;
+}): number {
+  const values = Object.values(ratings).filter((v): v is number => v !== undefined && v > 0);
+  if (values.length === 0) return 0;
+  return Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(1));
+}
+
+// Helper function to calculate form completeness
+function calculateCompleteness(values: Partial<CompanyFormValues>): number {
+  const fields = [
+    'name', 'website', 'industry', 'size', 'location', 'founded',
+    'status', 'priority', 'remotePolicy', 'description', 'culture',
+    'linkedinUrl', 'glassdoorUrl'
+  ];
+  const filled = fields.filter(field => {
+    const value = values[field as keyof CompanyFormValues];
+    return value !== undefined && value !== '' && value !== null;
+  });
+  return Math.round((filled.length / fields.length) * 100);
+}
+
+// Helper function to validate URL
+function isValidUrl(url: string | undefined): boolean {
+  if (!url || url === '') return false;
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: CompanyFormProps) {
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -119,6 +161,40 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
       salaryPeriod: 'year',
     },
   });
+
+  // Watch all form values for smart features
+  const formValues = useWatch({ control: form.control });
+  
+  // Calculate completeness percentage
+  const completeness = useMemo(() => {
+    return calculateCompleteness(formValues);
+  }, [formValues]);
+
+  // Auto-calculate average rating when individual ratings change
+  useEffect(() => {
+    const ratings = {
+      workLifeBalance: formValues.workLifeBalanceRating,
+      compensation: formValues.compensationRating,
+      careerGrowth: formValues.careerGrowthRating,
+      management: formValues.managementRating,
+      culture: formValues.cultureRating,
+    };
+    
+    const average = calculateAverageRating(ratings);
+    
+    // Only update if there's a calculated average and it's different
+    if (average > 0 && formValues.overallRating !== average) {
+      form.setValue('overallRating', average, { shouldValidate: false });
+    }
+  }, [
+    formValues.workLifeBalanceRating,
+    formValues.compensationRating,
+    formValues.careerGrowthRating,
+    formValues.managementRating,
+    formValues.cultureRating,
+    formValues.overallRating,
+    form
+  ]);
 
   const handleSubmit = (values: CompanyFormValues) => {
     // Transform form values to Company format
@@ -199,6 +275,29 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
           </TabsList>
 
+          {/* Data Completeness Indicator */}
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {completeness === 100 ? (
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                )}
+                <span className="text-sm font-medium">
+                  Profile Completeness: {completeness}%
+                </span>
+              </div>
+              <Badge variant={completeness === 100 ? 'default' : 'secondary'}>
+                {completeness < 50 ? 'Getting Started' : completeness < 80 ? 'Good Progress' : completeness < 100 ? 'Almost There' : 'Complete'}
+              </Badge>
+            </div>
+            <Progress value={completeness} className="h-2" />
+            <p className="text-xs text-muted-foreground mt-2">
+              Fill out more fields to get better insights and recommendations
+            </p>
+          </div>
+
           <TabsContent value="basic" className="space-y-6 mt-6">
         {/* Basic Information */}
         <div className="space-y-4">
@@ -221,15 +320,29 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
           <FormField
             control={form.control}
             name="website"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Website</FormLabel>
-                <FormControl>
-                  <Input type="url" placeholder="https://company.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const isValid = isValidUrl(field.value);
+              return (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input type="url" placeholder="https://company.com" {...field} />
+                      {field.value && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {isValid ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4 text-amber-500" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -424,29 +537,57 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
             <FormField
               control={form.control}
               name="linkedinUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>LinkedIn URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.linkedin.com/company/..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const isValid = isValidUrl(field.value);
+                return (
+                  <FormItem>
+                    <FormLabel>LinkedIn URL</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input placeholder="https://www.linkedin.com/company/..." {...field} />
+                        {field.value && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {isValid ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <AlertCircle className="h-4 w-4 text-amber-500" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
               control={form.control}
               name="glassdoorUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Glassdoor URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.glassdoor.com/..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const isValid = isValidUrl(field.value);
+                return (
+                  <FormItem>
+                    <FormLabel>Glassdoor URL</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input placeholder="https://www.glassdoor.com/..." {...field} />
+                        {field.value && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {isValid ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <AlertCircle className="h-4 w-4 text-amber-500" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
@@ -493,7 +634,13 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
               name="overallRating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Overall Rating</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    Overall Rating
+                    <Badge variant="outline" className="text-xs font-normal">
+                      <Star className="h-3 w-3 mr-1" />
+                      Auto-calculated
+                    </Badge>
+                  </FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -503,8 +650,13 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
                       placeholder="0-5" 
                       {...field}
                       onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                      className="bg-muted/50"
+                      readOnly
                     />
                   </FormControl>
+                  <FormDescription>
+                    Automatically calculated from ratings below
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
