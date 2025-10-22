@@ -1,10 +1,11 @@
-import { eachMonthOfInterval, eachWeekOfInterval, format, subMonths } from 'date-fns';
+import { eachMonthOfInterval, eachWeekOfInterval, format, subMonths, isWithinInterval } from 'date-fns';
 import { useId, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
   CartesianGrid,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -20,6 +21,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useAnnotationsStore } from '@/stores/annotationsStore';
+import { AnnotationDialog } from './AnnotationDialog';
 import type { Application } from '@/types';
 
 type TimeRange = 'week' | 'month';

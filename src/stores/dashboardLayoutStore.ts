@@ -13,7 +13,8 @@ export type WidgetId =
   | 'goals-tracking'
   | 'filters'
   | 'export-options'
-  | 'report-generator';
+  | 'report-generator'
+  | 'annotations';
 
 export interface WidgetConfig {
   id: WidgetId;
@@ -116,6 +117,13 @@ export const AVAILABLE_WIDGETS: WidgetConfig[] = [
     defaultVisible: false,
     gridSpan: 'full',
   },
+  {
+    id: 'annotations',
+    name: 'Annotations',
+    description: 'Notes, milestones, and event markers',
+    defaultVisible: false,
+    gridSpan: 'full',
+  },
 ];
 
 export const DEFAULT_LAYOUTS: DashboardLayout[] = [
@@ -158,6 +166,7 @@ export const DEFAULT_LAYOUTS: DashboardLayout[] = [
       'filters': false,
       'export-options': false,
       'report-generator': false,
+      'annotations': false,
     },
   },
   {
@@ -197,6 +206,7 @@ export const DEFAULT_LAYOUTS: DashboardLayout[] = [
       'filters': false,
       'export-options': false,
       'report-generator': false,
+      'annotations': false,
     },
   },
 ];

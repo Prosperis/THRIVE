@@ -53,6 +53,7 @@ import { AdditionalInsights } from './AdditionalInsights';
 import { GoalsTracking } from './GoalsTracking';
 import { ExportOptions } from './ExportOptions';
 import { ReportGenerator } from './ReportGenerator';
+import { AnnotationsList } from './AnnotationsList';
 import {
   AnalyticsFiltersPanel,
   applyAnalyticsFilters,
@@ -582,6 +583,9 @@ export function AnalyticsDashboard() {
           </Card>
           </>
         )}
+
+        {/* Annotations */}
+        {visibleWidgets.includes('annotations') && <AnnotationsList />}
       </div>
     </div>
   );
