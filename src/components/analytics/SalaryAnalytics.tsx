@@ -206,9 +206,11 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ label, percent }: { label: string; percent: number }) =>
-                          `${label}: ${(percent * 100).toFixed(0)}%`
-                        }
+                        label={(props) => {
+                          const percent = Number(props.percent) || 0;
+                          const name = String(props.name) || '';
+                          return `${name}: ${(percent * 100).toFixed(0)}%`;
+                        }}
                         outerRadius={100}
                         fill="#8884d8"
                         dataKey="count"

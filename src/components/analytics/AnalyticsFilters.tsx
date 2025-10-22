@@ -38,10 +38,7 @@ export function AnalyticsFiltersPanel({
 }: AnalyticsFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Extract unique values from applications
-  const uniqueCompanyNames = Array.from(
-    new Set(applications.map((app) => app.companyName).filter(Boolean))
-  ).sort();
+  // Extract unique values from applications (companyNames are used inline in the component)
   
   const uniqueSources = Array.from(
     new Set(

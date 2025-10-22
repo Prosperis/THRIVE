@@ -2,6 +2,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
+import './styles/print.css';
 import { ThemeProvider } from '@/components/layout';
 import { QueryProvider } from '@/lib/queryClient';
 import { autoMigrateOnLoad } from '@/lib/migrate-companies';

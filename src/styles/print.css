@@ -1,0 +1,203 @@
+/* Print Stylesheet for Analytics Dashboard */
+
+@media print {
+  /* Hide non-essential elements */
+  nav,
+  aside,
+  .no-print,
+  button:not(.print-button),
+  input[type="checkbox"],
+  .filter-panel,
+  .tabs-list {
+    display: none !important;
+  }
+
+  /* Show all content */
+  .tabs-content {
+    display: block !important;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  body {
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #000;
+    background: #fff;
+  }
+
+  /* Typography */
+  h1 {
+    font-size: 20pt;
+    margin-bottom: 0.5cm;
+  }
+
+  h2 {
+    font-size: 16pt;
+    margin-top: 0.5cm;
+    margin-bottom: 0.3cm;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 14pt;
+    margin-top: 0.4cm;
+    margin-bottom: 0.2cm;
+    page-break-after: avoid;
+  }
+
+  /* Cards and containers */
+  .card {
+    border: 1px solid #ddd;
+    padding: 0.4cm;
+    margin-bottom: 0.3cm;
+    page-break-inside: avoid;
+  }
+
+  .card-header {
+    margin-bottom: 0.2cm;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.2cm;
+  }
+
+  /* Charts */
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .recharts-wrapper {
+    page-break-inside: avoid;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  td,
+  th {
+    border: 1px solid #ddd;
+    padding: 0.2cm;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+
+  /* Progress bars */
+  .progress {
+    border: 1px solid #ddd;
+    height: 0.3cm;
+  }
+
+  /* Badges */
+  .badge {
+    border: 1px solid #ddd;
+    padding: 0.1cm 0.2cm;
+    display: inline-block;
+  }
+
+  /* Links */
+  a {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #666;
+  }
+
+  /* Grid layouts */
+  .grid {
+    display: block !important;
+  }
+
+  .grid > * {
+    margin-bottom: 0.3cm;
+  }
+
+  /* Avoid page breaks */
+  .stat-card,
+  .metric-card,
+  .chart-container {
+    page-break-inside: avoid;
+  }
+
+  /* Show page numbers */
+  .page-number:after {
+    content: counter(page);
+  }
+
+  /* Header for each page */
+  @top-center {
+    content: "Job Search Analytics Report";
+  }
+
+  /* Footer with date and page number */
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+  }
+
+  @bottom-left {
+    content: "Generated on " string(current-date);
+  }
+
+  /* Improve contrast */
+  * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure colored backgrounds print */
+  .bg-green-500,
+  .text-green-500 {
+    background-color: #22c55e !important;
+    color: #22c55e !important;
+  }
+
+  .bg-blue-500,
+  .text-blue-500 {
+    background-color: #3b82f6 !important;
+    color: #3b82f6 !important;
+  }
+
+  .bg-yellow-500,
+  .text-yellow-500 {
+    background-color: #eab308 !important;
+    color: #eab308 !important;
+  }
+
+  .bg-red-500,
+  .text-red-500 {
+    background-color: #ef4444 !important;
+    color: #ef4444 !important;
+  }
+
+  /* Remove shadows and transitions */
+  * {
+    box-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

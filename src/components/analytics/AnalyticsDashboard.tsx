@@ -56,6 +56,7 @@ import { SalaryAnalytics } from './SalaryAnalytics';
 import { CompanyComparison } from './CompanyComparison';
 import { PeriodComparison } from './PeriodComparison';
 import { GoalsTracking } from './GoalsTracking';
+import { ExportOptions } from './ExportOptions';
 import {
   AnalyticsFiltersPanel,
   applyAnalyticsFilters,
@@ -288,6 +289,7 @@ export function AnalyticsDashboard() {
           <TabsTrigger value="goals">Goals & Tracking</TabsTrigger>
           <TabsTrigger value="geographic">Geographic</TabsTrigger>
           <TabsTrigger value="salary">Salary</TabsTrigger>
+          <TabsTrigger value="export">Export & Reports</TabsTrigger>
           <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
         </TabsList>
 
@@ -497,6 +499,15 @@ export function AnalyticsDashboard() {
         {/* Salary Analytics */}
         <TabsContent value="salary" className="space-y-4">
           <SalaryAnalytics applications={filteredApplications} period={period} />
+        </TabsContent>
+
+        {/* Export & Reports */}
+        <TabsContent value="export" className="space-y-4">
+          <ExportOptions
+            applications={filteredApplications}
+            interviews={interviews}
+            metrics={metrics}
+          />
         </TabsContent>
 
         {/* Monthly Trends */}
