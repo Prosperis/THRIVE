@@ -27,7 +27,10 @@ import type { Company } from '@/types';
 import { COMPANY_STATUSES, REMOTE_POLICIES, PRIORITY_LEVELS } from '@/lib/constants';
 import { CompanyDialog } from './CompanyDialog';
 import { LinkApplicationDialog } from './LinkApplicationDialog';
+import { DataQualityIndicator } from './DataQualityIndicator';
+import { DuplicateDetection } from './DuplicateDetection';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useCompaniesStore } from '@/stores/companiesStore';
 
 interface CompanyDetailDrawerProps {
   company: Company | null;
@@ -40,6 +43,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const { applications } = useApplicationsStore();
+  const { companies } = useCompaniesStore();
 
   if (!company) return null;
 
@@ -171,6 +175,15 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6 mt-6">
+              {/* Duplicate Detection */}
+              <DuplicateDetection 
+                company={company} 
+                allCompanies={companies}
+              />
+
+              {/* Data Quality Indicator */}
+              <DataQualityIndicator company={company} variant="detailed" />
+
               {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-4">
                 {company.industry && (

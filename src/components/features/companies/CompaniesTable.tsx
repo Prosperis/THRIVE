@@ -20,6 +20,7 @@ import type { Company } from '@/types';
 import { COMPANY_STATUSES, REMOTE_POLICIES } from '@/lib/constants';
 import { CompanyDetailDrawer } from './CompanyDetailDrawer';
 import { BulkActionsToolbar } from './BulkActionsToolbar';
+import { DataQualityIndicator } from './DataQualityIndicator';
 
 const statusColors: Record<string, string> = {
   target: 'bg-gray-500',
@@ -106,13 +107,14 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
             >
               <Building2 className="h-4 w-4 text-muted-foreground" />
               <div className="flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium">{row.getValue('name')}</span>
                   {row.original.applicationIds.length > 0 && (
                     <Badge variant="secondary" className="text-xs">
                       {row.original.applicationIds.length} {row.original.applicationIds.length === 1 ? 'app' : 'apps'}
                     </Badge>
                   )}
+                  <DataQualityIndicator company={row.original} variant="inline" />
                 </div>
                 {row.original.website && (
                   <a
