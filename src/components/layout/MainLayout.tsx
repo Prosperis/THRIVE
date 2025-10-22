@@ -17,7 +17,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <div className="relative flex min-h-screen flex-col">
       <Header />
       <main id="main-content" className="flex-1" tabIndex={-1}>
-        <div className={useMinimalPadding ? "container py-2" : "container py-4 md:py-6 lg:py-8"}>
+        <div className={useMinimalPadding ? "container py-2" : "container py-1 md:py-2 lg:py-3"}>
           {children}
         </div>
       </main>
