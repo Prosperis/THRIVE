@@ -100,7 +100,7 @@ export function AnnotationsList() {
             <CardTitle>Annotations ({annotations.length})</CardTitle>
             <CardDescription>Your notes, milestones, and reminders</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant={enableReorder ? 'default' : 'outline'}
               size="sm"
@@ -109,19 +109,48 @@ export function AnnotationsList() {
             >
               {enableReorder ? '✓ Reordering' : 'Reorder'}
             </Button>
-            <Select value={filterType} onValueChange={(value) => setFilterType(value as AnnotationType | 'all')}>
-              <SelectTrigger className="w-[150px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="milestone">🎯 Milestones</SelectItem>
-                <SelectItem value="note">📝 Notes</SelectItem>
-                <SelectItem value="reminder">⏰ Reminders</SelectItem>
-                <SelectItem value="event">🎉 Events</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={filterType === 'all' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setFilterType('all')}
+                className="h-7 px-2 text-xs"
+              >
+                All
+              </Button>
+              <Button
+                variant={filterType === 'milestone' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setFilterType('milestone')}
+                className="h-7 px-2 text-xs"
+              >
+                🎯
+              </Button>
+              <Button
+                variant={filterType === 'note' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setFilterType('note')}
+                className="h-7 px-2 text-xs"
+              >
+                📝
+              </Button>
+              <Button
+                variant={filterType === 'reminder' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setFilterType('reminder')}
+                className="h-7 px-2 text-xs"
+              >
+                ⏰
+              </Button>
+              <Button
+                variant={filterType === 'event' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setFilterType('event')}
+                className="h-7 px-2 text-xs"
+              >
+                🎉
+              </Button>
+            </div>
             <AnnotationDialog />
           </div>
         </div>
