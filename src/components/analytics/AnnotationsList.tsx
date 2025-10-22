@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar, Edit, MoreVertical, Trash2, Filter } from 'lucide-react';
+import { AnimatedIconButton } from '@/components/ui/animated-icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -128,9 +129,12 @@ export function AnnotationsList() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
+                        <AnimatedIconButton
+                          icon={MoreVertical}
+                          size={16}
+                          animation="rotate"
+                          className="h-8 w-8"
+                        />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem disabled>
