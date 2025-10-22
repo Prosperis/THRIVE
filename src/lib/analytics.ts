@@ -16,6 +16,7 @@ import type {
   ResponseTimeDistribution,
   StatusDistribution,
   TimeSeriesData,
+  InterviewStageStats,
 } from '@/types/analytics';
 
 /**
@@ -465,4 +466,68 @@ export function getTrend(
     color: change > 0 ? 'text-green-600' : 'text-red-600',
     percentage: change,
   };
+}
+
+/**
+ * Calculate interview stage statistics
+ */
+export function calculateInterviewStageStats(
+  interviews: Interview[],
+  period?: { start: Date; end: Date }
+): InterviewStageStats[] {
+  // Filter by period if provided
+  const filteredInterviews = period
+    ? interviews.filter((interview) => {
+        if (!interview.scheduledAt) return false;
+        const interviewDate = new Date(interview.scheduledAt);
+        return (
+          interviewDate >= period.start &&
+          interviewDate <= period.end
+        );
+      })
+    : interviews;
+
+  // Group interviews by type/stage
+  const stageGroups = filteredInterviews.reduce(
+    (acc, interview) => {
+      const stage = interview.type || 'other';
+      if (!acc[stage]) {
+        acc[stage] = [];
+      }
+      acc[stage].push(interview);
+      return acc;
+    },
+    {} as Record<string, Interview[]>
+  );
+
+  // Calculate stats for each stage
+  return Object.entries(stageGroups).map(([stage, stageInterviews]) => {
+    const completedInterviews = stageInterviews.filter((i) => i.status === 'completed');
+    const successfulInterviews = stageInterviews.filter(
+      (i) => i.status === 'completed' && i.result === 'passed'
+    );
+
+    // Calculate average duration (assuming duration field is in minutes)
+    let averageDuration = 0;
+    if (completedInterviews.length > 0) {
+      const totalDuration = completedInterviews.reduce((sum, interview) => {
+        // Convert duration from minutes to days (rough estimate: interview happens same day)
+        return sum + (interview.duration || 60) / (60 * 24);
+      }, 0);
+      averageDuration = totalDuration / completedInterviews.length;
+    }
+
+    // Calculate success rate
+    const successRate =
+      completedInterviews.length > 0
+        ? (successfulInterviews.length / completedInterviews.length) * 100
+        : 0;
+
+    return {
+      stage: stage.replace(/-/g, ' '),
+      count: stageInterviews.length,
+      averageDuration,
+      successRate,
+    };
+  }).sort((a, b) => b.count - a.count); // Sort by count descending
 }
