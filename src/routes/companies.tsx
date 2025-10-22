@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import type { Table } from '@tanstack/react-table';
 import { CompaniesToolbar } from '@/components/features/companies/CompaniesToolbar';
 import { CompaniesTable } from '@/components/features/companies/CompaniesTable';
+import { CompaniesList } from '@/components/features/companies/CompaniesList';
 import { CompanyResearchHub } from '@/components/interview-prep/CompanyResearchHub';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import type { Company } from '@/types';
@@ -107,9 +108,7 @@ function CompaniesRoute() {
       )}
 
       {activeView === 'list' && (
-        <div className="text-center py-12 text-muted-foreground">
-          List view coming soon...
-        </div>
+        <CompaniesList companies={filteredCompanies} />
       )}
     </div>
   );
