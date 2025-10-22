@@ -47,6 +47,9 @@ import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 import { ANALYTICS_PERIODS, type AnalyticsPeriod } from '@/types/analytics';
 import { MetricGrid, StatCard } from './StatCard';
+import { ApplicationFunnelChart } from './ApplicationFunnelChart';
+import { ResponseTimeChart } from './ResponseTimeChart';
+import { InterviewStageChart } from './InterviewStageChart';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
@@ -178,6 +181,7 @@ export function AnalyticsDashboard() {
       <Tabs defaultValue="timeline" className="space-y-4">
         <TabsList>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="funnel">Application Funnel</TabsTrigger>
           <TabsTrigger value="status">Status Distribution</TabsTrigger>
           <TabsTrigger value="companies">Top Companies</TabsTrigger>
           <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
@@ -243,6 +247,11 @@ export function AnalyticsDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Application Funnel */}
+        <TabsContent value="funnel" className="space-y-4">
+          <ApplicationFunnelChart period={period} />
         </TabsContent>
 
         {/* Status Distribution */}
@@ -320,6 +329,12 @@ export function AnalyticsDashboard() {
                 )}
               </CardContent>
             </Card>
+          </div>
+
+          {/* Response Time Distribution */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <ResponseTimeChart period={period} />
+            <InterviewStageChart period={period} />
           </div>
         </TabsContent>
 
