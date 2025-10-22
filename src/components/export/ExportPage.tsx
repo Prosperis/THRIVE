@@ -367,7 +367,7 @@ export function ExportPage() {
                 {/* Status Filter Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[140px] justify-between">
+                    <Button variant="outline" className="min-w-[120px] justify-between px-3">
                       <span className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         Status
@@ -379,7 +379,7 @@ export function ExportPage() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[200px]">
+                  <DropdownMenuContent align="start" className="w-[140px]">
                     {APPLICATION_STATUSES.map((status) => (
                       <DropdownMenuCheckboxItem
                         key={status.value}
@@ -401,7 +401,7 @@ export function ExportPage() {
                 {/* Work Type Filter Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[140px] justify-between">
+                    <Button variant="outline" className="min-w-[140px] justify-between px-3">
                       <span className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         Work Type
@@ -413,7 +413,7 @@ export function ExportPage() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[180px]">
+                  <DropdownMenuContent align="start" className="w-[140px]">
                     {WORK_TYPES.map((type) => (
                       <DropdownMenuCheckboxItem
                         key={type.value}
@@ -435,7 +435,7 @@ export function ExportPage() {
                 {/* Employment Type Filter Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[160px] justify-between">
+                    <Button variant="outline" className="min-w-[160px] justify-between px-3">
                       <span className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         Employment
@@ -447,7 +447,7 @@ export function ExportPage() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[180px]">
+                  <DropdownMenuContent align="start" className="w-[140px]">
                     {EMPLOYMENT_TYPES.map((type) => (
                       <DropdownMenuCheckboxItem
                         key={type.value}
@@ -471,7 +471,7 @@ export function ExportPage() {
                 {/* Priority Filter Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[130px] justify-between">
+                    <Button variant="outline" className="min-w-[130px] justify-between px-3">
                       <span className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         Priority
@@ -483,7 +483,7 @@ export function ExportPage() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[150px]">
+                  <DropdownMenuContent align="start" className="w-[120px]">
                     {['low', 'medium', 'high'].map((priority) => (
                       <DropdownMenuCheckboxItem
                         key={priority}
