@@ -52,6 +52,7 @@ import { ResponseTimeChart } from './ResponseTimeChart';
 import { InterviewStageChart } from './InterviewStageChart';
 import { AdditionalInsights } from './AdditionalInsights';
 import { GeographicDistribution } from './GeographicDistribution';
+import { SalaryAnalytics } from './SalaryAnalytics';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
@@ -244,6 +245,7 @@ export function AnalyticsDashboard() {
           <TabsTrigger value="status">Status Distribution</TabsTrigger>
           <TabsTrigger value="companies">Top Companies</TabsTrigger>
           <TabsTrigger value="geographic">Geographic</TabsTrigger>
+          <TabsTrigger value="salary">Salary</TabsTrigger>
           <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
         </TabsList>
 
@@ -433,6 +435,11 @@ export function AnalyticsDashboard() {
         {/* Geographic Distribution */}
         <TabsContent value="geographic" className="space-y-4">
           <GeographicDistribution period={period} />
+        </TabsContent>
+
+        {/* Salary Analytics */}
+        <TabsContent value="salary" className="space-y-4">
+          <SalaryAnalytics applications={applications} period={period} />
         </TabsContent>
 
         {/* Monthly Trends */}

@@ -714,3 +714,172 @@ export function calculateWorkTypeDistribution(
     }))
     .sort((a, b) => b.total - a.total);
 }
+
+/**
+ * Calculate average salary by application status
+ */
+export function calculateSalaryByStatus(applications: Application[]) {
+  const statusGroups = applications.reduce(
+    (acc, app) => {
+      if (!app.salary?.min || !app.salary?.max) return acc;
+      
+      const avgSalary = (app.salary.min + app.salary.max) / 2;
+      
+      if (!acc[app.status]) {
+        acc[app.status] = { total: 0, count: 0 };
+      }
+      
+      acc[app.status].total += avgSalary;
+      acc[app.status].count++;
+      
+      return acc;
+    },
+    {} as Record<string, { total: number; count: number }>
+  );
+
+  return Object.entries(statusGroups)
+    .map(([status, stats]) => ({
+      status,
+      avgSalary: stats.count > 0 ? Math.round(stats.total / stats.count) : 0,
+      count: stats.count,
+    }))
+    .sort((a, b) => b.avgSalary - a.avgSalary);
+}
+
+/**
+ * Calculate salary distribution ranges
+ */
+export function calculateSalaryDistribution(applications: Application[]) {
+  const ranges = [
+    { label: '<$50K', min: 0, max: 50000 },
+    { label: '$50K-$75K', min: 50000, max: 75000 },
+    { label: '$75K-$100K', min: 75000, max: 100000 },
+    { label: '$100K-$125K', min: 100000, max: 125000 },
+    { label: '$125K-$150K', min: 125000, max: 150000 },
+    { label: '$150K+', min: 150000, max: Infinity },
+  ];
+
+  const distribution = ranges.map((range) => ({
+    label: range.label,
+    count: 0,
+    avgSalary: 0,
+    totalSalary: 0,
+  }));
+
+  applications.forEach((app) => {
+    if (!app.salary?.min || !app.salary?.max) return;
+    
+    const avgSalary = (app.salary.min + app.salary.max) / 2;
+    
+    const rangeIndex = ranges.findIndex(
+      (range) => avgSalary >= range.min && avgSalary < range.max
+    );
+    
+    if (rangeIndex !== -1) {
+      distribution[rangeIndex].count++;
+      distribution[rangeIndex].totalSalary += avgSalary;
+    }
+  });
+
+  // Calculate averages
+  distribution.forEach((range) => {
+    if (range.count > 0) {
+      range.avgSalary = Math.round(range.totalSalary / range.count);
+    }
+  });
+
+  return distribution;
+}
+
+/**
+ * Calculate expected value of applications
+ * Expected value = average salary × success rate
+ */
+export function calculateExpectedValue(applications: Application[]) {
+  const applicationsWithSalary = applications.filter(
+    (app) => app.salary?.min && app.salary?.max
+  );
+
+  if (applicationsWithSalary.length === 0) {
+    return {
+      averageSalary: 0,
+      successRate: 0,
+      expectedValue: 0,
+      totalApplications: 0,
+      withSalary: 0,
+    };
+  }
+
+  const totalSalary = applicationsWithSalary.reduce((sum, app) => {
+    if (!app.salary?.min || !app.salary?.max) return sum;
+    return sum + (app.salary.min + app.salary.max) / 2;
+  }, 0);
+
+  const successfulApps = applicationsWithSalary.filter(
+    (app) => app.status === 'offer' || app.status === 'accepted'
+  ).length;
+
+  const averageSalary = Math.round(totalSalary / applicationsWithSalary.length);
+  const successRate = (successfulApps / applicationsWithSalary.length) * 100;
+  const expectedValue = Math.round((averageSalary * successRate) / 100);
+
+  return {
+    averageSalary,
+    successRate,
+    expectedValue,
+    totalApplications: applications.length,
+    withSalary: applicationsWithSalary.length,
+  };
+}
+
+/**
+ * Compare offered vs expected salary
+ */
+export function calculateOfferedVsExpected(applications: Application[]) {
+  const offeredApps = applications.filter(
+    (app) =>
+      (app.status === 'offer' || app.status === 'accepted') &&
+      app.salary?.min &&
+      app.salary?.max
+  );
+
+  if (offeredApps.length === 0) {
+    return {
+      averageOffered: 0,
+      averageExpected: 0,
+      difference: 0,
+      percentDifference: 0,
+      count: 0,
+    };
+  }
+
+  const offeredTotal = offeredApps.reduce((sum, app) => {
+    if (!app.salary?.min || !app.salary?.max) return sum;
+    return sum + (app.salary.min + app.salary.max) / 2;
+  }, 0);
+
+  // For comparison, use all applications with salary info as "expected"
+  const expectedApps = applications.filter(
+    (app) => app.salary?.min && app.salary?.max
+  );
+
+  const expectedTotal = expectedApps.reduce((sum, app) => {
+    if (!app.salary?.min || !app.salary?.max) return sum;
+    return sum + (app.salary.min + app.salary.max) / 2;
+  }, 0);
+
+  const averageOffered = Math.round(offeredTotal / offeredApps.length);
+  const averageExpected =
+    expectedApps.length > 0 ? Math.round(expectedTotal / expectedApps.length) : 0;
+  const difference = averageOffered - averageExpected;
+  const percentDifference =
+    averageExpected > 0 ? ((difference / averageExpected) * 100) : 0;
+
+  return {
+    averageOffered,
+    averageExpected,
+    difference,
+    percentDifference,
+    count: offeredApps.length,
+  };
+}
