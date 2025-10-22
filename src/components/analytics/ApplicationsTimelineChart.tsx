@@ -60,11 +60,14 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
 
 export function ApplicationsTimelineChart() {
   const { applications } = useApplicationsStore();
+  const { getAnnotationsInRange } = useAnnotationsStore();
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
   const [drillDownData, setDrillDownData] = useState<{
     title: string;
     applications: Application[];
   } | null>(null);
+  const [showAnnotationDialog, setShowAnnotationDialog] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const gradientId1 = useId();
   const gradientId2 = useId();
 
@@ -130,6 +133,14 @@ export function ApplicationsTimelineChart() {
     }
   }, [applications, timeRange]);
 
+  // Get annotations for visible time range
+  const visibleAnnotations = useMemo(() => {
+    if (chartData.length === 0) return [];
+    const startDate = chartData[0].startDate;
+    const endDate = chartData[chartData.length - 1].endDate;
+    return getAnnotationsInRange(startDate, endDate);
+  }, [chartData, getAnnotationsInRange]);
+
   const handleChartClick = (data: unknown) => {
     const point = data as { applicationList?: Application[]; period?: string };
     if (point.applicationList && point.applicationList.length > 0) {
@@ -171,6 +182,16 @@ export function ApplicationsTimelineChart() {
           <div className="flex gap-2">
             <Button
               size="sm"
+              variant="outline"
+              onClick={() => {
+                setSelectedDate(new Date());
+                setShowAnnotationDialog(true);
+              }}
+            >
+              + Add Annotation
+            </Button>
+            <Button
+              size="sm"
               variant={timeRange === 'week' ? 'default' : 'outline'}
               onClick={() => setTimeRange('week')}
             >
@@ -187,8 +208,15 @@ export function ApplicationsTimelineChart() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-2 text-xs text-muted-foreground">
-          💡 Click on any point to view application details
+        <div className="mb-2 flex items-center justify-between">
+          <div className="text-xs text-muted-foreground">
+            💡 Click on any point to view application details
+          </div>
+          {visibleAnnotations.length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              📍 {visibleAnnotations.length} annotation{visibleAnnotations.length !== 1 ? 's' : ''} shown
+            </div>
+          )}
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart
@@ -232,6 +260,32 @@ export function ApplicationsTimelineChart() {
               name="Interviews"
               activeDot={{ r: 6, style: { cursor: 'pointer' } }}
             />
+            {/* Annotation Markers */}
+            {visibleAnnotations.map((annotation) => {
+              const annotationDate = new Date(annotation.date);
+              // Find the closest data point
+              const dataPoint = chartData.find((point) =>
+                isWithinInterval(annotationDate, { start: point.startDate, end: point.endDate })
+              );
+              if (!dataPoint) return null;
+
+              return (
+                <ReferenceLine
+                  key={annotation.id}
+                  x={dataPoint.period}
+                  stroke={annotation.color}
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  label={{
+                    value: annotation.title,
+                    position: 'top',
+                    fill: annotation.color,
+                    fontSize: 11,
+                    fontWeight: 600,
+                  }}
+                />
+              );
+            })}
           </AreaChart>
         </ResponsiveContainer>
       </CardContent>
@@ -281,6 +335,13 @@ export function ApplicationsTimelineChart() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Annotation Dialog */}
+      <AnnotationDialog
+        open={showAnnotationDialog}
+        onOpenChange={setShowAnnotationDialog}
+        defaultDate={selectedDate}
+      />
     </Card>
   );
 }

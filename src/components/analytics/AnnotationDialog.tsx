@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Calendar, Plus, Tag, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,8 @@ import { toast } from 'sonner';
 interface AnnotationDialogProps {
   defaultDate?: Date;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const ANNOTATION_TYPES: { value: AnnotationType; label: string; description: string; icon: string }[] = [
@@ -36,8 +38,8 @@ const ANNOTATION_TYPES: { value: AnnotationType; label: string; description: str
   { value: 'event', label: 'Event', description: 'Significant occurrence or activity', icon: '🎉' },
 ];
 
-export function AnnotationDialog({ defaultDate, trigger }: AnnotationDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function AnnotationDialog({ defaultDate, trigger, open, onOpenChange }: AnnotationDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [date, setDate] = useState(defaultDate ? format(defaultDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'));
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -46,6 +48,17 @@ export function AnnotationDialog({ defaultDate, trigger }: AnnotationDialogProps
   const [tags, setTags] = useState<string[]>([]);
 
   const { addAnnotation } = useAnnotationsStore();
+
+  // Use controlled state if provided, otherwise use internal state
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setIsOpen = onOpenChange !== undefined ? onOpenChange : setInternalOpen;
+
+  // Sync date with defaultDate when it changes
+  useEffect(() => {
+    if (defaultDate) {
+      setDate(format(defaultDate, 'yyyy-MM-dd'));
+    }
+  }, [defaultDate]);
 
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
