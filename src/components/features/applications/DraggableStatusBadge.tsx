@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { GripVertical } from 'lucide-react';
 import { useState } from 'react';
-import { AnimatedStatusBadge } from '@/components/ui/animated-status-badge';
+import { StatusTransitionBadge } from '@/components/ui/status-transition-badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,6 @@ import { toast } from 'sonner';
 
 interface DraggableStatusBadgeProps {
   application: Application;
-  statusColors: Record<Application['status'], string>;
 }
 
 const STATUS_OPTIONS: Array<{ value: Application['status']; label: string; emoji: string }> = [
@@ -29,7 +28,7 @@ const STATUS_OPTIONS: Array<{ value: Application['status']; label: string; emoji
   { value: 'withdrawn', label: 'Withdrawn', emoji: '↩️' },
 ];
 
-export function DraggableStatusBadge({ application, statusColors }: DraggableStatusBadgeProps) {
+export function DraggableStatusBadge({ application }: DraggableStatusBadgeProps) {
   const { updateApplication } = useApplicationsStore();
   const [isDragging, setIsDragging] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -73,12 +72,11 @@ export function DraggableStatusBadge({ application, statusColors }: DraggableSta
           )}
         >
           <GripVertical className="h-3 w-3 text-muted-foreground opacity-50" />
-          <AnimatedStatusBadge
+          <StatusTransitionBadge
             status={application.status}
-            className={statusColors[application.status]}
-          >
-            {application.status.replace('-', ' ')}
-          </AnimatedStatusBadge>
+            showIcon
+            showPulse={isDragging}
+          />
         </motion.div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">

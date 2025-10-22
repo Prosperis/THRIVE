@@ -28,17 +28,6 @@ import { BulkActions } from './BulkActions';
 import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
 import { DraggableStatusBadge } from './DraggableStatusBadge';
 
-const statusColors: Record<Application['status'], string> = {
-  target: 'bg-gray-500',
-  hunting: 'bg-blue-500',
-  applied: 'bg-yellow-500',
-  interviewing: 'bg-purple-500',
-  offer: 'bg-green-500',
-  accepted: 'bg-emerald-500',
-  rejected: 'bg-red-500',
-  withdrawn: 'bg-orange-500',
-};
-
 const priorityColors: Record<NonNullable<Application['priority']>, string> = {
   low: 'bg-gray-400',
   medium: 'bg-yellow-500',
@@ -246,7 +235,6 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
           return (
             <DraggableStatusBadge
               application={row.original}
-              statusColors={statusColors}
             />
           );
         },
