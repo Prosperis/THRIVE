@@ -531,3 +531,124 @@ export function calculateInterviewStageStats(
     };
   }).sort((a, b) => b.count - a.count); // Sort by count descending
 }
+
+/**
+ * Calculate average time from application to offer
+ */
+export function calculateAvgTimeToOffer(applications: Application[]): number {
+  const offeredApps = applications.filter(
+    (app) => (app.status === 'offer' || app.status === 'accepted') && app.appliedDate
+  );
+
+  if (offeredApps.length === 0) return 0;
+
+  const totalDays = offeredApps.reduce((sum, app) => {
+    if (!app.appliedDate) return sum;
+    // Use offerDate if available, otherwise use updatedAt as approximation
+    const offerDate = app.updatedAt || new Date();
+    const days = differenceInDays(new Date(offerDate), new Date(app.appliedDate));
+    return sum + Math.abs(days);
+  }, 0);
+
+  return totalDays / offeredApps.length;
+}
+
+/**
+ * Calculate average time in each status
+ */
+export function calculateAvgTimePerStatus(
+  applications: Application[]
+): { status: string; avgDays: number; count: number }[] {
+  const statusGroups = applications.reduce(
+    (acc, app) => {
+      const status = app.status;
+      if (!acc[status]) {
+        acc[status] = [];
+      }
+      acc[status].push(app);
+      return acc;
+    },
+    {} as Record<string, Application[]>
+  );
+
+  return Object.entries(statusGroups).map(([status, apps]) => {
+    // Calculate average time by using createdAt and updatedAt as rough estimate
+    const totalDays = apps.reduce((sum, app) => {
+      if (!app.createdAt) return sum;
+      const endDate = app.updatedAt || new Date();
+      const days = differenceInDays(new Date(endDate), new Date(app.createdAt));
+      return sum + Math.abs(days);
+    }, 0);
+
+    return {
+      status: status.replace(/-/g, ' '),
+      avgDays: apps.length > 0 ? totalDays / apps.length : 0,
+      count: apps.length,
+    };
+  }).sort((a, b) => b.count - a.count);
+}
+
+/**
+ * Calculate success rate by application source
+ */
+export function calculateSourcePerformance(
+  applications: Application[]
+): { source: string; total: number; successful: number; successRate: number }[] {
+  const sourceGroups = applications.reduce(
+    (acc, app) => {
+      const source = app.source || 'unknown';
+      if (!acc[source]) {
+        acc[source] = { total: 0, successful: 0 };
+      }
+      acc[source].total++;
+      if (app.status === 'offer' || app.status === 'accepted') {
+        acc[source].successful++;
+      }
+      return acc;
+    },
+    {} as Record<string, { total: number; successful: number }>
+  );
+
+  return Object.entries(sourceGroups)
+    .map(([source, stats]) => ({
+      source,
+      total: stats.total,
+      successful: stats.successful,
+      successRate: stats.total > 0 ? (stats.successful / stats.total) * 100 : 0,
+    }))
+    .sort((a, b) => b.successRate - a.successRate);
+}
+
+/**
+ * Calculate success rate by day of week
+ */
+export function calculateDayOfWeekPerformance(
+  applications: Application[]
+): { day: string; total: number; successful: number; successRate: number }[] {
+  const dayGroups = applications.reduce(
+    (acc, app) => {
+      if (!app.appliedDate) return acc;
+      const dayOfWeek = format(new Date(app.appliedDate), 'EEEE');
+      if (!acc[dayOfWeek]) {
+        acc[dayOfWeek] = { total: 0, successful: 0 };
+      }
+      acc[dayOfWeek].total++;
+      if (app.status === 'offer' || app.status === 'accepted' || app.status === 'interviewing') {
+        acc[dayOfWeek].successful++;
+      }
+      return acc;
+    },
+    {} as Record<string, { total: number; successful: number }>
+  );
+
+  const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  return dayOrder
+    .filter((day) => dayGroups[day])
+    .map((day) => ({
+      day,
+      total: dayGroups[day].total,
+      successful: dayGroups[day].successful,
+      successRate: dayGroups[day].total > 0 ? (dayGroups[day].successful / dayGroups[day].total) * 100 : 0,
+    }));
+}
