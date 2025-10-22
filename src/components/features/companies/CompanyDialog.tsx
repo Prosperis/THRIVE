@@ -57,6 +57,20 @@ export function CompanyDialog({
     setOpen(false);
   };
 
+  const handleSaveAndAddAnother = async (data: Partial<Company>) => {
+    setIsLoading(true);
+
+    try {
+      // Create new company
+      await addCompany(data as Omit<Company, 'id' | 'createdAt' | 'updatedAt'>);
+      // Don't close the dialog - form will be reset for next entry
+    } catch (error) {
+      console.error('Failed to save company:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
@@ -75,6 +89,7 @@ export function CompanyDialog({
           company={company}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          onSaveAndAddAnother={!company ? handleSaveAndAddAnother : undefined}
           isLoading={isLoading}
         />
       </DialogContent>

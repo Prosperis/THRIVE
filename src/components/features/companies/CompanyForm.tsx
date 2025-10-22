@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -81,6 +81,7 @@ interface CompanyFormProps {
   onSubmit: (data: Partial<Company>) => void | Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
+  onSaveAndAddAnother?: (data: Partial<Company>) => void | Promise<void>;
 }
 
 // Helper function to calculate average rating
@@ -121,7 +122,7 @@ function isValidUrl(url: string | undefined): boolean {
   }
 }
 
-export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: CompanyFormProps) {
+export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, onSaveAndAddAnother }: CompanyFormProps) {
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
@@ -196,7 +197,54 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
     form
   ]);
 
-  const handleSubmit = (values: CompanyFormValues) => {
+  // Track if form has unsaved changes
+  const isDirty = form.formState.isDirty;
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const formElement = document.querySelector('form');
+        if (formElement) {
+          formElement.requestSubmit();
+        }
+      }
+      // Escape to cancel
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (isDirty) {
+          const confirmCancel = window.confirm(
+            'You have unsaved changes. Are you sure you want to cancel?'
+          );
+          if (confirmCancel) {
+            onCancel();
+          }
+        } else {
+          onCancel();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDirty, onCancel]);
+
+  // Warn before closing with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  const handleSubmit = useCallback((values: CompanyFormValues) => {
     // Transform form values to Company format
     const companyData: Partial<Company> = {
       name: values.name,
@@ -262,7 +310,75 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
     };
 
     onSubmit(companyData);
-  };
+  }, [onSubmit]);
+
+  const handleSaveAndAddAnother = useCallback(async (values: CompanyFormValues) => {
+    // Transform form values to Company format (reuse the same logic)
+    const companyData: Partial<Company> = {
+      name: values.name,
+      website: values.website || undefined,
+      industry: values.industry ? [values.industry] : undefined,
+      size: values.size || undefined,
+      location: values.location || undefined,
+      founded: values.founded || undefined,
+      remotePolicy: (values.remotePolicy as Company['remotePolicy']) || undefined,
+      status: (values.status as Company['status']) || undefined,
+      priority: (values.priority as Company['priority']) || undefined,
+      researched: values.researched || false,
+      description: values.description || undefined,
+      culture: values.culture || undefined,
+      techStack: values.techStack
+        ? values.techStack
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : undefined,
+      benefits: values.benefits
+        ? values.benefits
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : undefined,
+      pros: values.pros
+        ? values.pros
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : undefined,
+      cons: values.cons
+        ? values.cons
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : undefined,
+      notes: values.notes || undefined,
+      companyLinks: {
+        website: values.website || undefined,
+        linkedin: values.linkedinUrl || undefined,
+        glassdoor: values.glassdoorUrl || undefined,
+        careers: values.careersUrl || undefined,
+        news: values.newsUrl || undefined,
+      },
+      ratings: {
+        overall: values.overallRating || undefined,
+        workLifeBalance: values.workLifeBalanceRating || undefined,
+        compensation: values.compensationRating || undefined,
+        careerGrowth: values.careerGrowthRating || undefined,
+        management: values.managementRating || undefined,
+        culture: values.cultureRating || undefined,
+      },
+      salaryRange: values.salaryMin || values.salaryMax ? {
+        min: values.salaryMin,
+        max: values.salaryMax,
+        currency: values.salaryCurrency || 'USD',
+      } : undefined,
+    };
+
+    if (onSaveAndAddAnother) {
+      await onSaveAndAddAnother(companyData);
+      form.reset(); // Reset form for next entry
+    }
+  }, [onSaveAndAddAnother, form]);
 
   return (
     <Form {...form}>
@@ -984,13 +1100,57 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false }: 
         </Tabs>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Saving...' : company ? 'Update Company' : 'Create Company'}
-          </Button>
+        <div className="flex flex-col gap-4 pt-4 border-t">
+          {/* Keyboard shortcuts hint */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <span>
+                <kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+S</kbd> to save
+              </span>
+              <span>
+                <kbd className="px-2 py-1 bg-muted rounded text-xs">Esc</kbd> to cancel
+              </span>
+            </div>
+            {isDirty && (
+              <Badge variant="outline" className="text-xs">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                Unsaved changes
+              </Badge>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex justify-between items-center gap-3">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => form.reset()}
+                disabled={isLoading || !isDirty}
+              >
+                Reset Form
+              </Button>
+            </div>
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+                Cancel
+              </Button>
+              {!company && onSaveAndAddAnother && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={form.handleSubmit(handleSaveAndAddAnother)}
+                  disabled={isLoading}
+                >
+                  Save & Add Another
+                </Button>
+              )}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Saving...' : company ? 'Update Company' : 'Save Company'}
+              </Button>
+            </div>
+          </div>
         </div>
       </form>
     </Form>
