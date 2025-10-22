@@ -105,8 +105,15 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
               onClick={() => handleRowClick(row.original)}
             >
               <Building2 className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="font-medium">{row.getValue('name')}</div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{row.getValue('name')}</span>
+                  {row.original.applicationIds.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {row.original.applicationIds.length} {row.original.applicationIds.length === 1 ? 'app' : 'apps'}
+                    </Badge>
+                  )}
+                </div>
                 {row.original.website && (
                   <a
                     href={row.original.website}

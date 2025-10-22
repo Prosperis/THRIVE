@@ -21,10 +21,12 @@ import {
   Edit,
   ExternalLink,
   Trash2,
+  Link2,
 } from 'lucide-react';
 import type { Company } from '@/types';
 import { COMPANY_STATUSES, REMOTE_POLICIES, PRIORITY_LEVELS } from '@/lib/constants';
 import { CompanyDialog } from './CompanyDialog';
+import { LinkApplicationDialog } from './LinkApplicationDialog';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 
 interface CompanyDetailDrawerProps {
@@ -36,12 +38,13 @@ interface CompanyDetailDrawerProps {
 
 export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: CompanyDetailDrawerProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const { applications } = useApplicationsStore();
 
   if (!company) return null;
 
-  // Find linked applications
-  const linkedApplications = applications.filter(app => app.companyName === company.name);
+  // Find linked applications - use applicationIds from company
+  const linkedApplications = applications.filter(app => company.applicationIds.includes(app.id));
 
   // Get status badge
   const status = COMPANY_STATUSES.find(s => s.value === company.status);
@@ -333,6 +336,20 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
 
             {/* Applications Tab */}
             <TabsContent value="applications" className="space-y-4 mt-6">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  {linkedApplications.length} {linkedApplications.length === 1 ? 'application' : 'applications'}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLinkDialogOpen(true)}
+                >
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Link Application
+                </Button>
+              </div>
+
               {linkedApplications.length > 0 ? (
                 <div className="space-y-3">
                   {linkedApplications.map((app) => (
@@ -360,10 +377,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Briefcase className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No applications yet</p>
-                  <Button variant="outline" size="sm" className="mt-4">
-                    Create Application
-                  </Button>
+                  <p>No linked applications yet</p>
+                  <p className="text-xs mt-1">Click the button above to link existing applications</p>
                 </div>
               )}
             </TabsContent>
@@ -452,6 +467,13 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
         company={company}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
+      />
+
+      {/* Link Application Dialog */}
+      <LinkApplicationDialog
+        company={company}
+        open={linkDialogOpen}
+        onOpenChange={setLinkDialogOpen}
       />
     </>
   );
