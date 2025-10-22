@@ -57,6 +57,7 @@ import { CompanyComparison } from './CompanyComparison';
 import { PeriodComparison } from './PeriodComparison';
 import { GoalsTracking } from './GoalsTracking';
 import { ExportOptions } from './ExportOptions';
+import { ReportGenerator } from './ReportGenerator';
 import {
   AnalyticsFiltersPanel,
   applyAnalyticsFilters,
@@ -290,6 +291,7 @@ export function AnalyticsDashboard() {
           <TabsTrigger value="geographic">Geographic</TabsTrigger>
           <TabsTrigger value="salary">Salary</TabsTrigger>
           <TabsTrigger value="export">Export & Reports</TabsTrigger>
+          <TabsTrigger value="reports">Automated Reports</TabsTrigger>
           <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
         </TabsList>
 
@@ -507,6 +509,14 @@ export function AnalyticsDashboard() {
             applications={filteredApplications}
             interviews={interviews}
             metrics={metrics}
+          />
+        </TabsContent>
+
+        {/* Automated Reports */}
+        <TabsContent value="reports" className="space-y-4">
+          <ReportGenerator
+            applications={filteredApplications}
+            interviews={interviews}
           />
         </TabsContent>
 

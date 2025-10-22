@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, subDays } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
 import type { Application, Interview } from '@/types';
 import type { AnalyticsMetrics } from '@/types/analytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,7 @@ import {
   CheckCircle2,
   Calendar,
 } from 'lucide-react';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 
 interface ExportOptionsProps {
   applications: Application[];
@@ -28,12 +30,13 @@ interface ExportOptionsProps {
   metrics: AnalyticsMetrics;
 }
 
-type PeriodType = 'all' | '7' | '30' | '90' | '180' | '365';
+type PeriodType = 'all' | '7' | '30' | '90' | '180' | '365' | 'custom';
 
 export function ExportOptions({ applications, interviews, metrics }: ExportOptionsProps) {
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
   const [exportType, setExportType] = useState<'applications' | 'interviews' | 'summary'>('applications');
   const [period, setPeriod] = useState<PeriodType>('all');
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   const [lastExport, setLastExport] = useState<string | null>(null);
 
   // Filter data by selected period
@@ -42,21 +45,34 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
       return { applications, interviews };
     }
 
-    const daysBack = parseInt(period, 10);
-    const cutoffDate = subDays(new Date(), daysBack);
+    let startDate: Date;
+    let endDate: Date = new Date();
+
+    if (period === 'custom') {
+      if (!customDateRange?.from) {
+        return { applications, interviews };
+      }
+      startDate = customDateRange.from;
+      endDate = customDateRange.to || customDateRange.from;
+    } else {
+      const daysBack = parseInt(period, 10);
+      startDate = subDays(endDate, daysBack);
+    }
 
     const filteredApps = applications.filter((app) => {
       if (!app.appliedDate) return false;
-      return new Date(app.appliedDate) >= cutoffDate;
+      const appDate = new Date(app.appliedDate);
+      return appDate >= startDate && appDate <= endDate;
     });
 
     const filteredInterviews = interviews.filter((interview) => {
       if (!interview.scheduledAt) return false;
-      return new Date(interview.scheduledAt) >= cutoffDate;
+      const interviewDate = new Date(interview.scheduledAt);
+      return interviewDate >= startDate && interviewDate <= endDate;
     });
 
     return { applications: filteredApps, interviews: filteredInterviews };
-  }, [applications, interviews, period]);
+  }, [applications, interviews, period, customDateRange]);
 
   // Export applications to CSV
   const exportApplicationsCSV = () => {
@@ -255,6 +271,7 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
                   <SelectItem value="90">Last 90 Days</SelectItem>
                   <SelectItem value="180">Last 6 Months</SelectItem>
                   <SelectItem value="365">Last Year</SelectItem>
+                  <SelectItem value="custom">Custom Range</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -312,10 +329,26 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
             </div>
           </div>
 
+          {period === 'custom' && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Select Date Range</div>
+              <DateRangePicker
+                value={customDateRange}
+                onChange={setCustomDateRange}
+              />
+            </div>
+          )}
+
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
             <span>
               Showing {filteredData.applications.length} application(s) and {filteredData.interviews.length} interview(s)
+              {period === 'custom' && customDateRange?.from && (
+                <>
+                  {' '}from {format(customDateRange.from, 'MMM dd, yyyy')}
+                  {customDateRange.to && ` to ${format(customDateRange.to, 'MMM dd, yyyy')}`}
+                </>
+              )}
             </span>
           </div>
 
@@ -348,7 +381,13 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
           <CardContent className="space-y-3">
             <div className="text-2xl font-bold">{filteredData.applications.length}</div>
             <div className="text-xs text-muted-foreground">
-              {period === 'all' ? 'all time' : `last ${period} days`}
+              {period === 'all'
+                ? 'all time'
+                : period === 'custom'
+                  ? customDateRange?.from
+                    ? `${format(customDateRange.from, 'MMM dd')} - ${customDateRange.to ? format(customDateRange.to, 'MMM dd') : 'now'}`
+                    : 'select dates'
+                  : `last ${period} days`}
             </div>
             <div className="flex gap-2">
               <Button
@@ -388,7 +427,13 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
           <CardContent className="space-y-3">
             <div className="text-2xl font-bold">{filteredData.interviews.length}</div>
             <div className="text-xs text-muted-foreground">
-              {period === 'all' ? 'all time' : `last ${period} days`}
+              {period === 'all'
+                ? 'all time'
+                : period === 'custom'
+                  ? customDateRange?.from
+                    ? `${format(customDateRange.from, 'MMM dd')} - ${customDateRange.to ? format(customDateRange.to, 'MMM dd') : 'now'}`
+                    : 'select dates'
+                  : `last ${period} days`}
             </div>
             <div className="flex gap-2">
               <Button
