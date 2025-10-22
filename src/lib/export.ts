@@ -326,6 +326,147 @@ export function exportAndDownloadDocumentsCSV(documents: Document[]): void {
   downloadCSV(csvContent, filename);
 }
 
+/**
+ * Export documents to JSON and trigger download
+ */
+export function exportAndDownloadDocumentsJSON(documents: Document[]): void {
+  const jsonContent = exportToJSON(documents);
+
+  const timestamp = new Date().toISOString().split('T')[0];
+  const filename = `thrive-documents-${timestamp}.json`;
+
+  downloadJSON(jsonContent, filename);
+}
+
+/**
+ * Export documents as ZIP file with metadata and actual document files
+ * Note: This is a placeholder for future implementation with JSZip
+ */
+export async function exportAndDownloadDocumentsZIP(documents: Document[]): Promise<void> {
+  // Check if JSZip is available
+  if (typeof window === 'undefined') {
+    console.error('ZIP export is only available in browser environment');
+    return;
+  }
+
+  try {
+    // Dynamic import of JSZip (you'll need to install it: bun add jszip)
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+
+    // Add metadata JSON
+    const metadata = documents.map((doc) => ({
+      id: doc.id,
+      name: doc.name,
+      type: doc.type,
+      fileName: doc.fileName,
+      fileSize: doc.fileSize,
+      mimeType: doc.mimeType,
+      version: doc.version,
+      versionName: doc.versionName,
+      baseDocumentId: doc.baseDocumentId,
+      applicationId: doc.applicationId,
+      usedInApplicationIds: doc.usedInApplicationIds,
+      lastUsedDate: doc.lastUsedDate,
+      tags: doc.tags,
+      notes: doc.notes,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    }));
+
+    zip.file('metadata.json', JSON.stringify(metadata, null, 2));
+
+    // Create a documents folder in the ZIP
+    const docsFolder = zip.folder('documents');
+
+    if (!docsFolder) {
+      throw new Error('Failed to create documents folder in ZIP');
+    }
+
+    // Add each document file
+    for (const doc of documents) {
+      try {
+        let fileContent: Blob | string | null = null;
+        const safeFileName = doc.fileName || `${doc.name.replace(/[^a-z0-9]/gi, '_')}.txt`;
+
+        // Try to get the file content from various sources
+        if (doc.fileUrl) {
+          // If it's a data URL, convert it to blob
+          if (doc.fileUrl.startsWith('data:')) {
+            const response = await fetch(doc.fileUrl);
+            fileContent = await response.blob();
+          } else if (doc.fileUrl.startsWith('blob:')) {
+            // If it's a blob URL, fetch it
+            const response = await fetch(doc.fileUrl);
+            fileContent = await response.blob();
+          } else {
+            // If it's a regular URL, try to fetch it (may fail due to CORS)
+            try {
+              const response = await fetch(doc.fileUrl);
+              fileContent = await response.blob();
+            } catch (error) {
+              console.warn(`Failed to fetch document from URL: ${doc.fileUrl}`, error);
+              // Create a text file with the URL instead
+              fileContent = `Document URL: ${doc.fileUrl}\n\nNote: The actual file could not be included in the export. Please download it manually from the URL above.`;
+            }
+          }
+        } else if (doc.content) {
+          // If we have text content, use that
+          fileContent = doc.content;
+        } else if (doc.url) {
+          // Try alternative URL field
+          try {
+            const response = await fetch(doc.url);
+            fileContent = await response.blob();
+          } catch (error) {
+            console.warn(`Failed to fetch document from URL: ${doc.url}`, error);
+            fileContent = `Document URL: ${doc.url}\n\nNote: The actual file could not be included in the export. Please download it manually from the URL above.`;
+          }
+        }
+
+        if (fileContent) {
+          docsFolder.file(safeFileName, fileContent);
+        } else {
+          // Create a placeholder file
+          docsFolder.file(
+            `${safeFileName}.txt`,
+            `Document: ${doc.name}\nType: ${doc.type}\n\nNote: The actual file content was not available for export.`
+          );
+        }
+      } catch (error) {
+        console.error(`Failed to add document ${doc.name} to ZIP:`, error);
+        // Add error note file
+        docsFolder.file(
+          `ERROR_${doc.name}.txt`,
+          `Failed to export document: ${doc.name}\nError: ${error}`
+        );
+      }
+    }
+
+    // Generate the ZIP file
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+    // Download the ZIP
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(zipBlob);
+    const timestamp = new Date().toISOString().split('T')[0];
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', `thrive-documents-${timestamp}.zip`);
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up the URL object
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to create ZIP export:', error);
+    throw error;
+  }
+}
+
 // ============ Companies Export ============
 
 /**

@@ -16,6 +16,8 @@ import {
   exportAndDownloadCompaniesCSV,
   exportAndDownloadCompaniesJSON,
   exportAndDownloadDocumentsCSV,
+  exportAndDownloadDocumentsJSON,
+  exportAndDownloadDocumentsZIP,
   exportAndDownloadInterviewsCSV,
   exportAndDownloadInterviewsJSON,
   exportBackup,
@@ -91,6 +93,19 @@ export function ExportPage() {
 
   const handleExportDocumentsCSV = () => {
     exportAndDownloadDocumentsCSV(documents);
+  };
+
+  const handleExportDocumentsJSON = () => {
+    exportAndDownloadDocumentsJSON(documents);
+  };
+
+  const handleExportDocumentsZIP = async () => {
+    try {
+      await exportAndDownloadDocumentsZIP(documents);
+    } catch (error) {
+      console.error('Failed to export documents as ZIP:', error);
+      alert('Failed to export documents as ZIP. Please try again.');
+    }
   };
 
   const handleExportCompaniesCSV = () => {
@@ -382,22 +397,31 @@ export function ExportPage() {
                 </Button>
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
+                <div className="flex-1">
                   <p className="font-medium">Documents</p>
                   <p className="text-sm text-muted-foreground">
                     {stats.documents} document{stats.documents !== 1 ? 's' : ''}
+                    {exportType === 'json' && ' - metadata only'}
                   </p>
                 </div>
-                <Button onClick={handleExportDocumentsCSV} disabled={exportType === 'json'}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-              {exportType === 'json' && (
-                <div className="p-3 bg-muted rounded-lg text-sm text-muted-foreground">
-                  Note: JSON export is currently only available for Applications, Companies, and Interviews. Documents export will be added soon.
+                <div className="flex gap-2">
+                  <Button onClick={exportType === 'csv' ? handleExportDocumentsCSV : handleExportDocumentsJSON}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export {exportType.toUpperCase()}
+                  </Button>
+                  <Button onClick={handleExportDocumentsZIP} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export ZIP
+                  </Button>
                 </div>
-              )}
+              </div>
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
+                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">💡 Documents Export Options:</p>
+                <ul className="text-blue-700 dark:text-blue-300 space-y-1 ml-4 list-disc">
+                  <li><strong>CSV/JSON:</strong> Exports document metadata (names, types, tags, etc.)</li>
+                  <li><strong>ZIP:</strong> Exports both metadata and actual document files together</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
