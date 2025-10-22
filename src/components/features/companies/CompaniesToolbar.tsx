@@ -1,4 +1,5 @@
-import { LayoutGrid, Plus, Table as TableIcon, X, Download, FileDown, ChevronDown, List } from 'lucide-react';
+import { LayoutGrid, Plus, Table as TableIcon, X, Download, FileDown, ChevronDown, List, Bookmark } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,6 +12,7 @@ import {
 import { SearchInput } from '@/components/ui/search-input';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import { UnifiedFilters } from './UnifiedFilters';
+import { SavedFiltersDialog } from './SavedFiltersDialog';
 import type { Table } from '@tanstack/react-table';
 import type { Company } from '@/types';
 
@@ -48,6 +50,7 @@ export function CompaniesToolbar({
   onClearFilters,
 }: CompaniesToolbarProps) {
   const { companies } = useCompaniesStore();
+  const [savedFiltersOpen, setSavedFiltersOpen] = useState(false);
 
   const handleExportCSV = () => {
     // TODO: Implement company-specific export
@@ -115,6 +118,14 @@ export function CompaniesToolbar({
               onFiltersChange={onFiltersChange}
               activeFilterCount={activeFilterCount}
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSavedFiltersOpen(true)}
+            >
+              <Bookmark className="h-4 w-4" />
+              <span className="ml-2 hidden sm:inline">Saved</span>
+            </Button>
             {activeFilterCount > 0 && (
               <Button variant="ghost" size="sm" onClick={onClearFilters}>
                 <X className="h-4 w-4" />
@@ -175,6 +186,13 @@ export function CompaniesToolbar({
           </div>
         </div>
       </div>
+
+      <SavedFiltersDialog
+        open={savedFiltersOpen}
+        onOpenChange={setSavedFiltersOpen}
+        currentFilters={filters}
+        onApplyFilter={onFiltersChange}
+      />
     </>
   );
 }
