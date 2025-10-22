@@ -1,4 +1,4 @@
-import { LayoutGrid, Plus, Table as TableIcon, X, Download, FileDown, ChevronDown, List, Bookmark } from 'lucide-react';
+import { LayoutGrid, Plus, Table as TableIcon, X, Download, FileDown, ChevronDown, List } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,125 +65,119 @@ export function CompaniesToolbar({
 
   return (
     <>
-      {/* Top Bar: View Toggle and New Company */}
-      <div className="flex items-center justify-end gap-2 mb-6">
-        <div className="flex items-center rounded-lg border">
-          <Button
-            variant={activeView === 'table' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => onViewChange('table')}
-            className="rounded-r-none border-r"
-            title="Table View"
-          >
-            <TableIcon className="h-4 w-4" />
+      {/* Single Row: Search, Filters, Actions */}
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
+        {/* Left side: Search and Filters */}
+        <SearchInput
+          value={searchQuery}
+          onChange={onSearchChange}
+          placeholder="Search companies..."
+          className="w-full sm:w-auto sm:flex-1 sm:max-w-sm"
+        />
+        <UnifiedFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          activeFilterCount={activeFilterCount}
+          onOpenSavedFilters={() => setSavedFiltersOpen(true)}
+        />
+        {activeFilterCount > 0 && (
+          <Button variant="ghost" size="sm" onClick={onClearFilters}>
+            <X className="h-4 w-4" />
+            <span className="ml-2 hidden sm:inline">Clear ({activeFilterCount})</span>
           </Button>
-          <Button
-            variant={activeView === 'cards' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => onViewChange('cards')}
-            className="rounded-none border-r"
-            title="Cards View"
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeView === 'list' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => onViewChange('list')}
-            className="rounded-l-none"
-            title="List View"
-          >
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
-        <Button onClick={onAddCompany} className="gap-2">
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">New Company</span>
-          <span className="sm:hidden">New</span>
-        </Button>
-      </div>
+        )}
 
-      {/* Search and Filters Bar */}
-      <div className="space-y-4 mb-4">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2 flex-wrap flex-1">
-            <SearchInput
-              value={searchQuery}
-              onChange={onSearchChange}
-              placeholder="Search by company name, industry, location..."
-              className="w-full sm:w-auto sm:flex-1 sm:max-w-md"
-            />
-            <UnifiedFilters
-              filters={filters}
-              onFiltersChange={onFiltersChange}
-              activeFilterCount={activeFilterCount}
-            />
+        {/* Spacer */}
+        <div className="flex-1 hidden lg:block" />
+
+        {/* Right side: View Toggle, Export, Columns, Add Company */}
+        <div className="flex items-center gap-2">
+          {/* View Toggle */}
+          <div className="flex items-center rounded-lg border">
             <Button
-              variant="outline"
+              variant={activeView === 'table' ? 'secondary' : 'ghost'}
               size="sm"
-              onClick={() => setSavedFiltersOpen(true)}
+              onClick={() => onViewChange('table')}
+              className="rounded-r-none border-r"
+              title="Table View"
             >
-              <Bookmark className="h-4 w-4" />
-              <span className="ml-2 hidden sm:inline">Saved</span>
+              <TableIcon className="h-4 w-4" />
             </Button>
-            {activeFilterCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={onClearFilters}>
-                <X className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">Clear ({activeFilterCount})</span>
-              </Button>
-            )}
+            <Button
+              variant={activeView === 'cards' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => onViewChange('cards')}
+              className="rounded-none border-r"
+              title="Cards View"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={activeView === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => onViewChange('list')}
+              className="rounded-l-none"
+              title="List View"
+            >
+              <List className="h-4 w-4" />
+            </Button>
           </div>
 
-          {/* Right side: Import/Export, Columns buttons */}
-          <div className="flex items-center gap-2">
+          {/* Export */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <FileDown className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Export</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Export Companies</DropdownMenuLabel>
+              <DropdownMenuItem onClick={handleExportCSV}>
+                <Download className="mr-2 h-4 w-4" />
+                Export as CSV ({companies.length})
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportJSON}>
+                <Download className="mr-2 h-4 w-4" />
+                Export as JSON ({companies.length})
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Columns (only in table view) */}
+          {activeView === 'table' && table && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Export
+                  <span className="hidden sm:inline">Columns</span>
+                  <ChevronDown className="h-4 w-4 sm:ml-2" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Export Companies</DropdownMenuLabel>
-                <DropdownMenuItem onClick={handleExportCSV}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export as CSV ({companies.length})
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportJSON}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export as JSON ({companies.length})
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-[180px]">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
               </DropdownMenuContent>
             </DropdownMenu>
+          )}
 
-            {/* Only show Columns dropdown when in table view and table instance is available */}
-            {activeView === 'table' && table && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Columns <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[180px]">
-                  {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => {
-                      return (
-                        <DropdownMenuCheckboxItem
-                          key={column.id}
-                          className="capitalize"
-                          checked={column.getIsVisible()}
-                          onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                        >
-                          {column.id}
-                        </DropdownMenuCheckboxItem>
-                      );
-                    })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
+          {/* Add Company */}
+          <Button onClick={onAddCompany} className="gap-2">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New Company</span>
+          </Button>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Bookmark } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,9 +26,10 @@ interface UnifiedFiltersProps {
     researched?: boolean;
   }) => void;
   activeFilterCount: number;
+  onOpenSavedFilters?: () => void;
 }
 
-export function UnifiedFilters({ filters, onFiltersChange, activeFilterCount }: UnifiedFiltersProps) {
+export function UnifiedFilters({ filters, onFiltersChange, activeFilterCount, onOpenSavedFilters }: UnifiedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Extract current filter values
@@ -92,6 +93,25 @@ export function UnifiedFilters({ filters, onFiltersChange, activeFilterCount }: 
 
         <ScrollArea className="h-[400px]">
           <div className="p-3 space-y-3">
+            {/* Saved Filters */}
+            {onOpenSavedFilters && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setIsOpen(false);
+                    onOpenSavedFilters();
+                  }}
+                >
+                  <Bookmark className="h-4 w-4 mr-2" />
+                  Saved Filters
+                </Button>
+                <Separator />
+              </>
+            )}
+
             {/* Status Filter */}
             <div className="space-y-2">
               <Label className="text-xs font-semibold">Status</Label>
