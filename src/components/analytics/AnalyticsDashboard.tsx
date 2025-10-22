@@ -50,9 +50,11 @@ import { MetricGrid, StatCard } from './StatCard';
 import { ApplicationFunnelChart } from './ApplicationFunnelChart';
 import { ResponseTimeChart } from './ResponseTimeChart';
 import { InterviewStageChart } from './InterviewStageChart';
+import { AdditionalInsights } from './AdditionalInsights';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
+  const [showComparison, setShowComparison] = useState(false);
   const { applications } = useApplicationsStore();
   const { interviews } = useInterviewsStore();
 
@@ -68,6 +70,18 @@ export function AnalyticsDashboard() {
     };
   }, [selectedPeriod]);
 
+  // Calculate previous period dates for comparison
+  const previousPeriod = useMemo(() => {
+    const periodConfig = ANALYTICS_PERIODS.find((p) => p.value === selectedPeriod);
+    if (!periodConfig || selectedPeriod === 'all' || !periodConfig.days || !showComparison) {
+      return undefined;
+    }
+    return {
+      start: subDays(new Date(), periodConfig.days * 2),
+      end: subDays(new Date(), periodConfig.days),
+    };
+  }, [selectedPeriod, showComparison]);
+
   // Calculate the number of days for the selected period
   const periodDays = useMemo(() => {
     const periodConfig = ANALYTICS_PERIODS.find((p) => p.value === selectedPeriod);
@@ -79,6 +93,23 @@ export function AnalyticsDashboard() {
     () => calculateAnalytics(applications, interviews, period),
     [applications, interviews, period]
   );
+
+  // Calculate previous period metrics for comparison
+  const previousMetrics = useMemo(
+    () => previousPeriod ? calculateAnalytics(applications, interviews, previousPeriod) : null,
+    [applications, interviews, previousPeriod]
+  );
+
+  // Calculate trends
+  const calculateTrend = (current: number, previous: number | undefined) => {
+    if (!showComparison || !previous || previous === 0) return undefined;
+    const change = ((current - previous) / previous) * 100;
+    return {
+      value: Math.round(change * 10) / 10,
+      label: 'vs previous period',
+      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'neutral',
+    } as const;
+  };
 
   const timeSeriesData = useMemo(
     () => generateTimeSeriesData(applications, interviews, periodDays, period),
@@ -103,26 +134,39 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
           <p className="text-muted-foreground">Track your job search progress and insights</p>
         </div>
-        <Select
-          value={selectedPeriod}
-          onValueChange={(value) => setSelectedPeriod(value as AnalyticsPeriod['value'])}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ANALYTICS_PERIODS.map((period) => (
-              <SelectItem key={period.value} value={period.value}>
-                {period.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-3">
+          {selectedPeriod !== 'all' && (
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showComparison}
+                onChange={(e) => setShowComparison(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <span>Compare to previous period</span>
+            </label>
+          )}
+          <Select
+            value={selectedPeriod}
+            onValueChange={(value) => setSelectedPeriod(value as AnalyticsPeriod['value'])}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ANALYTICS_PERIODS.map((period) => (
+                <SelectItem key={period.value} value={period.value}>
+                  {period.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Key Metrics */}
@@ -132,50 +176,64 @@ export function AnalyticsDashboard() {
           value={formatNumber(metrics.totalApplications)}
           icon={Target}
           description={`${metrics.applicationsThisWeek} this week`}
+          trend={calculateTrend(metrics.totalApplications, previousMetrics?.totalApplications)}
         />
         <StatCard
           title="Response Rate"
           value={formatPercentage(metrics.responseRate)}
           icon={Percent}
           description={`${metrics.noResponseCount} no response`}
+          trend={calculateTrend(metrics.responseRate, previousMetrics?.responseRate)}
         />
         <StatCard
           title="Interviews"
           value={formatNumber(metrics.totalInterviews)}
           icon={Calendar}
           description={`${metrics.scheduledInterviews} scheduled`}
+          trend={calculateTrend(metrics.totalInterviews, previousMetrics?.totalInterviews)}
         />
         <StatCard
           title="Success Rate"
           value={formatPercentage(metrics.offerRate)}
           icon={CheckCircle}
           description={`${metrics.successfulApplications} offers`}
+          trend={calculateTrend(metrics.offerRate, previousMetrics?.offerRate)}
         />
         <StatCard
           title="Avg Response Time"
           value={`${Math.round(metrics.averageResponseTime)}d`}
           icon={Clock}
           description="Days to hear back"
+          trend={calculateTrend(metrics.averageResponseTime, previousMetrics?.averageResponseTime)}
         />
         <StatCard
           title="Interview Conversion"
           value={formatPercentage(metrics.interviewConversionRate)}
           icon={TrendingUp}
           description="Apps → Interviews"
+          trend={calculateTrend(metrics.interviewConversionRate, previousMetrics?.interviewConversionRate)}
         />
         <StatCard
           title="Offer Conversion"
           value={formatPercentage(metrics.interviewToOfferRate)}
           icon={BarChart3}
           description="Interviews → Offers"
+          trend={calculateTrend(metrics.interviewToOfferRate, previousMetrics?.interviewToOfferRate)}
         />
         <StatCard
           title="Active Applications"
           value={formatNumber(metrics.activeApplications)}
           icon={Building2}
           description="In progress"
+          trend={calculateTrend(metrics.activeApplications, previousMetrics?.activeApplications)}
         />
       </MetricGrid>
+
+      {/* Additional Insights */}
+      <div className="space-y-4">
+        <h3 className="text-2xl font-bold tracking-tight">Additional Insights</h3>
+        <AdditionalInsights period={period} />
+      </div>
 
       {/* Charts */}
       <Tabs defaultValue="timeline" className="space-y-4">
