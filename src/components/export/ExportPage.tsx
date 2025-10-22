@@ -1,6 +1,7 @@
-import { format } from 'date-fns';
-import { Calendar, Database, Download, FileJson, FileText, Filter, Upload } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
+import { Calendar, Database, Download, FileJson, FileText, Filter, Upload, X, Check } from 'lucide-react';
+import { useEffect, useId, useMemo, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
+import type { ApplicationStatus } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   type BackupData,
   type DateRangeFilter,
@@ -30,13 +38,20 @@ import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import { useDocumentsStore } from '@/stores/documentsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
+import { APPLICATION_STATUSES, WORK_TYPES, EMPLOYMENT_TYPES } from '@/lib/constants';
 
 export function ExportPage() {
-  const startDateId = useId();
-  const endDateId = useId();
   const fileUploadId = useId();
 
-  const [dateRange, setDateRange] = useState<DateRangeFilter>({});
+  // Date range state for calendar picker
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  
+  // Enhanced filter states
+  const [selectedStatuses, setSelectedStatuses] = useState<ApplicationStatus[]>([]);
+  const [selectedWorkTypes, setSelectedWorkTypes] = useState<string[]>([]);
+  const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState<string[]>([]);
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+  
   const [exportType, setExportType] = useState<'csv' | 'json'>('csv');
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>('');
@@ -57,38 +72,94 @@ export function ExportPage() {
 
   const isLoading = applicationsLoading || interviewsLoading || documentsLoading || companiesLoading;
 
-  // Stats
+  // Apply filters to applications
+  const filteredApplications = useMemo(() => {
+    let filtered = [...applications];
+
+    // Date range filter
+    if (dateRange?.from || dateRange?.to) {
+      const dateFilter: DateRangeFilter = {
+        startDate: dateRange.from,
+        endDate: dateRange.to,
+      };
+      filtered = filterApplicationsByDateRange(filtered, dateFilter);
+    }
+
+    // Status filter
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((app) => selectedStatuses.includes(app.status));
+    }
+
+    // Work type filter
+    if (selectedWorkTypes.length > 0) {
+      filtered = filtered.filter((app) => app.workType && selectedWorkTypes.includes(app.workType));
+    }
+
+    // Employment type filter
+    if (selectedEmploymentTypes.length > 0) {
+      filtered = filtered.filter(
+        (app) => app.employmentType && selectedEmploymentTypes.includes(app.employmentType)
+      );
+    }
+
+    // Priority filter
+    if (selectedPriorities.length > 0) {
+      filtered = filtered.filter((app) => app.priority && selectedPriorities.includes(app.priority));
+    }
+
+    return filtered;
+  }, [applications, dateRange, selectedStatuses, selectedWorkTypes, selectedEmploymentTypes, selectedPriorities]);
+
+  // Apply filters to interviews
+  const filteredInterviews = useMemo(() => {
+    if (!dateRange?.from && !dateRange?.to) {
+      return interviews;
+    }
+    const dateFilter: DateRangeFilter = {
+      startDate: dateRange.from,
+      endDate: dateRange.to,
+    };
+    return filterInterviewsByDateRange(interviews, dateFilter);
+  }, [interviews, dateRange]);
+
+  // Stats with filtered counts
   const stats = {
-    applications: applications.length,
-    interviews: interviews.length,
+    applications: filteredApplications.length,
+    interviews: filteredInterviews.length,
     documents: documents.length,
     companies: companies.length,
-    total: applications.length + interviews.length + documents.length + companies.length,
+    total: filteredApplications.length + filteredInterviews.length + documents.length + companies.length,
   };
 
-  // Handle exports with date range
+  // Check if any filters are active
+  const hasActiveFilters =
+    dateRange?.from ||
+    dateRange?.to ||
+    selectedStatuses.length > 0 ||
+    selectedWorkTypes.length > 0 ||
+    selectedEmploymentTypes.length > 0 ||
+    selectedPriorities.length > 0;
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setDateRange(undefined);
+    setSelectedStatuses([]);
+    setSelectedWorkTypes([]);
+    setSelectedEmploymentTypes([]);
+    setSelectedPriorities([]);
+  };
+
+  // Handle exports with filtered data
   const handleExportApplicationsCSV = () => {
-    const filtered =
-      dateRange.startDate || dateRange.endDate
-        ? filterApplicationsByDateRange(applications, dateRange)
-        : applications;
-    exportAndDownloadApplicationsCSV(filtered);
+    exportAndDownloadApplicationsCSV(filteredApplications);
   };
 
   const handleExportInterviewsCSV = () => {
-    const filtered =
-      dateRange.startDate || dateRange.endDate
-        ? filterInterviewsByDateRange(interviews, dateRange)
-        : interviews;
-    exportAndDownloadInterviewsCSV(filtered, applications);
+    exportAndDownloadInterviewsCSV(filteredInterviews, applications);
   };
 
   const handleExportInterviewsJSON = () => {
-    const filtered =
-      dateRange.startDate || dateRange.endDate
-        ? filterInterviewsByDateRange(interviews, dateRange)
-        : interviews;
-    exportAndDownloadInterviewsJSON(filtered);
+    exportAndDownloadInterviewsJSON(filteredInterviews);
   };
 
   const handleExportDocumentsCSV = () => {
@@ -117,11 +188,7 @@ export function ExportPage() {
   };
 
   const handleExportApplicationsJSON = () => {
-    const filtered =
-      dateRange.startDate || dateRange.endDate
-        ? filterApplicationsByDateRange(applications, dateRange)
-        : applications;
-    exportAndDownloadApplicationsJSON(filtered);
+    exportAndDownloadApplicationsJSON(filteredApplications);
   };
 
   const handleExportBackup = () => {
@@ -268,53 +335,188 @@ export function ExportPage() {
 
         {/* Export Tab */}
         <TabsContent value="export" className="space-y-4">
-          {/* Date Range Filter */}
+          {/* Enhanced Filters */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Date Range Filter (Optional)
-              </CardTitle>
-              <CardDescription>
-                Filter exports by date range. Leave empty to export all data.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={startDateId}>Start Date</Label>
-                  <Input
-                    id={startDateId}
-                    type="date"
-                    value={dateRange.startDate ? format(dateRange.startDate, 'yyyy-MM-dd') : ''}
-                    onChange={(e) =>
-                      setDateRange((prev) => ({
-                        ...prev,
-                        startDate: e.target.value ? new Date(e.target.value) : undefined,
-                      }))
-                    }
-                  />
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Filter className="h-5 w-5" />
+                    Export Filters
+                  </CardTitle>
+                  <CardDescription>
+                    Filter data before exporting. Leave empty to export all data.
+                  </CardDescription>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={endDateId}>End Date</Label>
-                  <Input
-                    id={endDateId}
-                    type="date"
-                    value={dateRange.endDate ? format(dateRange.endDate, 'yyyy-MM-dd') : ''}
-                    onChange={(e) =>
-                      setDateRange((prev) => ({
-                        ...prev,
-                        endDate: e.target.value ? new Date(e.target.value) : undefined,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              {(dateRange.startDate || dateRange.endDate) && (
-                <div className="mt-4">
-                  <Button variant="outline" size="sm" onClick={() => setDateRange({})}>
-                    Clear Filters
+                {hasActiveFilters && (
+                  <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                    <X className="h-4 w-4 mr-2" />
+                    Clear All
                   </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Compact Filters Row */}
+              <div className="flex flex-wrap gap-3">
+                {/* Date Range Filter */}
+                <div className="flex-1 min-w-[200px]">
+                  <DateRangePicker value={dateRange} onChange={setDateRange} />
+                </div>
+
+                {/* Status Filter Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="min-w-[140px] justify-between">
+                      <span className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        Status
+                        {selectedStatuses.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
+                            {selectedStatuses.length}
+                          </Badge>
+                        )}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[200px]">
+                    {APPLICATION_STATUSES.map((status) => (
+                      <DropdownMenuCheckboxItem
+                        key={status.value}
+                        checked={selectedStatuses.includes(status.value)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedStatuses([...selectedStatuses, status.value]);
+                          } else {
+                            setSelectedStatuses(selectedStatuses.filter((s) => s !== status.value));
+                          }
+                        }}
+                      >
+                        {status.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Work Type Filter Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="min-w-[140px] justify-between">
+                      <span className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        Work Type
+                        {selectedWorkTypes.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
+                            {selectedWorkTypes.length}
+                          </Badge>
+                        )}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[180px]">
+                    {WORK_TYPES.map((type) => (
+                      <DropdownMenuCheckboxItem
+                        key={type.value}
+                        checked={selectedWorkTypes.includes(type.value)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedWorkTypes([...selectedWorkTypes, type.value]);
+                          } else {
+                            setSelectedWorkTypes(selectedWorkTypes.filter((t) => t !== type.value));
+                          }
+                        }}
+                      >
+                        {type.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Employment Type Filter Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="min-w-[160px] justify-between">
+                      <span className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        Employment
+                        {selectedEmploymentTypes.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
+                            {selectedEmploymentTypes.length}
+                          </Badge>
+                        )}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[180px]">
+                    {EMPLOYMENT_TYPES.map((type) => (
+                      <DropdownMenuCheckboxItem
+                        key={type.value}
+                        checked={selectedEmploymentTypes.includes(type.value)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedEmploymentTypes([...selectedEmploymentTypes, type.value]);
+                          } else {
+                            setSelectedEmploymentTypes(
+                              selectedEmploymentTypes.filter((t) => t !== type.value)
+                            );
+                          }
+                        }}
+                      >
+                        {type.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Priority Filter Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="min-w-[130px] justify-between">
+                      <span className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        Priority
+                        {selectedPriorities.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
+                            {selectedPriorities.length}
+                          </Badge>
+                        )}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[150px]">
+                    {['low', 'medium', 'high'].map((priority) => (
+                      <DropdownMenuCheckboxItem
+                        key={priority}
+                        checked={selectedPriorities.includes(priority)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedPriorities([...selectedPriorities, priority]);
+                          } else {
+                            setSelectedPriorities(selectedPriorities.filter((p) => p !== priority));
+                          }
+                        }}
+                      >
+                        <span className="capitalize">{priority}</span>
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Filter Summary */}
+              {hasActiveFilters && (
+                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                      Showing {filteredApplications.length} of {applications.length} applications
+                    </span>
+                  </div>
+                  {filteredApplications.length !== applications.length && (
+                    <span className="text-xs text-blue-700 dark:text-blue-300">
+                      {applications.length - filteredApplications.length} filtered out
+                    </span>
+                  )}
                 </div>
               )}
             </CardContent>
