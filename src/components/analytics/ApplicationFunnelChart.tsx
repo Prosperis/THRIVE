@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { isWithinInterval } from 'date-fns';
 
 const STAGE_COLORS: Record<string, string> = {
   applied: '#3b82f6', // blue
@@ -72,14 +73,31 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
   return null;
 }
 
-export function ApplicationFunnelChart() {
+interface ApplicationFunnelChartProps {
+  period?: {
+    start: Date;
+    end: Date;
+  };
+}
+
+export function ApplicationFunnelChart({ period }: ApplicationFunnelChartProps = {}) {
   const { applications } = useApplicationsStore();
 
-  const totalApplications = applications.length;
+  // Filter applications by period if provided
+  const filteredApplications = useMemo(() => {
+    if (!period) return applications;
+    
+    return applications.filter((app) => {
+      const appDate = new Date(app.appliedDate || app.createdAt);
+      return isWithinInterval(appDate, { start: period.start, end: period.end });
+    });
+  }, [applications, period]);
+
+  const totalApplications = filteredApplications.length;
 
   const funnelData = useMemo(() => {
     // Count applications by status
-    const statusCounts = applications.reduce(
+    const statusCounts = filteredApplications.reduce(
       (acc, app) => {
         acc[app.status] = (acc[app.status] || 0) + 1;
         return acc;
@@ -95,9 +113,9 @@ export function ApplicationFunnelChart() {
       color: STAGE_COLORS[status],
       total: totalApplications,
     })).filter((item) => item.count > 0); // Only show stages with data
-  }, [applications, totalApplications]);
+  }, [filteredApplications, totalApplications]);
 
-  if (applications.length === 0) {
+  if (filteredApplications.length === 0) {
     return (
       <Card>
         <CardHeader>
