@@ -19,6 +19,7 @@ import { useCompaniesStore } from '@/stores/companiesStore';
 import type { Company } from '@/types';
 import { COMPANY_STATUSES, REMOTE_POLICIES } from '@/lib/constants';
 import { CompanyDetailDrawer } from './CompanyDetailDrawer';
+import { BulkActionsToolbar } from './BulkActionsToolbar';
 
 const statusColors: Record<string, string> = {
   target: 'bg-gray-500',
@@ -294,6 +295,12 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
         columns={columns}
         data={companies}
         onTableReady={onTableReady}
+        renderBulkActions={({ selectedRows, table }) => (
+          <BulkActionsToolbar
+            selectedCompanies={selectedRows}
+            onClearSelection={() => table.toggleAllRowsSelected(false)}
+          />
+        )}
       />
 
       <CompanyDetailDrawer
