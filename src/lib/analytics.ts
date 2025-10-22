@@ -652,3 +652,65 @@ export function calculateDayOfWeekPerformance(
       successRate: dayGroups[day].total > 0 ? (dayGroups[day].successful / dayGroups[day].total) * 100 : 0,
     }));
 }
+
+/**
+ * Calculate geographic distribution of applications
+ */
+export function calculateLocationDistribution(
+  applications: Application[]
+): { location: string; total: number; successful: number; successRate: number }[] {
+  const locationGroups = applications.reduce(
+    (acc, app) => {
+      const location = app.location || 'Unknown';
+      if (!acc[location]) {
+        acc[location] = { total: 0, successful: 0 };
+      }
+      acc[location].total++;
+      if (app.status === 'offer' || app.status === 'accepted') {
+        acc[location].successful++;
+      }
+      return acc;
+    },
+    {} as Record<string, { total: number; successful: number }>
+  );
+
+  return Object.entries(locationGroups)
+    .map(([location, stats]) => ({
+      location,
+      total: stats.total,
+      successful: stats.successful,
+      successRate: stats.total > 0 ? (stats.successful / stats.total) * 100 : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
+}
+
+/**
+ * Calculate work type (remote/hybrid/office) distribution
+ */
+export function calculateWorkTypeDistribution(
+  applications: Application[]
+): { workType: string; total: number; successful: number; successRate: number }[] {
+  const workTypeGroups = applications.reduce(
+    (acc, app) => {
+      const workType = app.workType || 'unspecified';
+      if (!acc[workType]) {
+        acc[workType] = { total: 0, successful: 0 };
+      }
+      acc[workType].total++;
+      if (app.status === 'offer' || app.status === 'accepted') {
+        acc[workType].successful++;
+      }
+      return acc;
+    },
+    {} as Record<string, { total: number; successful: number }>
+  );
+
+  return Object.entries(workTypeGroups)
+    .map(([workType, stats]) => ({
+      workType,
+      total: stats.total,
+      successful: stats.successful,
+      successRate: stats.total > 0 ? (stats.successful / stats.total) * 100 : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
+}

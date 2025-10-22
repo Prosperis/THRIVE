@@ -51,6 +51,7 @@ import { ApplicationFunnelChart } from './ApplicationFunnelChart';
 import { ResponseTimeChart } from './ResponseTimeChart';
 import { InterviewStageChart } from './InterviewStageChart';
 import { AdditionalInsights } from './AdditionalInsights';
+import { GeographicDistribution } from './GeographicDistribution';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
@@ -242,6 +243,7 @@ export function AnalyticsDashboard() {
           <TabsTrigger value="funnel">Application Funnel</TabsTrigger>
           <TabsTrigger value="status">Status Distribution</TabsTrigger>
           <TabsTrigger value="companies">Top Companies</TabsTrigger>
+          <TabsTrigger value="geographic">Geographic</TabsTrigger>
           <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
         </TabsList>
 
@@ -426,6 +428,11 @@ export function AnalyticsDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Geographic Distribution */}
+        <TabsContent value="geographic" className="space-y-4">
+          <GeographicDistribution period={period} />
         </TabsContent>
 
         {/* Monthly Trends */}
