@@ -63,6 +63,9 @@ import {
   applyAnalyticsFilters,
   type AnalyticsFilters,
 } from './AnalyticsFilters';
+import { useMilestoneNotifications, useMetricChangeNotifications } from '@/hooks/useMilestoneNotifications';
+import { useDataFreshness } from '@/hooks/useAnimations';
+import { formatDistanceToNow } from 'date-fns';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
@@ -76,6 +79,9 @@ export function AnalyticsDashboard() {
   });
   const { applications } = useApplicationsStore();
   const { interviews } = useInterviewsStore();
+
+  // Real-time milestone notifications
+  useMilestoneNotifications(applications, interviews);
 
   // Apply filters to applications
   const filteredApplications = useMemo(
@@ -125,6 +131,20 @@ export function AnalyticsDashboard() {
     [filteredApplications, interviews, previousPeriod]
   );
 
+  // Real-time metric change notifications
+  useMetricChangeNotifications(
+    {
+      responseRate: metrics.responseRate,
+      interviewConversionRate: metrics.interviewConversionRate,
+      offerRate: metrics.offerRate,
+    },
+    previousMetrics ? {
+      responseRate: previousMetrics.responseRate,
+      interviewConversionRate: previousMetrics.interviewConversionRate,
+      offerRate: previousMetrics.offerRate,
+    } : undefined
+  );
+
   // Calculate trends
   const calculateTrend = (current: number, previous: number | undefined) => {
     if (!showComparison || !previous || previous === 0) return undefined;
@@ -166,13 +186,20 @@ export function AnalyticsDashboard() {
     });
   };
 
+  // Data freshness indicator
+  const { lastUpdated } = useDataFreshness();
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
-          <p className="text-muted-foreground">Track your job search progress and insights</p>
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <p>Track your job search progress and insights</p>
+            <span className="text-xs">·</span>
+            <p className="text-xs">Updated {formatDistanceToNow(lastUpdated, { addSuffix: true })}</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {selectedPeriod !== 'all' && (

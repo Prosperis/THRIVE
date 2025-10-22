@@ -2,7 +2,15 @@ import { useMemo, useState } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import type { Application } from '@/types';
 
 type ChartType = 'status' | 'priority';
 
@@ -69,6 +77,10 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
 export function StatusDistributionChart() {
   const { applications } = useApplicationsStore();
   const [chartType, setChartType] = useState<ChartType>('status');
+  const [drillDownData, setDrillDownData] = useState<{
+    title: string;
+    applications: Application[];
+  } | null>(null);
 
   const chartData = useMemo(() => {
     const total = applications.length;
@@ -88,6 +100,8 @@ export function StatusDistributionChart() {
         value: count,
         percentage: total > 0 ? `${((count / total) * 100).toFixed(1)}%` : '0%',
         color: STATUS_COLORS[status] || '#6b7280',
+        rawStatus: status,
+        applications: applications.filter((app) => app.status === status),
       }));
     } else {
       // Group by priority
@@ -105,9 +119,21 @@ export function StatusDistributionChart() {
         value: count,
         percentage: total > 0 ? `${((count / total) * 100).toFixed(1)}%` : '0%',
         color: PRIORITY_COLORS[priority] || '#6b7280',
+        rawStatus: priority,
+        applications: applications.filter((app) => (app.priority || 'medium') === priority),
       }));
     }
   }, [applications, chartType]);
+
+  const handlePieClick = (data: unknown) => {
+    const segment = data as { applications?: Application[]; name?: string };
+    if (segment.applications && segment.applications.length > 0) {
+      setDrillDownData({
+        title: `${segment.name} Applications`,
+        applications: segment.applications,
+      });
+    }
+  };
 
   const totalApplications = applications.length;
 
@@ -184,6 +210,9 @@ export function StatusDistributionChart() {
         </div>
       </CardHeader>
       <CardContent>
+        <div className="mb-2 text-xs text-muted-foreground">
+          💡 Click on any segment to view applications
+        </div>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
@@ -197,9 +226,11 @@ export function StatusDistributionChart() {
               fill="#8884d8"
               dataKey="value"
               paddingAngle={2}
+              onClick={handlePieClick}
+              style={{ cursor: 'pointer' }}
             >
               {chartData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
+                <Cell key={entry.name} fill={entry.color} style={{ cursor: 'pointer' }} />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
@@ -207,7 +238,13 @@ export function StatusDistributionChart() {
               verticalAlign="bottom"
               height={36}
               iconType="circle"
-              wrapperStyle={{ fontSize: '14px' }}
+              wrapperStyle={{ fontSize: '14px', cursor: 'pointer' }}
+              onClick={(e) => {
+                const segment = chartData.find((item) => item.name === e.value);
+                if (segment) {
+                  handlePieClick(segment);
+                }
+              }}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -232,6 +269,52 @@ export function StatusDistributionChart() {
           </div>
         </div>
       </CardContent>
+
+      {/* Drill-Down Dialog */}
+      <Dialog open={!!drillDownData} onOpenChange={() => setDrillDownData(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>{drillDownData?.title}</DialogTitle>
+            <DialogDescription>
+              {drillDownData?.applications.length} application
+              {drillDownData?.applications.length !== 1 ? 's' : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-auto max-h-[60vh]">
+            {drillDownData?.applications.map((app) => (
+              <div
+                key={app.id}
+                className="p-3 border-b last:border-b-0 hover:bg-muted/50 rounded transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{app.companyName}</p>
+                    <p className="text-sm text-muted-foreground truncate">{app.position}</p>
+                    {app.appliedDate && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Applied: {new Date(app.appliedDate).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full capitalize whitespace-nowrap ${
+                      app.status === 'offer'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                        : app.status === 'interviewing'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300'
+                          : app.status === 'rejected'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                    }`}
+                  >
+                    {app.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
