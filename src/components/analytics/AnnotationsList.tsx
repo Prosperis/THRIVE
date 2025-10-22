@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar, Edit, MoreVertical, Trash2, Filter } from 'lucide-react';
+import { Reorder } from 'framer-motion';
+import { DraggableListItem } from '@/components/ui/draggable-list';
 import { AnimatedIconButton } from '@/components/ui/animated-icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,14 +40,27 @@ const ANNOTATION_TYPE_LABELS: Record<AnnotationType, string> = {
 export function AnnotationsList() {
   const { annotations, deleteAnnotation } = useAnnotationsStore();
   const [filterType, setFilterType] = useState<AnnotationType | 'all'>('all');
+  const [enableReorder, setEnableReorder] = useState(false);
 
   const filteredAnnotations = filterType === 'all'
     ? annotations
     : annotations.filter((a) => a.type === filterType);
 
-  const sortedAnnotations = [...filteredAnnotations].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const [localAnnotations, setLocalAnnotations] = useState(filteredAnnotations);
+
+  // Keep local state in sync with store
+  useState(() => {
+    const sorted = [...filteredAnnotations].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    setLocalAnnotations(sorted);
+  });
+
+  const sortedAnnotations = enableReorder
+    ? localAnnotations
+    : [...filteredAnnotations].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
 
   const handleDelete = (id: string, title: string) => {
     deleteAnnotation(id);
@@ -86,6 +101,14 @@ export function AnnotationsList() {
             <CardDescription>Your notes, milestones, and reminders</CardDescription>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant={enableReorder ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setEnableReorder(!enableReorder)}
+              className="gap-2"
+            >
+              {enableReorder ? '✓ Reordering' : 'Reorder'}
+            </Button>
             <Select value={filterType} onValueChange={(value) => setFilterType(value as AnnotationType | 'all')}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
@@ -104,18 +127,28 @@ export function AnnotationsList() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {sortedAnnotations.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">No annotations match the selected filter.</p>
-            </div>
-          ) : (
-            sortedAnnotations.map((annotation) => (
-              <div
+        {sortedAnnotations.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p className="text-sm">No annotations match the selected filter.</p>
+          </div>
+        ) : (
+          <Reorder.Group
+            axis="y"
+            values={sortedAnnotations}
+            onReorder={setLocalAnnotations}
+            className="space-y-3"
+          >
+            {sortedAnnotations.map((annotation) => (
+              <DraggableListItem
                 key={annotation.id}
-                className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                style={{ borderLeftWidth: '3px', borderLeftColor: annotation.color }}
+                item={annotation}
+                className="p-3 border rounded-lg hover:bg-muted/50 transition-colors bg-card"
+                showDragHandle={enableReorder}
               >
+                <div
+                  className="flex items-start gap-3"
+                  style={{ borderLeftWidth: '3px', borderLeftColor: annotation.color }}
+                >
                 <div className="text-2xl flex-shrink-0">
                   {ANNOTATION_TYPE_ICONS[annotation.type]}
                 </div>
@@ -170,9 +203,10 @@ export function AnnotationsList() {
                   )}
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            </DraggableListItem>
+            ))}
+          </Reorder.Group>
+        )}
       </CardContent>
     </Card>
   );
