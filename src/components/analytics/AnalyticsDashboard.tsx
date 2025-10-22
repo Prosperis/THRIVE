@@ -33,7 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   calculateAnalytics,
   calculateCompanyStats,
@@ -51,10 +50,6 @@ import { ApplicationFunnelChart } from './ApplicationFunnelChart';
 import { ResponseTimeChart } from './ResponseTimeChart';
 import { InterviewStageChart } from './InterviewStageChart';
 import { AdditionalInsights } from './AdditionalInsights';
-import { GeographicDistribution } from './GeographicDistribution';
-import { SalaryAnalytics } from './SalaryAnalytics';
-import { CompanyComparison } from './CompanyComparison';
-import { PeriodComparison } from './PeriodComparison';
 import { GoalsTracking } from './GoalsTracking';
 import { ExportOptions } from './ExportOptions';
 import { ReportGenerator } from './ReportGenerator';
@@ -314,25 +309,10 @@ export function AnalyticsDashboard() {
         <AdditionalInsights period={period} />
       </div>
 
-      {/* Charts */}
-      <Tabs defaultValue="timeline" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="funnel">Application Funnel</TabsTrigger>
-          <TabsTrigger value="status">Status Distribution</TabsTrigger>
-          <TabsTrigger value="companies">Top Companies</TabsTrigger>
-          <TabsTrigger value="comparison">Compare Companies</TabsTrigger>
-          <TabsTrigger value="periods">Time Periods</TabsTrigger>
-          <TabsTrigger value="goals">Goals & Tracking</TabsTrigger>
-          <TabsTrigger value="geographic">Geographic</TabsTrigger>
-          <TabsTrigger value="salary">Salary</TabsTrigger>
-          <TabsTrigger value="export">Export & Reports</TabsTrigger>
-          <TabsTrigger value="reports">Automated Reports</TabsTrigger>
-          <TabsTrigger value="trends">Monthly Trends</TabsTrigger>
-        </TabsList>
-
+      {/* Charts and Widgets */}
+      <div className="space-y-6">
         {/* Timeline Chart */}
-        <TabsContent value="timeline" className="space-y-4">
+        {visibleWidgets.includes('timeline-chart') && (
           <Card>
             <CardHeader>
               <CardTitle>
@@ -391,15 +371,15 @@ export function AnalyticsDashboard() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
         {/* Application Funnel */}
-        <TabsContent value="funnel" className="space-y-4">
+        {visibleWidgets.includes('funnel-chart') && (
           <ApplicationFunnelChart period={period} />
-        </TabsContent>
+        )}
 
         {/* Status Distribution */}
-        <TabsContent value="status" className="space-y-4">
+        {visibleWidgets.includes('status-distribution') && (
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -474,16 +454,16 @@ export function AnalyticsDashboard() {
               </CardContent>
             </Card>
           </div>
+        )}
 
-          {/* Response Time Distribution */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <ResponseTimeChart period={period} />
-            <InterviewStageChart period={period} />
-          </div>
-        </TabsContent>
+        {/* Response Time Distribution */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {visibleWidgets.includes('response-time') && <ResponseTimeChart period={period} />}
+          {visibleWidgets.includes('interview-stage') && <InterviewStageChart period={period} />}
+        </div>
 
         {/* Company Stats */}
-        <TabsContent value="companies" className="space-y-4">
+        {visibleWidgets.includes('company-stats') && (
           <Card>
             <CardHeader>
               <CardTitle>Top Companies</CardTitle>
@@ -512,53 +492,34 @@ export function AnalyticsDashboard() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* Company Comparison */}
-        <TabsContent value="comparison" className="space-y-4">
-          <CompanyComparison applications={filteredApplications} interviews={interviews} />
-        </TabsContent>
-
-        {/* Period Comparison */}
-        <TabsContent value="periods" className="space-y-4">
-          <PeriodComparison applications={filteredApplications} interviews={interviews} />
-        </TabsContent>
-
-        {/* Goals & Tracking */}
-        <TabsContent value="goals" className="space-y-4">
-          <GoalsTracking applications={filteredApplications} interviews={interviews} />
-        </TabsContent>
-
-        {/* Geographic Distribution */}
-        <TabsContent value="geographic" className="space-y-4">
-          <GeographicDistribution period={period} />
-        </TabsContent>
-
-        {/* Salary Analytics */}
-        <TabsContent value="salary" className="space-y-4">
-          <SalaryAnalytics applications={filteredApplications} period={period} />
-        </TabsContent>
+        )}
 
         {/* Export & Reports */}
-        <TabsContent value="export" className="space-y-4">
+        {visibleWidgets.includes('export-options') && (
           <ExportOptions
             applications={filteredApplications}
             interviews={interviews}
             metrics={metrics}
           />
-        </TabsContent>
+        )}
 
         {/* Automated Reports */}
-        <TabsContent value="reports" className="space-y-4">
+        {visibleWidgets.includes('report-generator') && (
           <ReportGenerator
             applications={filteredApplications}
             interviews={interviews}
           />
-        </TabsContent>
+        )}
+
+        {/* Goals & Tracking */}
+        {visibleWidgets.includes('goals-tracking') && (
+          <GoalsTracking applications={filteredApplications} interviews={interviews} />
+        )}
 
         {/* Monthly Trends */}
-        <TabsContent value="trends" className="space-y-4">
-          <Card>
+        {visibleWidgets.includes('monthly-trends') && (
+          <>
+            <Card>
             <CardHeader>
               <CardTitle>Monthly Trends</CardTitle>
               <CardDescription>Track your progress over the last 6 months</CardDescription>
@@ -619,8 +580,9 @@ export function AnalyticsDashboard() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+          </>
+        )}
+      </div>
     </div>
   );
 }
