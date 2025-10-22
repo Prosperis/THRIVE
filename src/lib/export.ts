@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import type { Application, Document, Interview } from '@/types';
+import type { Application, Company, Document, Interview } from '@/types';
 
 /**
  * Export utilities for CSV, JSON, and backup/restore functionality
@@ -249,6 +249,18 @@ export function exportAndDownloadInterviewsCSV(
   downloadCSV(csvContent, filename);
 }
 
+/**
+ * Export interviews to JSON and trigger download
+ */
+export function exportAndDownloadInterviewsJSON(interviews: Interview[]): void {
+  const jsonContent = exportToJSON(interviews);
+
+  const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const filename = `thrive-interviews-${timestamp}.json`;
+
+  downloadJSON(jsonContent, filename);
+}
+
 // ============ Documents Export ============
 
 /**
@@ -312,6 +324,137 @@ export function exportAndDownloadDocumentsCSV(documents: Document[]): void {
   const filename = `thrive-documents-${timestamp}.csv`;
 
   downloadCSV(csvContent, filename);
+}
+
+// ============ Companies Export ============
+
+/**
+ * Convert companies to CSV format
+ */
+export function exportCompaniesToCSV(companies: Company[]): string {
+  if (companies.length === 0) {
+    return '';
+  }
+
+  const headers = [
+    'ID',
+    'Name',
+    'Website',
+    'Industry',
+    'Size',
+    'Location',
+    'Founded',
+    'Remote Policy',
+    'Status',
+    'Priority',
+    'Researched',
+    'Description',
+    'Culture Notes',
+    'Tech Stack',
+    'Benefits',
+    'Pros',
+    'Cons',
+    'Notes',
+    'Overall Rating',
+    'Work-Life Balance',
+    'Compensation Rating',
+    'Career Growth',
+    'Management Rating',
+    'Culture Rating',
+    'Interview Difficulty',
+    'Interview Experience',
+    'Salary Min',
+    'Salary Max',
+    'Currency',
+    'Tags',
+    'Application IDs',
+    'Contact IDs',
+    'Document IDs',
+    'Interview IDs',
+    'Created At',
+    'Updated At',
+  ];
+
+  const escapeCSVValue = (value: unknown): string => {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    const stringValue = String(value);
+    if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+  };
+
+  const rows = companies.map((company) => [
+    escapeCSVValue(company.id),
+    escapeCSVValue(company.name),
+    escapeCSVValue(company.website || ''),
+    escapeCSVValue(company.industry?.join('; ') || ''),
+    escapeCSVValue(company.size || ''),
+    escapeCSVValue(company.location || ''),
+    escapeCSVValue(company.founded || ''),
+    escapeCSVValue(company.remotePolicy || ''),
+    escapeCSVValue(company.status || ''),
+    escapeCSVValue(company.priority || ''),
+    escapeCSVValue(company.researched ? 'Yes' : 'No'),
+    escapeCSVValue(company.description || ''),
+    escapeCSVValue(company.cultureNotes || ''),
+    escapeCSVValue(company.techStack?.join('; ') || ''),
+    escapeCSVValue(company.benefits?.join('; ') || ''),
+    escapeCSVValue(company.pros?.join('; ') || ''),
+    escapeCSVValue(company.cons?.join('; ') || ''),
+    escapeCSVValue(company.notes || ''),
+    escapeCSVValue(company.ratings?.overall || ''),
+    escapeCSVValue(company.ratings?.workLifeBalance || ''),
+    escapeCSVValue(company.ratings?.compensation || ''),
+    escapeCSVValue(company.ratings?.careerGrowth || ''),
+    escapeCSVValue(company.ratings?.management || ''),
+    escapeCSVValue(company.ratings?.culture || ''),
+    escapeCSVValue(company.interviewDifficulty || ''),
+    escapeCSVValue(company.interviewExperience || ''),
+    escapeCSVValue(company.salaryRange?.min || ''),
+    escapeCSVValue(company.salaryRange?.max || ''),
+    escapeCSVValue(company.salaryRange?.currency || ''),
+    escapeCSVValue(company.tags?.join('; ') || ''),
+    escapeCSVValue(company.applicationIds?.join('; ') || ''),
+    escapeCSVValue(company.contactIds?.join('; ') || ''),
+    escapeCSVValue(company.documentIds?.join('; ') || ''),
+    escapeCSVValue(company.interviewIds?.join('; ') || ''),
+    escapeCSVValue(company.createdAt),
+    escapeCSVValue(company.updatedAt),
+  ]);
+
+  return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+}
+
+/**
+ * Export companies to CSV and trigger download
+ */
+export function exportAndDownloadCompaniesCSV(companies: Company[]): void {
+  const csvContent = exportCompaniesToCSV(companies);
+
+  if (!csvContent) {
+    console.warn('No companies to export');
+    return;
+  }
+
+  const timestamp = new Date().toISOString().split('T')[0];
+  const filename = `thrive-companies-${timestamp}.csv`;
+
+  downloadCSV(csvContent, filename);
+}
+
+/**
+ * Export companies to JSON and trigger download
+ */
+export function exportAndDownloadCompaniesJSON(companies: Company[]): void {
+  const jsonContent = exportToJSON(companies);
+
+  const timestamp = new Date().toISOString().split('T')[0];
+  const filename = `thrive-companies-${timestamp}.json`;
+
+  downloadJSON(jsonContent, filename);
 }
 
 // ============ Backup & Restore ============

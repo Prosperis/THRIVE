@@ -1,19 +1,23 @@
 import { format } from 'date-fns';
 import { Calendar, Database, Download, FileJson, FileText, Filter, Upload } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   type BackupData,
   type DateRangeFilter,
   exportAndDownloadApplicationsCSV,
   exportAndDownloadApplicationsJSON,
+  exportAndDownloadCompaniesCSV,
+  exportAndDownloadCompaniesJSON,
   exportAndDownloadDocumentsCSV,
   exportAndDownloadInterviewsCSV,
+  exportAndDownloadInterviewsJSON,
   exportBackup,
   filterApplicationsByDateRange,
   filterInterviewsByDateRange,
@@ -21,6 +25,7 @@ import {
   validateBackupData,
 } from '@/lib/export';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useCompaniesStore } from '@/stores/companiesStore';
 import { useDocumentsStore } from '@/stores/documentsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 
@@ -30,20 +35,33 @@ export function ExportPage() {
   const fileUploadId = useId();
 
   const [dateRange, setDateRange] = useState<DateRangeFilter>({});
+  const [exportType, setExportType] = useState<'csv' | 'json'>('csv');
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>('');
   const [importSuccess, setImportSuccess] = useState<string>('');
 
-  const { applications, addApplication } = useApplicationsStore();
-  const { interviews, addInterview } = useInterviewsStore();
-  const { documents } = useDocumentsStore();
+  const { applications, addApplication, fetchApplications, isLoading: applicationsLoading } = useApplicationsStore();
+  const { interviews, addInterview, fetchInterviews, isLoading: interviewsLoading } = useInterviewsStore();
+  const { documents, fetchDocuments, isLoading: documentsLoading } = useDocumentsStore();
+  const { companies, fetchCompanies, isLoading: companiesLoading } = useCompaniesStore();
+
+  // Fetch data on mount
+  useEffect(() => {
+    fetchApplications();
+    fetchInterviews();
+    fetchDocuments();
+    fetchCompanies();
+  }, [fetchApplications, fetchInterviews, fetchDocuments, fetchCompanies]);
+
+  const isLoading = applicationsLoading || interviewsLoading || documentsLoading || companiesLoading;
 
   // Stats
   const stats = {
     applications: applications.length,
     interviews: interviews.length,
     documents: documents.length,
-    total: applications.length + interviews.length + documents.length,
+    companies: companies.length,
+    total: applications.length + interviews.length + documents.length + companies.length,
   };
 
   // Handle exports with date range
@@ -63,8 +81,24 @@ export function ExportPage() {
     exportAndDownloadInterviewsCSV(filtered, applications);
   };
 
+  const handleExportInterviewsJSON = () => {
+    const filtered =
+      dateRange.startDate || dateRange.endDate
+        ? filterInterviewsByDateRange(interviews, dateRange)
+        : interviews;
+    exportAndDownloadInterviewsJSON(filtered);
+  };
+
   const handleExportDocumentsCSV = () => {
     exportAndDownloadDocumentsCSV(documents);
+  };
+
+  const handleExportCompaniesCSV = () => {
+    exportAndDownloadCompaniesCSV(companies);
+  };
+
+  const handleExportCompaniesJSON = () => {
+    exportAndDownloadCompaniesJSON(companies);
   };
 
   const handleExportApplicationsJSON = () => {
@@ -137,6 +171,17 @@ export function ExportPage() {
     }
   };
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
@@ -152,7 +197,7 @@ export function ExportPage() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -161,6 +206,17 @@ export function ExportPage() {
                 <p className="text-2xl font-bold">{stats.applications}</p>
               </div>
               <FileText className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Companies</p>
+                <p className="text-2xl font-bold">{stats.companies}</p>
+              </div>
+              <Database className="h-8 w-8 text-orange-500" />
             </div>
           </CardContent>
         </Card>
@@ -249,69 +305,99 @@ export function ExportPage() {
             </CardContent>
           </Card>
 
-          {/* CSV Exports */}
+          {/* Export Data */}
           <Card>
             <CardHeader>
-              <CardTitle>CSV Exports</CardTitle>
-              <CardDescription>
-                Download your data as CSV files for analysis in Excel or Google Sheets
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Export Data</CardTitle>
+                  <CardDescription>
+                    Download your data in CSV or JSON format
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="export-type" className="text-sm text-muted-foreground">
+                    Format:
+                  </Label>
+                  <Select value={exportType} onValueChange={(value: 'csv' | 'json') => setExportType(value)}>
+                    <SelectTrigger id="export-type" className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="csv">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          CSV
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="json">
+                        <div className="flex items-center gap-2">
+                          <FileJson className="h-4 w-4" />
+                          JSON
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Applications</p>
-                  <p className="text-sm text-muted-foreground">{stats.applications} applications</p>
+                  <p className="text-sm text-muted-foreground">
+                    {stats.applications} application{stats.applications !== 1 ? 's' : ''}
+                    {exportType === 'json' && ' with all fields'}
+                  </p>
                 </div>
-                <Button onClick={handleExportApplicationsCSV}>
+                <Button onClick={exportType === 'csv' ? handleExportApplicationsCSV : handleExportApplicationsJSON}>
                   <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  Export
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <p className="font-medium">Companies</p>
+                  <p className="text-sm text-muted-foreground">
+                    {stats.companies} compan{stats.companies !== 1 ? 'ies' : 'y'}
+                    {exportType === 'json' && ' with all fields'}
+                  </p>
+                </div>
+                <Button onClick={exportType === 'csv' ? handleExportCompaniesCSV : handleExportCompaniesJSON}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
                 </Button>
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Interviews</p>
-                  <p className="text-sm text-muted-foreground">{stats.interviews} interviews</p>
+                  <p className="text-sm text-muted-foreground">
+                    {stats.interviews} interview{stats.interviews !== 1 ? 's' : ''}
+                    {exportType === 'json' && ' with all fields'}
+                  </p>
                 </div>
-                <Button onClick={handleExportInterviewsCSV}>
+                <Button onClick={exportType === 'csv' ? handleExportInterviewsCSV : handleExportInterviewsJSON}>
                   <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                  Export
                 </Button>
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Documents</p>
-                  <p className="text-sm text-muted-foreground">{stats.documents} documents</p>
-                </div>
-                <Button onClick={handleExportDocumentsCSV}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* JSON Exports */}
-          <Card>
-            <CardHeader>
-              <CardTitle>JSON Exports</CardTitle>
-              <CardDescription>
-                Download your data as JSON files for programmatic access
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <p className="font-medium">Applications (JSON)</p>
                   <p className="text-sm text-muted-foreground">
-                    Complete application data with all fields
+                    {stats.documents} document{stats.documents !== 1 ? 's' : ''}
                   </p>
                 </div>
-                <Button onClick={handleExportApplicationsJSON} variant="secondary">
-                  <FileJson className="h-4 w-4 mr-2" />
-                  Export JSON
+                <Button onClick={handleExportDocumentsCSV} disabled={exportType === 'json'}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
                 </Button>
               </div>
+              {exportType === 'json' && (
+                <div className="p-3 bg-muted rounded-lg text-sm text-muted-foreground">
+                  Note: JSON export is currently only available for Applications, Companies, and Interviews. Documents export will be added soon.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
