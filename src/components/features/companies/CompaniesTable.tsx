@@ -304,6 +304,7 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
         columns={columns}
         data={companies}
         onTableReady={onTableReady}
+        hideToolbar={true}
         renderBulkActions={({ selectedRows, table }) => (
           <BulkActionsToolbar
             selectedCompanies={selectedRows}
