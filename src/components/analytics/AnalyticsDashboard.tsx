@@ -66,6 +66,8 @@ import {
 import { useMilestoneNotifications, useMetricChangeNotifications } from '@/hooks/useMilestoneNotifications';
 import { useDataFreshness } from '@/hooks/useAnimations';
 import { formatDistanceToNow } from 'date-fns';
+import { LayoutManager } from './LayoutManager';
+import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
@@ -77,6 +79,8 @@ export function AnalyticsDashboard() {
     priorities: [],
     tags: [],
   });
+  const { getVisibleWidgets } = useDashboardLayoutStore();
+  const visibleWidgets = getVisibleWidgets();
   const { applications } = useApplicationsStore();
   const { interviews } = useInterviewsStore();
 
@@ -201,7 +205,8 @@ export function AnalyticsDashboard() {
             <p className="text-xs">Updated {formatDistanceToNow(lastUpdated, { addSuffix: true })}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <LayoutManager />
           {selectedPeriod !== 'all' && (
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
@@ -232,72 +237,76 @@ export function AnalyticsDashboard() {
       </div>
 
       {/* Filters */}
-      <AnalyticsFiltersPanel
-        applications={applications}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onReset={resetFilters}
-      />
+      {visibleWidgets.includes('filters') && (
+        <AnalyticsFiltersPanel
+          applications={applications}
+          filters={filters}
+          onFiltersChange={setFilters}
+          onReset={resetFilters}
+        />
+      )}
 
       {/* Key Metrics */}
-      <MetricGrid>
-        <StatCard
-          title="Total Applications"
-          value={formatNumber(metrics.totalApplications)}
-          icon={Target}
-          description={`${metrics.applicationsThisWeek} this week`}
-          trend={calculateTrend(metrics.totalApplications, previousMetrics?.totalApplications)}
-        />
-        <StatCard
-          title="Response Rate"
-          value={formatPercentage(metrics.responseRate)}
-          icon={Percent}
-          description={`${metrics.noResponseCount} no response`}
-          trend={calculateTrend(metrics.responseRate, previousMetrics?.responseRate)}
-        />
-        <StatCard
-          title="Interviews"
-          value={formatNumber(metrics.totalInterviews)}
-          icon={Calendar}
-          description={`${metrics.scheduledInterviews} scheduled`}
-          trend={calculateTrend(metrics.totalInterviews, previousMetrics?.totalInterviews)}
-        />
-        <StatCard
-          title="Success Rate"
-          value={formatPercentage(metrics.offerRate)}
-          icon={CheckCircle}
-          description={`${metrics.successfulApplications} offers`}
-          trend={calculateTrend(metrics.offerRate, previousMetrics?.offerRate)}
-        />
-        <StatCard
-          title="Avg Response Time"
-          value={`${Math.round(metrics.averageResponseTime)}d`}
-          icon={Clock}
-          description="Days to hear back"
-          trend={calculateTrend(metrics.averageResponseTime, previousMetrics?.averageResponseTime)}
-        />
-        <StatCard
-          title="Interview Conversion"
-          value={formatPercentage(metrics.interviewConversionRate)}
-          icon={TrendingUp}
-          description="Apps → Interviews"
-          trend={calculateTrend(metrics.interviewConversionRate, previousMetrics?.interviewConversionRate)}
-        />
-        <StatCard
-          title="Offer Conversion"
-          value={formatPercentage(metrics.interviewToOfferRate)}
-          icon={BarChart3}
-          description="Interviews → Offers"
-          trend={calculateTrend(metrics.interviewToOfferRate, previousMetrics?.interviewToOfferRate)}
-        />
-        <StatCard
-          title="Active Applications"
-          value={formatNumber(metrics.activeApplications)}
-          icon={Building2}
-          description="In progress"
-          trend={calculateTrend(metrics.activeApplications, previousMetrics?.activeApplications)}
-        />
-      </MetricGrid>
+      {visibleWidgets.includes('stats-overview') && (
+        <MetricGrid>
+          <StatCard
+            title="Total Applications"
+            value={formatNumber(metrics.totalApplications)}
+            icon={Target}
+            description={`${metrics.applicationsThisWeek} this week`}
+            trend={calculateTrend(metrics.totalApplications, previousMetrics?.totalApplications)}
+          />
+          <StatCard
+            title="Response Rate"
+            value={formatPercentage(metrics.responseRate)}
+            icon={Percent}
+            description={`${metrics.noResponseCount} no response`}
+            trend={calculateTrend(metrics.responseRate, previousMetrics?.responseRate)}
+          />
+          <StatCard
+            title="Interviews"
+            value={formatNumber(metrics.totalInterviews)}
+            icon={Calendar}
+            description={`${metrics.scheduledInterviews} scheduled`}
+            trend={calculateTrend(metrics.totalInterviews, previousMetrics?.totalInterviews)}
+          />
+          <StatCard
+            title="Success Rate"
+            value={formatPercentage(metrics.offerRate)}
+            icon={CheckCircle}
+            description={`${metrics.successfulApplications} offers`}
+            trend={calculateTrend(metrics.offerRate, previousMetrics?.offerRate)}
+          />
+          <StatCard
+            title="Avg Response Time"
+            value={`${Math.round(metrics.averageResponseTime)}d`}
+            icon={Clock}
+            description="Days to hear back"
+            trend={calculateTrend(metrics.averageResponseTime, previousMetrics?.averageResponseTime)}
+          />
+          <StatCard
+            title="Interview Conversion"
+            value={formatPercentage(metrics.interviewConversionRate)}
+            icon={TrendingUp}
+            description="Apps → Interviews"
+            trend={calculateTrend(metrics.interviewConversionRate, previousMetrics?.interviewConversionRate)}
+          />
+          <StatCard
+            title="Offer Conversion"
+            value={formatPercentage(metrics.interviewToOfferRate)}
+            icon={BarChart3}
+            description="Interviews → Offers"
+            trend={calculateTrend(metrics.interviewToOfferRate, previousMetrics?.interviewToOfferRate)}
+          />
+          <StatCard
+            title="Active Applications"
+            value={formatNumber(metrics.activeApplications)}
+            icon={Building2}
+            description="In progress"
+            trend={calculateTrend(metrics.activeApplications, previousMetrics?.activeApplications)}
+          />
+        </MetricGrid>
+      )}
 
       {/* Additional Insights */}
       <div className="space-y-4">
