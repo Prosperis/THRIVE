@@ -15,19 +15,15 @@ import {
   Info,
   Keyboard,
   Layout,
-  Monitor,
-  Moon,
   Palette,
   RotateCcw,
   Save,
   Scale,
-  Sun,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { ChangelogDialog } from '@/components/features/settings/ChangelogDialog';
 import { KeyboardShortcutsDialog } from '@/components/features/settings/KeyboardShortcutsDialog';
-import { useTheme } from '@/components/layout';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,7 +44,6 @@ export const Route = createFileRoute('/settings')({
 });
 
 function SettingsPage() {
-  const { setTheme } = useTheme();
   const {
     display,
     notifications,
@@ -64,40 +59,16 @@ function SettingsPage() {
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
-  const handleThemeChange = useCallback(
-    (newTheme: 'light' | 'dark' | 'system') => {
-      if (newTheme === 'system') {
-        // Get system preference
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
-        setTheme(systemTheme);
-      } else {
-        setTheme(newTheme);
-      }
-      updateDisplay({ theme: newTheme });
-      toast.success('Theme Updated', {
-        description: `Theme changed to ${newTheme}`,
-      });
-    },
-    [setTheme, updateDisplay]
-  );
-
   const handleReset = useCallback(() => {
     if (
       confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')
     ) {
       resetToDefaults();
-      // Reset theme to system
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      setTheme(systemTheme);
       toast.success('Settings Reset', {
         description: 'All settings have been reset to defaults',
       });
     }
-  }, [resetToDefaults, setTheme]);
+  }, [resetToDefaults]);
 
   return (
     <PageTransition>
@@ -132,42 +103,6 @@ function SettingsPage() {
             </div>
 
             <div className="space-y-4">
-              {/* Theme Selection */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>Theme</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Choose your preferred color scheme
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant={display.theme === 'light' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleThemeChange('light')}
-                  >
-                    <Sun className="mr-2 h-4 w-4" />
-                    Light
-                  </Button>
-                  <Button
-                    variant={display.theme === 'dark' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleThemeChange('dark')}
-                  >
-                    <Moon className="mr-2 h-4 w-4" />
-                    Dark
-                  </Button>
-                  <Button
-                    variant={display.theme === 'system' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleThemeChange('system')}
-                  >
-                    <Monitor className="mr-2 h-4 w-4" />
-                    System
-                  </Button>
-                </div>
-              </div>
-
               {/* Language */}
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -792,3 +727,5 @@ function SettingsPage() {
     </PageTransition>
   );
 }
+
+  
