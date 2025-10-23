@@ -38,6 +38,9 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { CREDITS, HELP_RESOURCES } from '@/lib/about';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useDashboardStore } from '@/stores/dashboardStore';
+import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
+import { useUIStore } from '@/stores/uiStore';
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
@@ -56,6 +59,10 @@ function SettingsPage() {
     resetToDefaults,
   } = useSettingsStore();
 
+  const { resetToDefault: resetDashboard } = useDashboardStore();
+  const { resetToDefault: resetDashboardLayout } = useDashboardLayoutStore();
+  const { setSidebarOpen, setActiveView } = useUIStore();
+
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
@@ -63,12 +70,21 @@ function SettingsPage() {
     if (
       confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')
     ) {
+      // Reset all settings
       resetToDefaults();
+      // Reset dashboard widgets
+      resetDashboard();
+      // Reset analytics dashboard layout
+      resetDashboardLayout();
+      // Reset UI preferences
+      setSidebarOpen(true);
+      setActiveView('table');
+      
       toast.success('Settings Reset', {
         description: 'All settings have been reset to defaults',
       });
     }
-  }, [resetToDefaults]);
+  }, [resetToDefaults, resetDashboard, resetDashboardLayout, setSidebarOpen, setActiveView]);
 
   return (
     <PageTransition>
