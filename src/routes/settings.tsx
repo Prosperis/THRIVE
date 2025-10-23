@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import { useConfirm } from '@/hooks/useConfirm';
 import { ChangelogDialog } from '@/components/features/settings/ChangelogDialog';
 import { KeyboardShortcutsDialog } from '@/components/features/settings/KeyboardShortcutsDialog';
 import { PageTransition } from '@/components/layout/PageTransition';
@@ -62,14 +63,21 @@ function SettingsPage() {
   const { resetToDefault: resetDashboard } = useDashboardStore();
   const { resetToDefault: resetDashboardLayout } = useDashboardLayoutStore();
   const { setSidebarOpen, setActiveView } = useUIStore();
+  const { confirm } = useConfirm();
 
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
-  const handleReset = useCallback(() => {
-    if (
-      confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')
-    ) {
+  const handleReset = useCallback(async () => {
+    const confirmed = await confirm({
+      title: 'Reset All Settings',
+      description: 'Are you sure you want to reset all settings to defaults? This cannot be undone.',
+      type: 'danger',
+      confirmText: 'Reset',
+      cancelText: 'Cancel',
+    });
+
+    if (confirmed) {
       // Reset all settings
       resetToDefaults();
       // Reset dashboard widgets
@@ -84,7 +92,7 @@ function SettingsPage() {
         description: 'All settings have been reset to defaults',
       });
     }
-  }, [resetToDefaults, resetDashboard, resetDashboardLayout, setSidebarOpen, setActiveView]);
+  }, [confirm, resetToDefaults, resetDashboard, resetDashboardLayout, setSidebarOpen, setActiveView]);
 
   return (
     <PageTransition>

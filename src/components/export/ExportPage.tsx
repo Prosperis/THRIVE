@@ -2,6 +2,7 @@ import { Calendar, Database, Download, FileJson, FileText, Filter, Upload, X, Ch
 import { useEffect, useId, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import type { ApplicationStatus } from '@/types';
+import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,6 +62,7 @@ export function ExportPage() {
   const { interviews, addInterview, fetchInterviews, isLoading: interviewsLoading } = useInterviewsStore();
   const { documents, fetchDocuments, isLoading: documentsLoading } = useDocumentsStore();
   const { companies, fetchCompanies, isLoading: companiesLoading } = useCompaniesStore();
+  const { confirm, alert } = useConfirm();
 
   // Fetch data on mount
   useEffect(() => {
@@ -175,7 +177,7 @@ export function ExportPage() {
       await exportAndDownloadDocumentsZIP(documents);
     } catch (error) {
       console.error('Failed to export documents as ZIP:', error);
-      alert('Failed to export documents as ZIP. Please try again.');
+      await alert('Export Failed', 'Failed to export documents as ZIP. Please try again.');
     }
   };
 
@@ -217,13 +219,18 @@ export function ExportPage() {
       }
 
       // Ask for confirmation
-      const confirmed = window.confirm(
-        `This will restore:\n` +
+      const confirmed = await confirm({
+        title: 'Restore Backup',
+        description:
+          `This will restore:\n` +
           `- ${backupData.applications.length} applications\n` +
           `- ${backupData.interviews.length} interviews\n` +
           `- ${backupData.documents.length} documents\n\n` +
-          `Current data will be replaced. Continue?`
-      );
+          `Current data will be replaced. Continue?`,
+        type: 'danger',
+        confirmText: 'Restore',
+        cancelText: 'Cancel',
+      });
 
       if (!confirmed) {
         setImporting(false);

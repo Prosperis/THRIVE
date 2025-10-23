@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, Clock, Download, HardDrive, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useConfirm } from '@/hooks/useConfirm';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
     clearBackupHistory,
     updateSettings,
   } = useBackupStore();
+  const { confirm } = useConfirm();
 
   const [isCreatingBackup, setIsCreatingBackup] = useState(false);
 
@@ -83,14 +85,22 @@ export function BackupManagementDialog({ open, onOpenChange }: BackupManagementD
     [removeBackupRecord]
   );
 
-  const handleClearHistory = useCallback(() => {
-    if (confirm('Are you sure you want to clear all backup history? This cannot be undone.')) {
+  const handleClearHistory = useCallback(async () => {
+    const confirmed = await confirm({
+      title: 'Clear Backup History',
+      description: 'Are you sure you want to clear all backup history? This cannot be undone.',
+      type: 'danger',
+      confirmText: 'Clear',
+      cancelText: 'Cancel',
+    });
+
+    if (confirmed) {
       clearBackupHistory();
       toast.success('History Cleared', {
         description: 'All backup records removed',
       });
     }
-  }, [clearBackupHistory]);
+  }, [confirm, clearBackupHistory]);
 
   // Check for due backups on mount
   useEffect(() => {

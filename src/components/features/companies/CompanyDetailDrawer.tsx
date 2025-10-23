@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useConfirm } from '@/hooks/useConfirm';
 import {
   Sheet,
   SheetContent,
@@ -44,6 +45,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const { applications } = useApplicationsStore();
   const { companies } = useCompaniesStore();
+  const { confirm } = useConfirm();
 
   if (!company) return null;
 
@@ -76,8 +78,16 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
   ].filter(Boolean).length;
   const completeness = Math.round((filledFields / totalFields) * 100);
 
-  const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete ${company.name}?`)) {
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: 'Delete Company',
+      description: `Are you sure you want to delete ${company.name}?`,
+      type: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+
+    if (confirmed) {
       onDelete?.(company);
       onOpenChange(false);
     }

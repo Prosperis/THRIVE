@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Save, Trash2, Calendar, Filter, Search } from 'lucide-react';
+import { useConfirm } from '@/hooks/useConfirm';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ export function SavedFiltersDialog({
   currentFilters,
   onApplyFilter,
 }: SavedFiltersDialogProps) {
+  const { confirm } = useConfirm();
   const [savedFilters, setSavedFilters] = useState<CompanySavedFilter[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -105,8 +107,16 @@ export function SavedFiltersDialog({
     setShowSaveDialog(false);
   };
 
-  const handleDeleteFilter = (id: string, name: string) => {
-    if (confirm(`Delete filter "${name}"?`)) {
+  const handleDeleteFilter = async (id: string, name: string) => {
+    const confirmed = await confirm({
+      title: 'Delete Filter',
+      description: `Delete filter "${name}"?`,
+      type: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+
+    if (confirmed) {
       const updated = savedFilters.filter(f => f.id !== id);
       persistFilters(updated);
       toast.success(`Filter "${name}" deleted`);

@@ -1,5 +1,6 @@
 import { Eye, Plus, Save, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
+import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +47,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
   const nameId = useId();
   const descriptionId = useId();
   const contentId = useId();
+  const { alert } = useConfirm();
 
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
@@ -100,9 +102,9 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     setVariables((prev) => prev.map((v, i) => (i === index ? { ...v, ...updates } : v)));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim() || !content.trim()) {
-      alert('Name and content are required');
+      await alert('Validation Error', 'Name and content are required');
       return;
     }
 

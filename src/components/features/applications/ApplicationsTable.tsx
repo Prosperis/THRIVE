@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -42,6 +43,7 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
   const { getFilteredApplications, deleteApplication } = useApplicationsStore();
   const { data: dataSettings } = useSettingsStore();
   const { documents, linkDocumentToApplications } = useDocumentsStore();
+  const { confirm } = useConfirm();
   const applications = getFilteredApplications();
   const [editingApplication, setEditingApplication] = useState<Application | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -403,16 +405,23 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
               <ContextMenuSeparator />
               <ContextMenuItem
                 className="text-destructive focus:text-destructive"
-                onClick={() => {
-                  if (
-                    !dataSettings.confirmDelete ||
-                    confirm(`Are you sure you want to delete "${application.position}"?`)
-                  ) {
-                    deleteApplication(application.id);
-                    toast.success('Application Deleted', {
-                      description: `${application.position} has been deleted`,
+                onClick={async () => {
+                  if (dataSettings.confirmDelete) {
+                    const confirmed = await confirm({
+                      title: 'Delete Application',
+                      description: `Are you sure you want to delete "${application.position}"?`,
+                      type: 'danger',
+                      confirmText: 'Delete',
+                      cancelText: 'Cancel',
                     });
+
+                    if (!confirmed) return;
                   }
+
+                  deleteApplication(application.id);
+                  toast.success('Application Deleted', {
+                    description: `${application.position} has been deleted`,
+                  });
                 }}
               >
                 <Trash2 className="mr-2 h-4 w-4" />

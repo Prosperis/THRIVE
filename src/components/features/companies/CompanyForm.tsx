@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
 import { useEffect, useMemo, useCallback } from 'react';
 import { z } from 'zod';
+import { useConfirm } from '@/hooks/useConfirm';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -123,6 +124,7 @@ function isValidUrl(url: string | undefined): boolean {
 }
 
 export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, onSaveAndAddAnother }: CompanyFormProps) {
+  const { confirm } = useConfirm();
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
@@ -215,12 +217,18 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
       if (e.key === 'Escape') {
         e.preventDefault();
         if (isDirty) {
-          const confirmCancel = window.confirm(
-            'You have unsaved changes. Are you sure you want to cancel?'
-          );
-          if (confirmCancel) {
-            onCancel();
-          }
+          (async () => {
+            const confirmCancel = await confirm({
+              title: 'Unsaved Changes',
+              description: 'You have unsaved changes. Are you sure you want to cancel?',
+              type: 'danger',
+              confirmText: 'Discard',
+              cancelText: 'Keep Editing',
+            });
+            if (confirmCancel) {
+              onCancel();
+            }
+          })();
         } else {
           onCancel();
         }
@@ -229,7 +237,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDirty, onCancel]);
+  }, [isDirty, onCancel, confirm]);
 
   // Warn before closing with unsaved changes
   useEffect(() => {

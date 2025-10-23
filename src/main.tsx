@@ -6,6 +6,7 @@ import './styles/print.css';
 import { ThemeProvider } from '@/components/layout';
 import { QueryProvider } from '@/lib/queryClient';
 import { autoMigrateOnLoad } from '@/lib/migrate-companies';
+import { ConfirmProvider } from '@/hooks/useConfirm';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -33,7 +34,9 @@ createRoot(rootElement).render(
   <StrictMode>
     <QueryProvider>
       <ThemeProvider defaultTheme="light">
-        <RouterProvider router={router} />
+        <ConfirmProvider>
+          <RouterProvider router={router} />
+        </ConfirmProvider>
       </ThemeProvider>
     </QueryProvider>
   </StrictMode>

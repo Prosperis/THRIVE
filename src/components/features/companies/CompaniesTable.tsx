@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -39,15 +40,24 @@ interface CompaniesTableProps {
 
 export function CompaniesTable({ companies, onTableReady, onEditCompany }: CompaniesTableProps) {
   const { deleteCompany } = useCompaniesStore();
+  const { confirm } = useConfirm();
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleDelete = useCallback((company: Company) => {
-    if (confirm(`Are you sure you want to delete ${company.name}?`)) {
+  const handleDelete = useCallback(async (company: Company) => {
+    const confirmed = await confirm({
+      title: 'Delete Company',
+      description: `Are you sure you want to delete ${company.name}?`,
+      type: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+
+    if (confirmed) {
       deleteCompany(company.id);
       toast.success(`${company.name} deleted`);
     }
-  }, [deleteCompany]);
+  }, [confirm, deleteCompany]);
 
   const handleRowClick = useCallback((company: Company) => {
     setSelectedCompany(company);

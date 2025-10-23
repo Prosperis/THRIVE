@@ -3,6 +3,7 @@ import { FileText, Plus, Upload, Pencil, Download, Trash2, RotateCcw, Trash, Fol
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useConfirm } from '@/hooks/useConfirm';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -88,6 +89,7 @@ function DocumentsPage() {
   const { documents, fetchDocuments, addDocument, updateDocument, deleteDocument, linkDocumentToApplications } = useDocumentsStore();
   const { applications } = useApplicationsStore();
   const { documents: documentSettings } = useSettingsStore();
+  const { confirm } = useConfirm();
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isNewDocDialogOpen, setIsNewDocDialogOpen] = useState(false);
   const [isCoverLetterDialogOpen, setIsCoverLetterDialogOpen] = useState(false);
@@ -730,7 +732,15 @@ Add your content here...`;
   };
 
   const handlePermanentDelete = async (doc: Document) => {
-    if (!window.confirm(`Permanently delete "${doc.name}"? This cannot be undone.`)) {
+    const confirmed = await confirm({
+      title: 'Permanently Delete Document',
+      description: `Permanently delete "${doc.name}"? This cannot be undone.`,
+      type: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) {
       return;
     }
 
