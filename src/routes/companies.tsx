@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Table } from '@tanstack/react-table';
 import { CompaniesToolbar } from '@/components/features/companies/CompaniesToolbar';
 import { CompaniesTable } from '@/components/features/companies/CompaniesTable';
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/companies')({
 type ViewType = 'cards' | 'table' | 'list';
 
 function CompaniesRoute() {
-  const { companies } = useCompaniesStore();
+  const { companies, fetchCompanies } = useCompaniesStore();
   const [activeView, setActiveView] = useState<ViewType>('cards');
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<{
@@ -24,6 +24,19 @@ function CompaniesRoute() {
     researched?: boolean;
   }>({});
   const [table, setTable] = useState<Table<Company> | undefined>();
+
+  useEffect(() => {
+    // Initialize data by fetching from database
+    const initializeData = async () => {
+      try {
+        await fetchCompanies();
+      } catch (error) {
+        console.error('Failed to initialize companies data:', error);
+      }
+    };
+    
+    initializeData();
+  }, [fetchCompanies]);
 
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
