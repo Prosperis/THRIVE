@@ -277,7 +277,7 @@ export function DataTable<TData, TValue>({
             </Button>
             {/* Page indicator */}
             <div className="flex items-center justify-center text-sm font-medium min-w-[100px]">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              Page {table.getPageCount() === 0 ? 0 : table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
             </div>
             {/* Next page */}
             <Button

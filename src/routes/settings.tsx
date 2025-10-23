@@ -44,6 +44,7 @@ import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
+import { useContactsStore } from '@/stores/contactsStore';
 import { useDocumentsStore } from '@/stores/documentsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 import { 
@@ -80,6 +81,7 @@ function SettingsPage() {
   const { setSidebarOpen, setActiveView } = useUIStore();
   const { fetchApplications } = useApplicationsStore();
   const { fetchCompanies } = useCompaniesStore();
+  const { fetchContacts } = useContactsStore();
   const { fetchDocuments } = useDocumentsStore();
   const { fetchInterviews } = useInterviewsStore();
   const { confirm } = useConfirm();
@@ -113,6 +115,51 @@ function SettingsPage() {
       });
     }
   }, [confirm, resetToDefaults, resetDashboard, resetDashboardLayout, setSidebarOpen, setActiveView]);
+
+  const handleDeleteAllData = useCallback(async () => {
+    const confirmed = await confirm({
+      title: 'Delete All Data',
+      description: 'Are you sure you want to delete ALL data from the database? This will permanently remove all applications, interviews, documents, companies, and contacts. This action CANNOT be undone!',
+      type: 'danger',
+      confirmText: 'Yes, Delete Everything',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      // Disable demo mode if it's enabled (to prevent re-seeding on reload)
+      if (demoMode.enabled) {
+        updateDemoMode({ enabled: false, hasUserData: false });
+        console.log('🔄 Disabled demo mode before clearing data');
+        // Give it a moment for Zustand persist to save to localStorage
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // Clear all data from the database and localStorage
+      await clearAllData();
+
+      // Delete any backup that might exist
+      deleteBackup();
+
+      toast.success('All Data Deleted', {
+        description: 'All data has been permanently removed. The page will reload.',
+      });
+
+      // Force a full page reload to reset all stores completely
+      // This ensures all Zustand stores are reinitialized from scratch
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error('Error deleting all data:', error);
+      toast.error('Failed to Delete Data', {
+        description: error instanceof Error ? error.message : 'Failed to delete all data',
+      });
+    }
+  }, [confirm, demoMode.enabled, updateDemoMode]);
 
   const handleDemoModeToggle = useCallback(async (checked: boolean) => {
     setIsDemoModeToggling(true);
@@ -155,6 +202,7 @@ function SettingsPage() {
         await Promise.all([
           fetchApplications(),
           fetchCompanies(),
+          fetchContacts(),
           fetchDocuments(),
           fetchInterviews(),
         ]);
@@ -199,6 +247,7 @@ function SettingsPage() {
         await Promise.all([
           fetchApplications(),
           fetchCompanies(),
+          fetchContacts(),
           fetchDocuments(),
           fetchInterviews(),
         ]);
@@ -223,6 +272,7 @@ function SettingsPage() {
     updateDemoMode,
     fetchApplications,
     fetchCompanies,
+    fetchContacts,
     fetchDocuments,
     fetchInterviews,
   ]);
@@ -606,6 +656,36 @@ function SettingsPage() {
                     );
                   }}
                 />
+              </div>
+
+              {/* Delete All Data */}
+              <div className="pt-4 border-t">
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label className="flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="w-4 h-4" />
+                      Danger Zone
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Permanently delete all data from the database
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteAllData}
+                    className="w-full sm:w-auto"
+                  >
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Delete All Data
+                  </Button>
+                  <div className="rounded-lg bg-destructive/10 p-3 text-sm text-muted-foreground">
+                    <p className="font-medium text-destructive mb-1">Warning</p>
+                    <p className="text-xs">
+                      This action will permanently delete all applications, interviews, documents, companies, and contacts. 
+                      This cannot be undone. Make sure to export your data first if you want to keep a backup.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

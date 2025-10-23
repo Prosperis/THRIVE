@@ -59,12 +59,55 @@ export async function backupUserData(): Promise<void> {
  */
 export async function clearAllData(): Promise<void> {
   try {
+    // Clear IndexedDB
+    console.log('🗑️ Clearing IndexedDB tables...');
+    const appCount = await db.applications.count();
+    const companyCount = await db.companies.count();
+    const contactCount = await db.contacts.count();
+    const interviewCount = await db.interviews.count();
+    const documentCount = await db.documents.count();
+    
+    console.log(`📊 Current counts - Apps: ${appCount}, Companies: ${companyCount}, Contacts: ${contactCount}, Interviews: ${interviewCount}, Docs: ${documentCount}`);
+    
     await db.applications.clear();
     await db.companies.clear();
     await db.contacts.clear();
     await db.interviews.clear();
     await db.documents.clear();
+    
+    // Verify counts after clearing
+    const newAppCount = await db.applications.count();
+    const newCompanyCount = await db.companies.count();
+    const newContactCount = await db.contacts.count();
+    const newInterviewCount = await db.interviews.count();
+    const newDocumentCount = await db.documents.count();
+    
+    console.log(`📊 After clear - Apps: ${newAppCount}, Companies: ${newCompanyCount}, Contacts: ${newContactCount}, Interviews: ${newInterviewCount}, Docs: ${newDocumentCount}`);
     console.log('✅ Database cleared');
+    
+    // Clear all Zustand persisted stores from localStorage
+    // This ensures the UI also reflects empty state
+    const storageKeysToKeep = [
+      BACKUP_KEY, // Keep the backup
+      'thrive-settings', // Keep settings
+      'ui-storage', // Keep UI preferences
+      'dashboard-layout-storage', // Keep layout
+      'thrive-backup-storage', // Keep backup settings
+    ];
+    
+    console.log('🗑️ Clearing localStorage...');
+    // Get all localStorage keys
+    const allKeys = Object.keys(localStorage);
+    
+    // Remove all keys except the ones we want to keep
+    for (const key of allKeys) {
+      if (!storageKeysToKeep.includes(key)) {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Cleared localStorage key: ${key}`);
+      }
+    }
+    
+    console.log('✅ All data cleared from database and localStorage');
   } catch (error) {
     console.error('❌ Failed to clear database:', error);
     throw error;
