@@ -175,16 +175,10 @@ export const CREDITS = [
         licenseUrl: 'https://github.com/vitejs/vite/blob/main/LICENSE'
       },
       {
-        name: 'TanStack Router',
-        description: 'Type-safe routing',
-        url: 'https://github.com/TanStack/router',
+        name: 'TanStack',
+        description: 'High-quality open-source tools (Router, Table, Query)',
+        url: 'https://tanstack.com',
         licenseUrl: 'https://github.com/TanStack/router/blob/main/LICENSE'
-      },
-      {
-        name: 'TanStack Table',
-        description: 'Headless table library',
-        url: 'https://github.com/TanStack/table',
-        licenseUrl: 'https://github.com/TanStack/table/blob/main/LICENSE'
       },
       { 
         name: 'Zustand', 
@@ -203,6 +197,24 @@ export const CREDITS = [
         description: 'Animation library', 
         url: 'https://github.com/framer/motion',
         licenseUrl: 'https://github.com/framer/motion/blob/main/LICENSE'
+      },
+      { 
+        name: 'Tailwind CSS', 
+        description: 'Utility-first CSS framework', 
+        url: 'https://github.com/tailwindlabs/tailwindcss',
+        licenseUrl: 'https://github.com/tailwindlabs/tailwindcss/blob/master/LICENSE'
+      },
+      { 
+        name: 'Zod', 
+        description: 'TypeScript-first schema validation', 
+        url: 'https://github.com/colinhacks/zod',
+        licenseUrl: 'https://github.com/colinhacks/zod/blob/master/LICENSE'
+      },
+      { 
+        name: 'React Hook Form', 
+        description: 'Performant form handling', 
+        url: 'https://github.com/react-hook-form/react-hook-form',
+        licenseUrl: 'https://github.com/react-hook-form/react-hook-form/blob/master/LICENSE'
       },
     ],
   },
@@ -261,6 +273,29 @@ export const CREDITS = [
         description: 'Drag and drop', 
         url: 'https://github.com/clauderic/dnd-kit',
         licenseUrl: 'https://github.com/clauderic/dnd-kit/blob/master/LICENSE'
+      },
+    ],
+  },
+  {
+    category: 'Utilities',
+    items: [
+      { 
+        name: 'jsPDF', 
+        description: 'PDF document generation', 
+        url: 'https://github.com/parallax/jsPDF',
+        licenseUrl: 'https://github.com/parallax/jsPDF/blob/master/LICENSE'
+      },
+      { 
+        name: 'date-fns', 
+        description: 'Modern date utility library', 
+        url: 'https://github.com/date-fns/date-fns',
+        licenseUrl: 'https://github.com/date-fns/date-fns/blob/main/LICENSE.md'
+      },
+      { 
+        name: 'React Markdown', 
+        description: 'Markdown component for React', 
+        url: 'https://github.com/remarkjs/react-markdown',
+        licenseUrl: 'https://github.com/remarkjs/react-markdown/blob/main/license'
       },
     ],
   },
