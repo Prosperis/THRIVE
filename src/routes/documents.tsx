@@ -807,7 +807,7 @@ Sincerely,
     <>
       <div className="flex gap-6 h-[calc(100vh-6rem)] pb-6">
         {/* Sidebar */}
-        <div className="w-56 flex flex-col gap-4 shrink-0">
+        <div className="w-56 flex flex-col gap-4 shrink-0 overflow-hidden">
           {/* Search with integrated Filter */}
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -1077,9 +1077,9 @@ Sincerely,
 
           {/* Document Groups with Accordion */}
           <ScrollArea className="flex-1 scrollbar-hide">
-            <Accordion type="multiple" defaultValue={["resumes", "cover-letters"]} className="w-full">
+            <Accordion type="multiple" defaultValue={["resumes", "cover-letters"]} className="w-full max-w-full overflow-hidden">
               {/* Resumes Section */}
-              <AccordionItem value="resumes" className="border-b-0">
+              <AccordionItem value="resumes" className="border-b-0 overflow-hidden">
                 <AccordionTrigger className="px-2 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
                   <div className="flex items-center justify-between w-full pr-2">
                     <div className="flex items-center gap-2">
@@ -1091,7 +1091,7 @@ Sincerely,
                     </Badge>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="pb-2">
+                <AccordionContent className="pb-2 overflow-hidden">
                   <div className="space-y-1">
                     {resumes.length === 0 ? (
                       <div className="px-2 py-6 text-center">
@@ -1138,46 +1138,41 @@ Sincerely,
                             }
                           }}
                           onClick={() => handleViewDocument(doc)}
-                          className={`w-full text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
                             selectedDocument?.id === doc.id
                               ? 'bg-accent text-accent-foreground border-primary'
                               : `hover:bg-muted ${colors.border}`
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{doc.name}</p>
-                                <div className="flex items-center gap-1.5 overflow-hidden">
-                                  <p className="text-xs text-muted-foreground shrink-0">
-                                    v{doc.version} · {new Date(doc.updatedAt).toLocaleDateString()}
-                                  </p>
-                                  {doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0 && (
-                                    <Badge variant="secondary" className="h-4 text-[10px] px-1 shrink-0">
-                                      <Link className="h-2.5 w-2.5 mr-0.5" />
-                                      {doc.usedInApplicationIds.length}
-                                    </Badge>
-                                  )}
-                                  {isDocumentRecent(doc.updatedAt) && (
-                                    <Badge 
-                                      variant="secondary" 
-                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                    >
-                                      <Sparkles className="h-2.5 w-2.5" />
-                                      New
-                                    </Badge>
-                                  )}
-                                  {isDocumentOutdated(doc.updatedAt) && (
-                                    <Badge 
-                                      variant="outline" 
-                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                    >
-                                      <Clock className="h-2.5 w-2.5" />
-                                      Old
-                                    </Badge>
-                                  )}
-                                </div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{doc.name}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0 && (
+                                  <Badge variant="secondary" className="h-4 text-[10px] px-1 shrink-0">
+                                    <Link className="h-2.5 w-2.5 mr-0.5" />
+                                    {doc.usedInApplicationIds.length}
+                                  </Badge>
+                                )}
+                                {isDocumentRecent(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                  >
+                                    <Sparkles className="h-2.5 w-2.5" />
+                                    New
+                                  </Badge>
+                                )}
+                                {isDocumentOutdated(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                  >
+                                    <Clock className="h-2.5 w-2.5" />
+                                    Old
+                                  </Badge>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1190,7 +1185,7 @@ Sincerely,
               </AccordionItem>
 
               {/* Cover Letters Section */}
-              <AccordionItem value="cover-letters" className="border-b-0">
+              <AccordionItem value="cover-letters" className="border-b-0 overflow-hidden">
                 <AccordionTrigger className="px-2 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
                   <div className="flex items-center justify-between w-full pr-2">
                     <div className="flex items-center gap-2">
@@ -1202,7 +1197,7 @@ Sincerely,
                     </Badge>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="pb-2">
+                <AccordionContent className="pb-2 overflow-hidden">
                   <div className="space-y-1">
                     {coverLetters.length === 0 ? (
                       <div className="px-2 py-6 text-center">
@@ -1244,46 +1239,41 @@ Sincerely,
                             }
                           }}
                           onClick={() => handleViewDocument(doc)}
-                          className={`w-full text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
                             selectedDocument?.id === doc.id
                               ? 'bg-accent text-accent-foreground border-primary'
                               : `hover:bg-muted ${colors.border}`
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{doc.name}</p>
-                                <div className="flex items-center gap-1.5 overflow-hidden">
-                                  <p className="text-xs text-muted-foreground shrink-0">
-                                    v{doc.version} · {new Date(doc.updatedAt).toLocaleDateString()}
-                                  </p>
-                                  {doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0 && (
-                                    <Badge variant="secondary" className="h-4 text-[10px] px-1 shrink-0">
-                                      <Link className="h-2.5 w-2.5 mr-0.5" />
-                                      {doc.usedInApplicationIds.length}
-                                    </Badge>
-                                  )}
-                                  {isDocumentRecent(doc.updatedAt) && (
-                                    <Badge 
-                                      variant="secondary" 
-                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                    >
-                                      <Sparkles className="h-2.5 w-2.5" />
-                                      New
-                                    </Badge>
-                                  )}
-                                  {isDocumentOutdated(doc.updatedAt) && (
-                                    <Badge 
-                                      variant="outline" 
-                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                    >
-                                      <Clock className="h-2.5 w-2.5" />
-                                      Old
-                                    </Badge>
-                                  )}
-                                </div>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{doc.name}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0 && (
+                                  <Badge variant="secondary" className="h-4 text-[10px] px-1 shrink-0">
+                                    <Link className="h-2.5 w-2.5 mr-0.5" />
+                                    {doc.usedInApplicationIds.length}
+                                  </Badge>
+                                )}
+                                {isDocumentRecent(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                  >
+                                    <Sparkles className="h-2.5 w-2.5" />
+                                    New
+                                  </Badge>
+                                )}
+                                {isDocumentOutdated(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                  >
+                                    <Clock className="h-2.5 w-2.5" />
+                                    Old
+                                  </Badge>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1309,17 +1299,17 @@ Sincerely,
                       </Badge>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="pb-2">
+                  <AccordionContent className="pb-2 overflow-hidden">
                     <div className="space-y-1">
                       {recentlyDeleted.map((doc) => (
                         <div
                           key={doc.id}
-                          className="px-2 py-2 rounded-md bg-muted/30 border border-destructive/20"
+                          className="w-full max-w-[13rem] px-2 py-2 rounded-md bg-muted/30 border border-destructive/20"
                         >
-                          <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-start justify-between gap-2 mb-2 min-w-0">
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium truncate">{doc.name}</p>
-                              <p className="text-[10px] text-muted-foreground">
+                              <p className="text-[10px] text-muted-foreground truncate">
                                 {doc.deletedAt ? new Date(doc.deletedAt).toLocaleDateString() : ''}
                               </p>
                             </div>
