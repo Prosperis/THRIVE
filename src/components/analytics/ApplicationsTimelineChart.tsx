@@ -174,37 +174,31 @@ export function ApplicationsTimelineChart() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Application Trends</CardTitle>
-            <CardDescription>Your application activity over the last 3 months</CardDescription>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSelectedDate(new Date());
-                setShowAnnotationDialog(true);
-              }}
-            >
-              + Add Annotation
-            </Button>
-            <Button
-              size="sm"
-              variant={timeRange === 'week' ? 'default' : 'outline'}
-              onClick={() => setTimeRange('week')}
-            >
-              Weekly
-            </Button>
-            <Button
-              size="sm"
-              variant={timeRange === 'month' ? 'default' : 'outline'}
-              onClick={() => setTimeRange('month')}
-            >
-              Monthly
-            </Button>
-          </div>
+        <div>
+          <CardTitle>Application Trends</CardTitle>
+          <CardDescription>Your application activity over the last 3 months</CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {/* Annotation Dialog */}
+          <AnnotationDialog
+            open={showAnnotationDialog}
+            onOpenChange={setShowAnnotationDialog}
+            defaultDate={selectedDate}
+          />
+          <Button
+            size="sm"
+            variant={timeRange === 'week' ? 'default' : 'outline'}
+            onClick={() => setTimeRange('week')}
+          >
+            Weekly
+          </Button>
+          <Button
+            size="sm"
+            variant={timeRange === 'month' ? 'default' : 'outline'}
+            onClick={() => setTimeRange('month')}
+          >
+            Monthly
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -335,13 +329,6 @@ export function ApplicationsTimelineChart() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Annotation Dialog */}
-      <AnnotationDialog
-        open={showAnnotationDialog}
-        onOpenChange={setShowAnnotationDialog}
-        defaultDate={selectedDate}
-      />
     </Card>
   );
 }
