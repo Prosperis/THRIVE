@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import {
   AlertTriangle,
   Bell,
@@ -48,7 +48,6 @@ export const Route = createFileRoute('/settings')({
 });
 
 function SettingsPage() {
-  const navigate = useNavigate();
   const { setTheme } = useTheme();
   const {
     display,
@@ -671,14 +670,16 @@ function SettingsPage() {
                   <ExternalLink className="ml-auto h-3 w-3" />
                 </a>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate({ to: '/' })}
-                className="justify-start"
-              >
-                <BookOpen className="mr-2 h-4 w-4" />
-                Dashboard
+              <Button variant="outline" size="sm" asChild className="justify-start">
+                <a
+                  href="https://github.com/adriandarian/thrive/wiki"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Documentation
+                  <ExternalLink className="ml-auto h-3 w-3" />
+                </a>
               </Button>
             </div>
           </div>

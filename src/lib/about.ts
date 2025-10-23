@@ -136,7 +136,7 @@ export const HELP_RESOURCES = [
     title: 'FAQ',
     icon: 'HelpCircle',
     description: 'Frequently asked questions and answers',
-    link: '#',
+    link: 'https://github.com/orgs/Prosperis/discussions/categories/q-a',
   },
   {
     title: 'Report a Bug',
