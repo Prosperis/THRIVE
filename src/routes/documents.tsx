@@ -424,11 +424,35 @@ function DocumentsPage() {
     return filtered;
   }, [activeDocuments, searchQuery, filterByType, filterByUsage, filterByDate, filterByVersion, sortBy, sortOrder, documents]);
 
-  // Calculate counts from filtered documents
+  // Calculate counts and filtered document lists for each category
+  // Use filteredDocuments to respect search and filter criteria
   const resumes = filteredDocuments.filter(doc => doc.type === 'resume' || doc.type === 'cv');
   const coverLetters = filteredDocuments.filter(doc => doc.type === 'cover-letter');
+  const portfolios = filteredDocuments.filter(doc => doc.type === 'portfolio');
+  const transcripts = filteredDocuments.filter(doc => doc.type === 'transcript');
+  const certifications = filteredDocuments.filter(doc => doc.type === 'certification');
+  const otherDocs = filteredDocuments.filter(doc => doc.type === 'other');
+  
   const resumeCount = resumes.length;
   const coverLetterCount = coverLetters.length;
+  const portfolioCount = portfolios.length;
+  const transcriptCount = transcripts.length;
+  const certificationCount = certifications.length;
+  const otherDocsCount = otherDocs.length;
+
+  // Render linked applications badge (simple badge without tooltip)
+  const renderLinkedApplicationsBadge = (doc: Document) => {
+    if (!doc.usedInApplicationIds || doc.usedInApplicationIds.length === 0) {
+      return null;
+    }
+
+    return (
+      <Badge variant="secondary" className="h-4 text-[10px] px-1 shrink-0">
+        <Link className="h-2.5 w-2.5 mr-0.5" />
+        {doc.usedInApplicationIds.length}
+      </Badge>
+    );
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, docType: 'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other' = 'other') => {
     const files = event.target.files;
@@ -1149,12 +1173,7 @@ Sincerely,
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{doc.name}</p>
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                {doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0 && (
-                                  <Badge variant="secondary" className="h-4 text-[10px] px-1 shrink-0">
-                                    <Link className="h-2.5 w-2.5 mr-0.5" />
-                                    {doc.usedInApplicationIds.length}
-                                  </Badge>
-                                )}
+                                {renderLinkedApplicationsBadge(doc)}
                                 {isDocumentRecent(doc.updatedAt) && (
                                   <Badge 
                                     variant="secondary" 
@@ -1250,12 +1269,7 @@ Sincerely,
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{doc.name}</p>
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                {doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0 && (
-                                  <Badge variant="secondary" className="h-4 text-[10px] px-1 shrink-0">
-                                    <Link className="h-2.5 w-2.5 mr-0.5" />
-                                    {doc.usedInApplicationIds.length}
-                                  </Badge>
-                                )}
+                                {renderLinkedApplicationsBadge(doc)}
                                 {isDocumentRecent(doc.updatedAt) && (
                                   <Badge 
                                     variant="secondary" 
@@ -1284,6 +1298,334 @@ Sincerely,
                   </div>
                 </AccordionContent>
               </AccordionItem>
+
+              {/* Portfolios Section */}
+              {portfolioCount > 0 && (
+                <AccordionItem value="portfolios" className="border-b-0 overflow-hidden">
+                  <AccordionTrigger className="px-2 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
+                    <div className="flex items-center justify-between w-full pr-2">
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Portfolios</span>
+                      </div>
+                      <Badge variant="secondary" className="h-5 text-xs">
+                        {portfolioCount}
+                      </Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-2 overflow-hidden">
+                    <div className="space-y-1">
+                      {portfolios.map((doc) => {
+                        const colors = getDocumentTypeColors(doc.type);
+                        return (
+                        <button
+                          key={doc.id}
+                          type="button"
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/x-document-id', doc.id);
+                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                            e.dataTransfer.effectAllowed = 'link';
+                            setIsDraggingDocument(true);
+                            setDraggingDocumentId(doc.id);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '0.5';
+                            }
+                          }}
+                          onDragEnd={(e) => {
+                            setIsDraggingDocument(false);
+                            setDraggingDocumentId(null);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '1';
+                            }
+                          }}
+                          onClick={() => handleViewDocument(doc)}
+                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                            selectedDocument?.id === doc.id
+                              ? 'bg-accent text-accent-foreground border-primary'
+                              : `hover:bg-muted ${colors.border}`
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{doc.name}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {renderLinkedApplicationsBadge(doc)}
+                                {isDocumentRecent(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                  >
+                                    <Sparkles className="h-2.5 w-2.5" />
+                                    New
+                                  </Badge>
+                                )}
+                                {isDocumentOutdated(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                  >
+                                    <Clock className="h-2.5 w-2.5" />
+                                    Old
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* Transcripts Section */}
+              {transcriptCount > 0 && (
+                <AccordionItem value="transcripts" className="border-b-0 overflow-hidden">
+                  <AccordionTrigger className="px-2 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
+                    <div className="flex items-center justify-between w-full pr-2">
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Transcripts</span>
+                      </div>
+                      <Badge variant="secondary" className="h-5 text-xs">
+                        {transcriptCount}
+                      </Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-2 overflow-hidden">
+                    <div className="space-y-1">
+                      {transcripts.map((doc) => {
+                        const colors = getDocumentTypeColors(doc.type);
+                        return (
+                        <button
+                          key={doc.id}
+                          type="button"
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/x-document-id', doc.id);
+                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                            e.dataTransfer.effectAllowed = 'link';
+                            setIsDraggingDocument(true);
+                            setDraggingDocumentId(doc.id);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '0.5';
+                            }
+                          }}
+                          onDragEnd={(e) => {
+                            setIsDraggingDocument(false);
+                            setDraggingDocumentId(null);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '1';
+                            }
+                          }}
+                          onClick={() => handleViewDocument(doc)}
+                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                            selectedDocument?.id === doc.id
+                              ? 'bg-accent text-accent-foreground border-primary'
+                              : `hover:bg-muted ${colors.border}`
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{doc.name}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {renderLinkedApplicationsBadge(doc)}
+                                {isDocumentRecent(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                  >
+                                    <Sparkles className="h-2.5 w-2.5" />
+                                    New
+                                  </Badge>
+                                )}
+                                {isDocumentOutdated(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                  >
+                                    <Clock className="h-2.5 w-2.5" />
+                                    Old
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* Certifications Section */}
+              {certificationCount > 0 && (
+                <AccordionItem value="certifications" className="border-b-0 overflow-hidden">
+                  <AccordionTrigger className="px-2 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
+                    <div className="flex items-center justify-between w-full pr-2">
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Certifications</span>
+                      </div>
+                      <Badge variant="secondary" className="h-5 text-xs">
+                        {certificationCount}
+                      </Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-2 overflow-hidden">
+                    <div className="space-y-1">
+                      {certifications.map((doc) => {
+                        const colors = getDocumentTypeColors(doc.type);
+                        return (
+                        <button
+                          key={doc.id}
+                          type="button"
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/x-document-id', doc.id);
+                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                            e.dataTransfer.effectAllowed = 'link';
+                            setIsDraggingDocument(true);
+                            setDraggingDocumentId(doc.id);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '0.5';
+                            }
+                          }}
+                          onDragEnd={(e) => {
+                            setIsDraggingDocument(false);
+                            setDraggingDocumentId(null);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '1';
+                            }
+                          }}
+                          onClick={() => handleViewDocument(doc)}
+                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                            selectedDocument?.id === doc.id
+                              ? 'bg-accent text-accent-foreground border-primary'
+                              : `hover:bg-muted ${colors.border}`
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{doc.name}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {renderLinkedApplicationsBadge(doc)}
+                                {isDocumentRecent(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                  >
+                                    <Sparkles className="h-2.5 w-2.5" />
+                                    New
+                                  </Badge>
+                                )}
+                                {isDocumentOutdated(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                  >
+                                    <Clock className="h-2.5 w-2.5" />
+                                    Old
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* Other Documents Section */}
+              {otherDocsCount > 0 && (
+                <AccordionItem value="other-docs" className="border-b-0 overflow-hidden">
+                  <AccordionTrigger className="px-2 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
+                    <div className="flex items-center justify-between w-full pr-2">
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Other Documents</span>
+                      </div>
+                      <Badge variant="secondary" className="h-5 text-xs">
+                        {otherDocsCount}
+                      </Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-2 overflow-hidden">
+                    <div className="space-y-1">
+                      {otherDocs.map((doc) => {
+                        const colors = getDocumentTypeColors(doc.type);
+                        return (
+                        <button
+                          key={doc.id}
+                          type="button"
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/x-document-id', doc.id);
+                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                            e.dataTransfer.effectAllowed = 'link';
+                            setIsDraggingDocument(true);
+                            setDraggingDocumentId(doc.id);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '0.5';
+                            }
+                          }}
+                          onDragEnd={(e) => {
+                            setIsDraggingDocument(false);
+                            setDraggingDocumentId(null);
+                            if (e.currentTarget instanceof HTMLElement) {
+                              e.currentTarget.style.opacity = '1';
+                            }
+                          }}
+                          onClick={() => handleViewDocument(doc)}
+                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                            selectedDocument?.id === doc.id
+                              ? 'bg-accent text-accent-foreground border-primary'
+                              : `hover:bg-muted ${colors.border}`
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{doc.name}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {renderLinkedApplicationsBadge(doc)}
+                                {isDocumentRecent(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                  >
+                                    <Sparkles className="h-2.5 w-2.5" />
+                                    New
+                                  </Badge>
+                                )}
+                                {isDocumentOutdated(doc.updatedAt) && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                  >
+                                    <Clock className="h-2.5 w-2.5" />
+                                    Old
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
 
               {/* Recently Deleted Section */}
               {recentlyDeleted.length > 0 && (

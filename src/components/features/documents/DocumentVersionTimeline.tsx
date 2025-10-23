@@ -35,27 +35,22 @@ export function DocumentVersionTimeline({ document }: DocumentVersionTimelinePro
   const timeline = useMemo(() => {
     const nodes: VersionNode[] = [];
     
-    // Find all applications that use this document
-    const linkedApps = applications.filter((app) => {
-      // Check both old structure (documentIds) and new structure (linkedDocuments)
-      const hasInOldStructure = app.documentIds?.includes(document.id);
-      const hasInNewStructure = app.linkedDocuments?.some(
-        (link) => link.documentId === document.id
-      );
-      return hasInOldStructure || hasInNewStructure;
-    });
+    // Find all applications that use this document by checking usedInApplicationIds
+    const linkedAppIds = document.usedInApplicationIds || [];
+    const linkedApps = applications.filter((app) => linkedAppIds.includes(app.id));
 
     // Create a map of versions to applications
     const versionMap = new Map<number, VersionNode['applications']>();
 
     linkedApps.forEach((app) => {
+      // Check if app has linkedDocuments structure (new format with version tracking)
       const linkedDoc = app.linkedDocuments?.find(
         (link) => link.documentId === document.id
       );
       
-      // For old structure (documentIds only), assume version 1 was used
-      // This is a safe assumption as they were linked before version tracking
-      const version = linkedDoc?.version || 1;
+      // Use version from linkedDocuments if available, otherwise use current document version
+      // (assuming if no version info, it's linked to the current/latest version)
+      const version = linkedDoc?.version || document.version;
       const linkedAt = linkedDoc?.linkedAt || app.createdAt;
 
       if (!versionMap.has(version)) {
