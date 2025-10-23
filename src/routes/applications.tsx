@@ -5,7 +5,6 @@ import { ApplicationsTable } from '@/components/features/applications/Applicatio
 import { ApplicationsToolbar } from '@/components/features/applications/ApplicationsToolbar';
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { PageTransition } from '@/components/layout';
-import { seedDatabase } from '@/lib/seed';
 import { useApplicationsStore, useUIStore, useDocumentsStore } from '@/stores';
 import type { Application } from '@/types';
 
@@ -21,10 +20,10 @@ function ApplicationsPage() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Seed database with sample data on first load
+    // Initialize data - just fetch, don't seed
+    // Demo mode in settings will handle seeding if needed
     const initializeData = async () => {
       try {
-        await seedDatabase();
         await fetchApplications();
         await fetchDocuments();
       } catch (error) {

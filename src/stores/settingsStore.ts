@@ -37,17 +37,24 @@ export interface DocumentSettings {
   recentlyDeletedDays: number; // Days to show documents in "Recently Deleted" tab
 }
 
+export interface DemoModeSettings {
+  enabled: boolean; // Whether demo mode is currently active
+  hasUserData: boolean; // Whether there was user data when demo mode was enabled
+}
+
 interface SettingsState {
   display: DisplaySettings;
   notifications: NotificationSettings;
   data: DataSettings;
   documents: DocumentSettings;
+  demoMode: DemoModeSettings;
 
   // Actions
   updateDisplay: (settings: Partial<DisplaySettings>) => void;
   updateNotifications: (settings: Partial<NotificationSettings>) => void;
   updateData: (settings: Partial<DataSettings>) => void;
   updateDocuments: (settings: Partial<DocumentSettings>) => void;
+  updateDemoMode: (settings: Partial<DemoModeSettings>) => void;
   resetToDefaults: () => void;
 }
 
@@ -81,6 +88,11 @@ const DEFAULT_DOCUMENTS: DocumentSettings = {
   recentlyDeletedDays: 7,
 };
 
+const DEFAULT_DEMO_MODE: DemoModeSettings = {
+  enabled: false,
+  hasUserData: false,
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
@@ -88,6 +100,7 @@ export const useSettingsStore = create<SettingsState>()(
       notifications: DEFAULT_NOTIFICATIONS,
       data: DEFAULT_DATA,
       documents: DEFAULT_DOCUMENTS,
+      demoMode: DEFAULT_DEMO_MODE,
 
       updateDisplay: (settings) => {
         set((state) => ({
@@ -113,12 +126,19 @@ export const useSettingsStore = create<SettingsState>()(
         }));
       },
 
+      updateDemoMode: (settings) => {
+        set((state) => ({
+          demoMode: { ...state.demoMode, ...settings },
+        }));
+      },
+
       resetToDefaults: () => {
         set({
           display: DEFAULT_DISPLAY,
           notifications: DEFAULT_NOTIFICATIONS,
           data: DEFAULT_DATA,
           documents: DEFAULT_DOCUMENTS,
+          demoMode: DEFAULT_DEMO_MODE,
         });
       },
     }),

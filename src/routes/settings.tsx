@@ -42,6 +42,19 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useCompaniesStore } from '@/stores/companiesStore';
+import { useDocumentsStore } from '@/stores/documentsStore';
+import { useInterviewsStore } from '@/stores/interviewsStore';
+import { 
+  hasUserData, 
+  backupUserData, 
+  clearAllData, 
+  restoreUserData, 
+  deleteBackup,
+  getBackupInfo 
+} from '@/lib/demoMode';
+import { seedDatabase } from '@/lib/seed';
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
@@ -53,20 +66,27 @@ function SettingsPage() {
     notifications,
     data,
     documents,
+    demoMode,
     updateDisplay,
     updateNotifications,
     updateData,
     updateDocuments,
+    updateDemoMode,
     resetToDefaults,
   } = useSettingsStore();
 
   const { resetToDefault: resetDashboard } = useDashboardStore();
   const { resetToDefault: resetDashboardLayout } = useDashboardLayoutStore();
   const { setSidebarOpen, setActiveView } = useUIStore();
+  const { fetchApplications } = useApplicationsStore();
+  const { fetchCompanies } = useCompaniesStore();
+  const { fetchDocuments } = useDocumentsStore();
+  const { fetchInterviews } = useInterviewsStore();
   const { confirm } = useConfirm();
 
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isDemoModeToggling, setIsDemoModeToggling] = useState(false);
 
   const handleReset = useCallback(async () => {
     const confirmed = await confirm({
@@ -93,6 +113,119 @@ function SettingsPage() {
       });
     }
   }, [confirm, resetToDefaults, resetDashboard, resetDashboardLayout, setSidebarOpen, setActiveView]);
+
+  const handleDemoModeToggle = useCallback(async (checked: boolean) => {
+    setIsDemoModeToggling(true);
+
+    try {
+      if (checked) {
+        // Enabling demo mode
+        const confirmed = await confirm({
+          title: 'Enable Demo Mode',
+          description: 'This will replace your current data with sample demo data. Your real data will be safely backed up and can be restored when you turn off demo mode.',
+          type: 'confirm',
+          confirmText: 'Enable Demo Mode',
+          cancelText: 'Cancel',
+        });
+
+        if (!confirmed) {
+          setIsDemoModeToggling(false);
+          return;
+        }
+
+        // Check if user has data
+        const hasData = await hasUserData();
+        
+        if (hasData) {
+          // Backup existing data
+          await backupUserData();
+          toast.info('Backing up your data...');
+        }
+
+        // Clear database
+        await clearAllData();
+
+        // Seed with demo data
+        await seedDatabase();
+
+        // Update settings
+        updateDemoMode({ enabled: true, hasUserData: hasData });
+
+        // Refresh all stores
+        await Promise.all([
+          fetchApplications(),
+          fetchCompanies(),
+          fetchDocuments(),
+          fetchInterviews(),
+        ]);
+
+        toast.success('Demo Mode Enabled', {
+          description: 'Sample data has been loaded. Your real data is safely backed up.',
+        });
+      } else {
+        // Disabling demo mode
+        const backupInfo = getBackupInfo();
+        const hasBackupData = backupInfo !== null;
+
+        const confirmed = await confirm({
+          title: 'Disable Demo Mode',
+          description: hasBackupData
+            ? `This will restore your original data from the backup (${backupInfo.itemCount} items backed up). The demo data will be removed.`
+            : 'This will remove the demo data. You don\'t have any backed up data to restore.',
+          type: 'confirm',
+          confirmText: 'Disable Demo Mode',
+          cancelText: 'Cancel',
+        });
+
+        if (!confirmed) {
+          setIsDemoModeToggling(false);
+          return;
+        }
+
+        // Clear demo data
+        await clearAllData();
+
+        // Restore user data if it exists
+        if (demoMode.hasUserData) {
+          await restoreUserData();
+          deleteBackup();
+          toast.info('Restoring your data...');
+        }
+
+        // Update settings
+        updateDemoMode({ enabled: false, hasUserData: false });
+
+        // Refresh all stores
+        await Promise.all([
+          fetchApplications(),
+          fetchCompanies(),
+          fetchDocuments(),
+          fetchInterviews(),
+        ]);
+
+        toast.success('Demo Mode Disabled', {
+          description: demoMode.hasUserData
+            ? 'Your original data has been restored.'
+            : 'Demo data has been removed.',
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling demo mode:', error);
+      toast.error('Error', {
+        description: error instanceof Error ? error.message : 'Failed to toggle demo mode',
+      });
+    } finally {
+      setIsDemoModeToggling(false);
+    }
+  }, [
+    confirm,
+    demoMode.hasUserData,
+    updateDemoMode,
+    fetchApplications,
+    fetchCompanies,
+    fetchDocuments,
+    fetchInterviews,
+  ]);
 
   return (
     <PageTransition>
@@ -473,6 +606,74 @@ function SettingsPage() {
                     );
                   }}
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Demo Mode Section */}
+          <div className="border rounded-lg p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                <Database className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Demo Mode</h2>
+                <p className="text-sm text-muted-foreground">
+                  Try out the app with sample data
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 pl-[52px]">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Enable Demo Mode</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Load sample data to explore features
+                  </p>
+                </div>
+                <Switch
+                  checked={demoMode.enabled}
+                  onCheckedChange={handleDemoModeToggle}
+                  disabled={isDemoModeToggling}
+                />
+              </div>
+
+              <div className="rounded-lg bg-muted p-4 space-y-2">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>
+                      <strong className="text-foreground">What is Demo Mode?</strong>
+                    </p>
+                    <p>
+                      Demo mode is perfect for new users who want to explore the app's features with realistic sample data. 
+                      When enabled, your current data is safely backed up and replaced with demo content including:
+                    </p>
+                    <ul className="list-disc list-inside space-y-0.5 ml-2">
+                      <li>Sample job applications in various stages</li>
+                      <li>Company research and notes</li>
+                      <li>Interview schedules and feedback</li>
+                      <li>Documents and templates</li>
+                    </ul>
+                    <p className="pt-1">
+                      <strong className="text-foreground">Your data is safe:</strong> When you disable demo mode, 
+                      your original data will be automatically restored.
+                    </p>
+                  </div>
+                </div>
+                
+                {demoMode.enabled && (
+                  <div className="pt-2 border-t">
+                    <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                      Demo Mode Active
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You're currently viewing sample data. Toggle off to restore your real data.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
