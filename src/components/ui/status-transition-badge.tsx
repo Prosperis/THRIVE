@@ -154,9 +154,9 @@ export function StatusTransitionBadge({
               ? {
                   scale: [1, 1.08, 1],
                   boxShadow: [
-                    '0 0 0 0 currentColor',
-                    '0 0 0 4px transparent',
-                    '0 0 0 0 currentColor',
+                    '0 0 0 0px rgba(0, 0, 0, 0)',
+                    '0 0 0 4px rgba(0, 0, 0, 0.1)',
+                    '0 0 0 0px rgba(0, 0, 0, 0)',
                   ],
                 }
               : {}

@@ -82,7 +82,7 @@
     "@tanstack/devtools-vite": "^0.3.7",
     "@tanstack/react-devtools": "^0.7.7",
     "@tanstack/react-query-devtools": "^5.90.2",
-    "@tanstack/router-devtools": "^1.133.13",
+    "@tanstack/react-router-devtools": "^1.133.22",
     "@tanstack/router-plugin": "^1.133.10",
     "@types/jszip": "^3.4.1",
     "@types/node": "^24.6.0",
