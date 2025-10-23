@@ -33,9 +33,14 @@ function DashboardPage() {
   const { interviews, fetchInterviews } = useInterviewsStore();
 
   useEffect(() => {
-    fetchApplications();
-    fetchInterviews();
-  }, [fetchApplications, fetchInterviews]);
+    const initializeData = async () => {
+      await fetchApplications();
+      await fetchInterviews();
+    };
+    
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Get recent activity (last 5 applications/interviews)
   const recentActivity = useMemo(() => {

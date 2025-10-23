@@ -46,12 +46,12 @@ const pageTransition = {
 export function PageTransition({ children }: PageTransitionProps) {
   return (
     <motion.div
-      initial="initial"
+      initial={false}
       animate="animate"
-      exit="exit"
       variants={pageVariants}
       transition={pageTransition}
       className="h-full"
+      style={{ minHeight: '100%' }}
     >
       {children}
     </motion.div>

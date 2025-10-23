@@ -28,8 +28,13 @@ function InterviewsPage() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   useEffect(() => {
-    fetchInterviews();
-  }, [fetchInterviews]);
+    const initializeData = async () => {
+      await fetchInterviews();
+    };
+    
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const upcomingInterviews = getUpcomingInterviews();
   const pastInterviews = getPastInterviews();

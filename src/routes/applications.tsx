@@ -14,38 +14,51 @@ export const Route = createFileRoute('/applications')({
 });
 
 function ApplicationsPage() {
-  const { fetchApplications, isLoading } = useApplicationsStore();
+  const { fetchApplications } = useApplicationsStore();
   const { activeView } = useUIStore();
   const { fetchDocuments } = useDocumentsStore();
   const [tableInstance, setTableInstance] = useState<Table<Application> | undefined>(undefined);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // Seed database with sample data on first load
-    seedDatabase().then(() => {
-      fetchApplications();
-      fetchDocuments();
-    });
-  }, [fetchApplications, fetchDocuments]);
+    const initializeData = async () => {
+      try {
+        await seedDatabase();
+        await fetchApplications();
+        await fetchDocuments();
+      } catch (error) {
+        console.error('Failed to initialize data:', error);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+    
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <PageTransition>
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading applications...</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Consolidated Toolbar */}
-          <ApplicationsToolbar table={tableInstance} />
+      <div className="space-y-6">
+        {!isInitialized ? (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">Loading applications...</p>
+          </div>
+        ) : (
+          <>
+            {/* Consolidated Toolbar */}
+            <ApplicationsToolbar table={tableInstance} />
 
-          {/* View Content */}
-          {activeView === 'table' ? (
-            <ApplicationsTable onTableReady={setTableInstance} />
-          ) : (
-            <KanbanBoard />
-          )}
-        </div>
-      )}
+            {/* View Content */}
+            {activeView === 'table' ? (
+              <ApplicationsTable onTableReady={setTableInstance} />
+            ) : (
+              <KanbanBoard />
+            )}
+          </>
+        )}
+      </div>
     </PageTransition>
   );
 }

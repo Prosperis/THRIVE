@@ -257,7 +257,9 @@ function DocumentsPage() {
       const autoDeleteDate = new Date();
       autoDeleteDate.setDate(autoDeleteDate.getDate() - documentSettings.autoDeleteDays);
       
-      const oldDeletedDocs = documents.filter(
+      // Get current documents from the store after fetching
+      const currentDocs = useDocumentsStore.getState().documents;
+      const oldDeletedDocs = currentDocs.filter(
         doc => doc.deletedAt && new Date(doc.deletedAt) <= autoDeleteDate
       );
       
@@ -281,7 +283,8 @@ function DocumentsPage() {
     };
     
     initDocuments();
-  }, [fetchDocuments, documents, deleteDocument, documentSettings.autoDeleteDays]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Select document from URL parameter
   useEffect(() => {
