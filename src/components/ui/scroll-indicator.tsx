@@ -40,17 +40,6 @@ export function ScrollIndicator({ containerRef, threshold = 50 }: ScrollIndicato
       } else {
         setScrollDirection(null);
       }
-      
-      // Debug logging (can be removed in production)
-      console.log('Scroll Check:', {
-        hasHorizontalScroll,
-        hasVerticalScroll,
-        scrollWidth,
-        clientWidth,
-        scrollHeight,
-        clientHeight,
-        direction: hasVerticalScroll && !isNearBottom ? 'vertical' : hasHorizontalScroll && !isNearRightEnd ? 'horizontal' : 'none'
-      });
     };
 
     const element = targetRef.current;

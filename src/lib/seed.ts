@@ -10,7 +10,6 @@ export async function seedDatabase() {
   // Check if already seeded
   const existingApplications = await db.applications.count();
   if (existingApplications > 0) {
-    console.log('Database already seeded');
     return;
   }
 
