@@ -64,6 +64,7 @@ export function DataTable<TData, TValue>({
   onTableReady,
 }: DataTableProps<TData, TValue>) {
   // Load initial sorting from localStorage if available
+  // Load initial sorting from localStorage if available
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (storageKey) {
       try {
@@ -79,6 +80,17 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  
+  // Track pagination state separately to make it controlled
+  const [pageSize, setPageSize] = useState(initialPageSize);
+  const [pageIndex, setPageIndex] = useState(0);
+
+  // Update page size when initialPageSize prop changes (e.g., from settings)
+  useEffect(() => {
+    setPageSize(initialPageSize);
+    // Reset to first page when page size changes
+    setPageIndex(0);
+  }, [initialPageSize]);
 
   // Persist sorting to localStorage whenever it changes
   useEffect(() => {
@@ -98,18 +110,24 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: (updater) => {
+      const newPagination = typeof updater === 'function' 
+        ? updater({ pageIndex, pageSize })
+        : updater;
+      setPageIndex(newPagination.pageIndex);
+      setPageSize(newPagination.pageSize);
+    },
     enableMultiSort: true, // Enable multi-column sorting
     maxMultiSortColCount: 3, // Limit to 3 columns
-    initialState: {
-      pagination: {
-        pageSize: initialPageSize,
-      },
-    },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
     },
   });
 
@@ -305,15 +323,17 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>
             <select
-              value={table.getState().pagination.pageSize}
+              value={pageSize}
               onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
+                const newSize = Number(e.target.value);
+                setPageSize(newSize);
+                setPageIndex(0); // Reset to first page when changing page size
               }}
               className="h-8 w-[70px] rounded-md border border-input bg-background px-2 text-sm"
             >
-              {[10, 20, 30, 40, 50].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
+              {[10, 25, 50, 100].map((size) => (
+                <option key={size} value={size}>
+                  {size}
                 </option>
               ))}
             </select>
