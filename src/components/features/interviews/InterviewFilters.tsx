@@ -12,9 +12,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { RelativeDateRangeSlider, type RelativeDateRange } from '@/components/ui/relative-date-range-slider';
 import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useInterviewsStore } from '@/stores/interviewsStore';
+
+// Preset relative date ranges for interview scheduling
+const RELATIVE_DATE_RANGES: RelativeDateRange[] = [
+  { label: 'Last 7 days', shortLabel: '-7d', value: 'last-7d', days: 7, direction: 'past' },
+  { label: 'Last 14 days', shortLabel: '-14d', value: 'last-14d', days: 14, direction: 'past' },
+  { label: 'Last 30 days', shortLabel: '-30d', value: 'last-30d', days: 30, direction: 'past' },
+  { label: 'Next 7 days', shortLabel: '+7d', value: 'next-7d', days: 7, direction: 'future' },
+  { label: 'Next 14 days', shortLabel: '+14d', value: 'next-14d', days: 14, direction: 'future' },
+  { label: 'Next 30 days', shortLabel: '+30d', value: 'next-30d', days: 30, direction: 'future' },
+];
 
 interface InterviewFiltersProps {
   savedFiltersButton?: React.ReactNode;
@@ -23,6 +34,7 @@ interface InterviewFiltersProps {
 export function InterviewFilters({ savedFiltersButton }: InterviewFiltersProps) {
   const { filters, setFilters } = useInterviewsStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedRelativeRange, setSelectedRelativeRange] = useState<string>('next-7d');
 
   // Extract current filter values
   const typeFilters = filters.type || [];
@@ -216,20 +228,47 @@ export function InterviewFilters({ savedFiltersButton }: InterviewFiltersProps) 
           <Separator />
 
           {/* Date Range with Calendar */}
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="text-xs font-medium text-muted-foreground">Scheduled Date Range</div>
               {hasDateFilters && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setFilters({ dateRange: undefined })}
+                  onClick={() => {
+                    setFilters({ dateRange: undefined });
+                    setSelectedRelativeRange('next-7d');
+                  }}
                   className="h-5 text-xs px-2"
                 >
                   <X className="mr-1 h-2.5 w-2.5" />
                   Clear
                 </Button>
               )}
+            </div>
+
+            {/* Quick Relative Date Range Selection */}
+            <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="text-xs font-medium text-muted-foreground mb-3">Quick Select</div>
+              <RelativeDateRangeSlider
+                ranges={RELATIVE_DATE_RANGES}
+                selectedValue={selectedRelativeRange}
+                onChange={(value, dateRange) => {
+                  setSelectedRelativeRange(value);
+                  setFilters({
+                    dateRange: {
+                      start: dateRange.start,
+                      end: dateRange.end,
+                    },
+                  });
+                }}
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">or pick specific dates</span>
+              <div className="h-px flex-1 bg-border" />
             </div>
             <div className="flex justify-center">
               <Calendar

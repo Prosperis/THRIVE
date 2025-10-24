@@ -26,6 +26,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { RatingSlider } from '@/components/ui/rating-slider';
+import { FormSalarySlider } from '@/components/ui/form-salary-slider';
 import { CheckCircle2, AlertCircle, Star } from 'lucide-react';
 import { 
   COMPANY_SIZES, 
@@ -758,24 +760,22 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
               name="overallRating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    Overall Rating
-                    <Badge variant="outline" className="text-xs font-normal">
-                      <Star className="h-3 w-3 mr-1" />
-                      Auto-calculated
-                    </Badge>
-                  </FormLabel>
+                  <div className="flex items-center justify-between mb-2">
+                    <FormLabel className="flex items-center gap-2">
+                      Overall Rating
+                      <Badge variant="outline" className="text-xs font-normal">
+                        <Star className="h-3 w-3 mr-1" />
+                        Auto-calculated
+                      </Badge>
+                    </FormLabel>
+                  </div>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="5" 
-                      step="0.5"
-                      placeholder="0-5" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="bg-muted/50"
-                      readOnly
+                    <RatingSlider
+                      value={field.value || 0}
+                      onChange={field.onChange}
+                      disabled
+                      showValue
+                      className="opacity-60"
                     />
                   </FormControl>
                   <FormDescription>
@@ -791,16 +791,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
               name="workLifeBalanceRating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Work-Life Balance</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="5" 
-                      step="0.5"
-                      placeholder="0-5" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                    <RatingSlider
+                      value={field.value || 0}
+                      onChange={field.onChange}
+                      label="Work-Life Balance"
+                      showValue
                     />
                   </FormControl>
                   <FormMessage />
@@ -813,16 +809,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
               name="compensationRating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Compensation</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="5" 
-                      step="0.5"
-                      placeholder="0-5" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                    <RatingSlider
+                      value={field.value || 0}
+                      onChange={field.onChange}
+                      label="Compensation"
+                      showValue
                     />
                   </FormControl>
                   <FormMessage />
@@ -835,16 +827,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
               name="careerGrowthRating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Career Growth</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="5" 
-                      step="0.5"
-                      placeholder="0-5" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                    <RatingSlider
+                      value={field.value || 0}
+                      onChange={field.onChange}
+                      label="Career Growth"
+                      showValue
                     />
                   </FormControl>
                   <FormMessage />
@@ -857,16 +845,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
               name="managementRating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Management</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="5" 
-                      step="0.5"
-                      placeholder="0-5" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                    <RatingSlider
+                      value={field.value || 0}
+                      onChange={field.onChange}
+                      label="Management"
+                      showValue
                     />
                   </FormControl>
                   <FormMessage />
@@ -879,16 +863,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
               name="cultureRating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Culture</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="5" 
-                      step="0.5"
-                      placeholder="0-5" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                    <RatingSlider
+                      value={field.value || 0}
+                      onChange={field.onChange}
+                      label="Culture"
+                      showValue
                     />
                   </FormControl>
                   <FormMessage />
@@ -900,59 +880,17 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
 
         {/* Salary Range */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Salary Range</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="salaryMin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Minimum Salary</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      placeholder="50000" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="salaryMax"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Maximum Salary</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      placeholder="100000" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Salary Range</h3>
             <FormField
               control={form.control}
               name="salaryCurrency"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Currency</FormLabel>
+                <FormItem className="w-[180px]">
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select currency" />
+                        <SelectValue placeholder="Currency" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -966,6 +904,18 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
                   <FormMessage />
                 </FormItem>
               )}
+            />
+          </div>
+          
+          <div className="pt-2">
+            <FormSalarySlider
+              minValue={form.watch('salaryMin')}
+              maxValue={form.watch('salaryMax')}
+              currency={form.watch('salaryCurrency') || 'USD'}
+              onChange={(range) => {
+                form.setValue('salaryMin', range.min);
+                form.setValue('salaryMax', range.max);
+              }}
             />
           </div>
         </div>

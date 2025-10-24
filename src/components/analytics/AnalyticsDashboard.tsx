@@ -26,13 +26,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { TimePeriodSlider } from '@/components/ui/time-period-slider';
 import {
   calculateAnalytics,
   calculateCompanyStats,
@@ -203,6 +197,12 @@ export function AnalyticsDashboard() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <LayoutManager />
+          <TimePeriodSlider
+            periods={ANALYTICS_PERIODS}
+            selectedValue={selectedPeriod}
+            onChange={(value) => setSelectedPeriod(value as AnalyticsPeriod['value'])}
+            className="min-w-[300px]"
+          />
           {selectedPeriod !== 'all' && (
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
@@ -214,21 +214,6 @@ export function AnalyticsDashboard() {
               <span>Compare to previous period</span>
             </label>
           )}
-          <Select
-            value={selectedPeriod}
-            onValueChange={(value) => setSelectedPeriod(value as AnalyticsPeriod['value'])}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ANALYTICS_PERIODS.map((period) => (
-                <SelectItem key={period.value} value={period.value}>
-                  {period.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 

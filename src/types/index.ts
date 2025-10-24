@@ -290,6 +290,10 @@ export interface ApplicationFilters {
     start?: Date;
     end?: Date;
   };
+  salaryRange?: {
+    min: number;
+    max: number;
+  };
   priority?: ('low' | 'medium' | 'high')[];
   tags?: string[];
   searchQuery?: string;

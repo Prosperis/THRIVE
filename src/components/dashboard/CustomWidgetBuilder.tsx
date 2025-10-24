@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Plus, Sparkles, X, Save } from 'lucide-react';
+import { Plus, Sparkles, Save } from 'lucide-react';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { WidgetFilterRow } from './WidgetFilterRow';
 import {
   Dialog,
   DialogContent,
@@ -219,53 +220,12 @@ export function CustomWidgetBuilder() {
             </div>
 
             {filters.map((filter, index) => (
-              <div key={index} className="flex gap-2 items-start p-3 border rounded-lg">
-                <div className="flex-1 grid grid-cols-3 gap-2">
-                  <Select
-                    value={filter.field}
-                    onValueChange={(value) => updateFilter(index, { field: value as typeof filter.field })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="status">Status</SelectItem>
-                      <SelectItem value="companyName">Company</SelectItem>
-                      <SelectItem value="position">Position</SelectItem>
-                      <SelectItem value="priority">Priority</SelectItem>
-                      <SelectItem value="workType">Work Type</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={filter.operator}
-                    onValueChange={(value) => updateFilter(index, { operator: value as typeof filter.operator })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="equals">Equals</SelectItem>
-                      <SelectItem value="notEquals">Not Equals</SelectItem>
-                      <SelectItem value="contains">Contains</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Input
-                    placeholder="Value"
-                    value={filter.value as string}
-                    onChange={(e) => updateFilter(index, { value: e.target.value })}
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeFilter(index)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <WidgetFilterRow
+                key={index}
+                filter={filter}
+                onUpdate={(updates) => updateFilter(index, updates)}
+                onRemove={() => removeFilter(index)}
+              />
             ))}
 
             {filters.length === 0 && (

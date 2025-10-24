@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ChartRangeSelector } from '@/components/ui/chart-range-selector';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useAnnotationsStore } from '@/stores/annotationsStore';
 import { AnnotationDialog } from './AnnotationDialog';
@@ -68,6 +69,7 @@ export function ApplicationsTimelineChart() {
   } | null>(null);
   const [showAnnotationDialog, setShowAnnotationDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [visibleRange, setVisibleRange] = useState<{ start: number; end: number } | null>(null);
   const gradientId1 = useId();
   const gradientId2 = useId();
 
@@ -133,13 +135,19 @@ export function ApplicationsTimelineChart() {
     }
   }, [applications, timeRange]);
 
+  // Filter chart data based on visible range
+  const filteredChartData = useMemo(() => {
+    if (!visibleRange || chartData.length === 0) return chartData;
+    return chartData.slice(visibleRange.start, visibleRange.end + 1);
+  }, [chartData, visibleRange]);
+
   // Get annotations for visible time range
   const visibleAnnotations = useMemo(() => {
-    if (chartData.length === 0) return [];
-    const startDate = chartData[0].startDate;
-    const endDate = chartData[chartData.length - 1].endDate;
+    if (filteredChartData.length === 0) return [];
+    const startDate = filteredChartData[0].startDate;
+    const endDate = filteredChartData[filteredChartData.length - 1].endDate;
     return getAnnotationsInRange(startDate, endDate);
-  }, [chartData, getAnnotationsInRange]);
+  }, [filteredChartData, getAnnotationsInRange]);
 
   const handleChartClick = (data: unknown) => {
     const point = data as { applicationList?: Application[]; period?: string };
@@ -214,7 +222,7 @@ export function ApplicationsTimelineChart() {
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart
-            data={chartData}
+            data={filteredChartData}
             margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             onClick={handleChartClick}
             style={{ cursor: 'pointer' }}
@@ -258,7 +266,7 @@ export function ApplicationsTimelineChart() {
             {visibleAnnotations.map((annotation) => {
               const annotationDate = new Date(annotation.date);
               // Find the closest data point
-              const dataPoint = chartData.find((point) =>
+              const dataPoint = filteredChartData.find((point) =>
                 isWithinInterval(annotationDate, { start: point.startDate, end: point.endDate })
               );
               if (!dataPoint) return null;
@@ -282,6 +290,25 @@ export function ApplicationsTimelineChart() {
             })}
           </AreaChart>
         </ResponsiveContainer>
+
+        {/* Chart Range Selector */}
+        {chartData.length > 5 && (
+          <div className="mt-6 pt-4 border-t">
+            <div className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
+              <span>📊 Zoom to Range</span>
+              <span className="text-[10px] opacity-60">
+                ({filteredChartData.length} of {chartData.length} periods)
+              </span>
+            </div>
+            <ChartRangeSelector
+              min={0}
+              max={chartData.length - 1}
+              formatLabel={(idx) => chartData[idx]?.period || ''}
+              onChange={setVisibleRange}
+              initialRange={visibleRange || undefined}
+            />
+          </div>
+        )}
       </CardContent>
 
       {/* Drill-Down Dialog */}

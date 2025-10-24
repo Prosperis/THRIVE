@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { SalaryRangeSlider } from '@/components/ui/salary-range-slider';
 import { APPLICATION_STATUSES, PRIORITY_LEVELS, WORK_TYPES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useApplicationsStore } from '@/stores';
@@ -22,8 +23,6 @@ export function UnifiedFilters() {
   const [isOpen, setIsOpen] = useState(false);
   const dateFromId = useId();
   const dateToId = useId();
-  const salaryMinId = useId();
-  const salaryMaxId = useId();
 
   // Extract current filter values
   const statusFilters = filters.status || [];
@@ -31,6 +30,7 @@ export function UnifiedFilters() {
   const workTypeFilters = filters.workType || [];
   const employmentTypeFilters = filters.employmentType || [];
   const hasDateFilters = filters.dateRange?.start || filters.dateRange?.end;
+  const hasSalaryFilter = filters.salaryRange !== undefined;
 
   // Toggle filter functions
   const toggleStatusFilter = (status: ApplicationStatus) => {
@@ -73,7 +73,8 @@ export function UnifiedFilters() {
     priorityFilters.length +
     workTypeFilters.length +
     employmentTypeFilters.length +
-    (hasDateFilters ? 1 : 0);
+    (hasDateFilters ? 1 : 0) +
+    (hasSalaryFilter ? 1 : 0);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -278,41 +279,32 @@ export function UnifiedFilters() {
               </div>
             </div>
 
-            {/* Salary Range - Coming Soon */}
+            {/* Salary Range */}
             <Separator />
-            <div className="space-y-2 opacity-50">
-              <Label className="text-xs font-semibold flex items-center gap-1.5">
-                Salary Range
-                <Badge variant="secondary" className="text-[10px] px-1 h-4">
-                  Soon
-                </Badge>
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor={salaryMinId} className="text-[10px] text-muted-foreground">
-                    Min ($)
-                  </Label>
-                  <input
-                    id={salaryMinId}
-                    type="number"
-                    disabled
-                    className="w-full px-2 py-1 text-xs border rounded-md bg-background mt-0.5"
-                    placeholder="50,000"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor={salaryMaxId} className="text-[10px] text-muted-foreground">
-                    Max ($)
-                  </Label>
-                  <input
-                    id={salaryMaxId}
-                    type="number"
-                    disabled
-                    className="w-full px-2 py-1 text-xs border rounded-md bg-background mt-0.5"
-                    placeholder="150,000"
-                  />
-                </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Salary Range</Label>
+                {hasSalaryFilter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 px-1 text-[10px]"
+                    onClick={() => setFilters({ salaryRange: undefined })}
+                  >
+                    <X className="h-2.5 w-2.5 mr-0.5" />
+                    Clear
+                  </Button>
+                )}
               </div>
+              <SalaryRangeSlider
+                minValue={filters.salaryRange?.min ?? 0}
+                maxValue={filters.salaryRange?.max ?? 500000}
+                onChange={(range) => setFilters({ salaryRange: range })}
+                currency="USD"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Filter by expected salary range
+              </p>
             </div>
           </div>
         </ScrollArea>

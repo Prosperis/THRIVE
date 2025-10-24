@@ -74,6 +74,13 @@ export const useApplicationsStore = create<ApplicationsState>()(
               }
             }
 
+            // Filter by employment type
+            if (filters.employmentType && filters.employmentType.length > 0) {
+              if (!app.employmentType || !filters.employmentType.includes(app.employmentType)) {
+                return false;
+              }
+            }
+
             // Filter by date range
             if (filters.dateRange?.start && app.appliedDate) {
               const appliedDate = new Date(app.appliedDate);
@@ -90,6 +97,21 @@ export const useApplicationsStore = create<ApplicationsState>()(
               toDate.setHours(23, 59, 59, 999);
               if (appliedDate > toDate) {
                 return false;
+              }
+            }
+
+            // Filter by salary range
+            if (filters.salaryRange && app.salary) {
+              const { min: filterMin, max: filterMax } = filters.salaryRange;
+              const { min: appMin, max: appMax } = app.salary;
+              
+              // Check if there's any overlap between filter range and app salary range
+              // App salary range must overlap with filter range
+              if (appMin !== undefined && appMax !== undefined) {
+                // No overlap if app max is less than filter min, or app min is greater than filter max
+                if (appMax < filterMin || appMin > filterMax) {
+                  return false;
+                }
               }
             }
 

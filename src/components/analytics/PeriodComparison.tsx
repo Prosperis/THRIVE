@@ -5,6 +5,7 @@ import { calculateAnalytics } from '@/lib/analytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { ChartRangeSelector } from '@/components/ui/chart-range-selector';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
 
@@ -15,6 +16,7 @@ interface PeriodComparisonProps {
 
 export function PeriodComparison({ applications, interviews }: PeriodComparisonProps) {
   const [comparisonType, setComparisonType] = useState<'yoy' | 'quarter' | 'month'>('yoy');
+  const [monthlyRange, setMonthlyRange] = useState<{ start: number; end: number } | null>(null);
 
   // Year-over-year comparison
   const yoyComparison = useMemo(() => {
@@ -86,6 +88,12 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
 
     return months;
   }, [applications, interviews]);
+
+  // Filter monthly data based on visible range
+  const filteredMonthComparison = useMemo(() => {
+    if (!monthlyRange) return monthComparison;
+    return monthComparison.slice(monthlyRange.start, monthlyRange.end + 1);
+  }, [monthComparison, monthlyRange]);
 
   const calculateChange = (current: number, previous: number) => {
     if (previous === 0) return current > 0 ? 100 : 0;
@@ -342,7 +350,7 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={400}>
-                    <LineChart data={monthComparison}>
+                    <LineChart data={filteredMonthComparison}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="label" />
                       <YAxis yAxisId="left" />
@@ -375,6 +383,25 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
                       />
                     </LineChart>
                   </ResponsiveContainer>
+
+                  {/* Chart Range Selector */}
+                  {monthComparison.length > 4 && (
+                    <div className="mt-6 pt-4 border-t">
+                      <div className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                        <span>📊 Zoom to Range</span>
+                        <span className="text-[10px] opacity-60">
+                          ({filteredMonthComparison.length} of {monthComparison.length} months)
+                        </span>
+                      </div>
+                      <ChartRangeSelector
+                        min={0}
+                        max={monthComparison.length - 1}
+                        formatLabel={(idx) => monthComparison[idx]?.label || ''}
+                        onChange={setMonthlyRange}
+                        initialRange={monthlyRange || undefined}
+                      />
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

@@ -1,9 +1,10 @@
 import { Calendar, CheckCircle2, Clock, Code, Edit, Plus, Trash2 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DurationSlider, TIME_LIMIT_PRESETS } from '@/components/ui/duration-slider';
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,7 @@ export function ChallengesTab() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<ChallengeStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [timeLimit, setTimeLimit] = useState<number>(60); // in minutes
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const challenges = useInterviewPrepStore((state) => state.challenges);
@@ -144,6 +146,15 @@ export function ChallengesTab() {
   };
 
   const editingChallenge = editingId ? challenges.find((c) => c.id === editingId) : null;
+
+  // Update timeLimit state when editing a challenge
+  useEffect(() => {
+    if (editingChallenge?.timeLimit !== undefined) {
+      setTimeLimit(editingChallenge.timeLimit);
+    } else {
+      setTimeLimit(60); // Reset to default
+    }
+  }, [editingChallenge]);
 
   return (
     <div className="space-y-6">
@@ -281,13 +292,18 @@ export function ChallengesTab() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
-                        <Input
-                          name="timeLimit"
-                          type="number"
-                          placeholder="60"
-                          defaultValue={editingChallenge?.timeLimit}
+                        <Label htmlFor="timeLimit">Time Limit</Label>
+                        <DurationSlider
+                          value={timeLimit}
+                          onChange={setTimeLimit}
+                          unit="minutes"
+                          min={15}
+                          max={240}
+                          step={5}
+                          presets={TIME_LIMIT_PRESETS}
+                          showPresets={true}
                         />
+                        <input type="hidden" name="timeLimit" value={timeLimit} />
                       </div>
                     </div>
 

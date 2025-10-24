@@ -85,14 +85,15 @@ export interface InterviewStageStats {
 
 export interface AnalyticsPeriod {
   label: string;
+  shortLabel: string;
   value: '7d' | '30d' | '90d' | '1y' | 'all';
   days?: number;
 }
 
 export const ANALYTICS_PERIODS: AnalyticsPeriod[] = [
-  { label: 'Last 7 days', value: '7d', days: 7 },
-  { label: 'Last 30 days', value: '30d', days: 30 },
-  { label: 'Last 90 days', value: '90d', days: 90 },
-  { label: 'Last year', value: '1y', days: 365 },
-  { label: 'All time', value: 'all' },
+  { label: 'Last 7 days', shortLabel: '7d', value: '7d', days: 7 },
+  { label: 'Last 30 days', shortLabel: '30d', value: '30d', days: 30 },
+  { label: 'Last 90 days', shortLabel: '90d', value: '90d', days: 90 },
+  { label: 'Last year', shortLabel: '1y', value: '1y', days: 365 },
+  { label: 'All time', shortLabel: 'All', value: 'all' },
 ];

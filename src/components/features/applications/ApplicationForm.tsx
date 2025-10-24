@@ -31,6 +31,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FormSalarySlider } from '@/components/ui/form-salary-slider';
 import {
   Dialog,
   DialogContent,
@@ -502,47 +503,17 @@ export function ApplicationForm({
 
         {/* Salary Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Salary Information</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="salaryMin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Minimum Salary</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="100000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="salaryMax"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Maximum Salary</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="150000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Salary Information</h3>
             <FormField
               control={form.control}
               name="salaryCurrency"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Currency</FormLabel>
+                <FormItem className="w-[180px]">
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select currency" />
+                        <SelectValue placeholder="Currency" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-[300px] overflow-y-auto">
@@ -567,6 +538,18 @@ export function ApplicationForm({
                   <FormMessage />
                 </FormItem>
               )}
+            />
+          </div>
+
+          <div className="pt-2">
+            <FormSalarySlider
+              minValue={form.watch('salaryMin')}
+              maxValue={form.watch('salaryMax')}
+              currency={form.watch('salaryCurrency') || 'USD'}
+              onChange={(range) => {
+                form.setValue('salaryMin', range.min);
+                form.setValue('salaryMax', range.max);
+              }}
             />
           </div>
         </div>
