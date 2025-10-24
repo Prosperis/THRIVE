@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { Application, Interview } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
   }, [applications]);
 
   // Calculate metrics for each company
-  const calculateCompanyMetrics = (companyName: string): CompanyMetrics => {
+  const calculateCompanyMetrics = useCallback((companyName: string): CompanyMetrics => {
     const companyApps = applications.filter((app) => app.companyName === companyName);
     const totalApplications = companyApps.length;
 
@@ -113,12 +113,12 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
       rejectedApplications,
       successRate,
     };
-  };
+  }, [applications, interviews]);
 
   const companyMetrics = useMemo(() => {
     return selectedCompanies.map(calculateCompanyMetrics);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCompanies, applications, interviews]);
+  }, [selectedCompanies, calculateCompanyMetrics]);
 
   const addCompany = (companyName: string) => {
     if (!selectedCompanies.includes(companyName) && selectedCompanies.length < 5) {

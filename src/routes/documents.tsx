@@ -224,7 +224,7 @@ function DocumentsPage() {
     pdfLoadErrorShownRef.current = null;
     pdfLoadErrorTimestampRef.current = 0;
     setPdfLoadFailed(false);
-  }, [selectedDocument?.id, viewFormat]);
+  }, []);
 
   // Reset upload dialog state when closed
   useEffect(() => {
@@ -333,7 +333,7 @@ function DocumentsPage() {
     
     initDocuments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [deleteDocument, documentSettings.autoDeleteDays, fetchDocuments]);
 
   // Select document from URL parameter
   useEffect(() => {

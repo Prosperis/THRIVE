@@ -241,8 +241,7 @@ export function DocumentVersionTimeline({ document }: DocumentVersionTimelinePro
                               </Button>
                             </div>
                           ) : (
-                            <>
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                                 <h4 className="text-sm font-semibold">
                                   {document.versionName && node.version === document.version 
                                     ? document.versionName 
@@ -263,7 +262,6 @@ export function DocumentVersionTimeline({ document }: DocumentVersionTimelinePro
                                   </Badge>
                                 )}
                               </div>
-                            </>
                           )}
                         </div>
                         {editingVersion !== node.version && (

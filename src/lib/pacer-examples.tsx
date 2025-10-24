@@ -16,7 +16,7 @@ import { useState } from 'react';
  */
 export function DebouncedSearchExample() {
   const [value, setValue] = useState('');
-  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [_searchResults, setSearchResults] = useState<string[]>([]);
 
   // Debounce the search API call
   const debouncedSearch = useDebouncedCallback(
@@ -52,7 +52,7 @@ export function AutoSaveExample() {
   const [content, setContent] = useState('');
   
   // Debounce the entire value
-  const debouncedContent = useDebouncedValue(content, { wait: 1000 });
+  const _debouncedContent = useDebouncedValue(content, { wait: 1000 });
 
   // This effect will only run 1 second after the last edit
   // useEffect(() => {
@@ -76,7 +76,7 @@ export function ThrottledScrollExample() {
   const [scrollY, setScrollY] = useState(0);
 
   // Throttle scroll updates to once per 100ms
-  const throttledScroll = useThrottledCallback(
+  const _throttledScroll = useThrottledCallback(
     () => {
       setScrollY(window.scrollY);
     },
@@ -113,7 +113,7 @@ async function performSearch(query: string): Promise<string[]> {
  * Used for: Tag editing, form auto-save, bulk imports
  */
 export function DatabaseBatchingExample() {
-  const [tags, setTags] = useState<string[]>([]);
+  const [_tags, setTags] = useState<string[]>([]);
   
   // This would be used in a real component
   // const batcher = useDatabaseBatcher({
@@ -123,7 +123,7 @@ export function DatabaseBatchingExample() {
   //   onSuccess: (count) => toast.success(`Saved ${count} changes`),
   // });
 
-  const handleTagChange = (applicationId: string, newTags: string[]) => {
+  const _handleTagChange = (_applicationId: string, newTags: string[]) => {
     setTags(newTags);
     // batcher.update(applicationId, { tags: newTags });
     // Updates are automatically batched!

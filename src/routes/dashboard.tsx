@@ -40,7 +40,7 @@ function DashboardPage() {
     
     initializeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchApplications, fetchInterviews]);
 
   // Get recent activity (last 5 applications/interviews)
   const recentActivity = useMemo(() => {

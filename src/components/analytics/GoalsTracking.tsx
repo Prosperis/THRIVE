@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { addWeeks, addMonths, startOfWeek, startOfMonth, endOfWeek, endOfMonth, isWithinInterval } from 'date-fns';
 import type { Application, Interview } from '@/types';
 import { useGoalsStore, type JobSearchGoal } from '@/stores/goalsStore';
@@ -41,7 +41,7 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
   const [newGoalTarget, setNewGoalTarget] = useState('10');
 
   // Calculate current period dates
-  const getCurrentPeriod = (period: 'weekly' | 'monthly') => {
+  const getCurrentPeriod = useCallback((period: 'weekly' | 'monthly') => {
     const now = new Date();
     if (period === 'weekly') {
       return {
@@ -53,10 +53,10 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
       start: startOfMonth(now),
       end: endOfMonth(now),
     };
-  };
+  }, []);
 
   // Calculate progress for each goal
-  const calculateGoalProgress = (goal: JobSearchGoal) => {
+  const calculateGoalProgress = useCallback((goal: JobSearchGoal) => {
     const period = getCurrentPeriod(goal.period);
     let current = 0;
 
@@ -106,7 +106,7 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
       percentage: Math.min(percentage, 100),
       status: percentage >= 100 ? 'achieved' : percentage >= 75 ? 'on-track' : 'behind',
     };
-  };
+  }, [applications, interviews, getCurrentPeriod]);
 
   const activeGoals = goals.filter((g) => g.active);
 
@@ -192,7 +192,7 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
       }).length,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeGoals, applications, interviews]);
+  }, [activeGoals, calculateGoalProgress]);
 
   return (
     <div className="space-y-6">

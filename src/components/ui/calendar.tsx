@@ -22,7 +22,7 @@ import { useSettingsStore } from "@/stores/settingsStore"
 // Convert Western numerals to Persian numerals
 function toPersianNumber(num: number | string): string {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/\d/g, (digit) => persianDigits[parseInt(digit)])
+  return String(num).replace(/\d/g, (digit) => persianDigits[parseInt(digit, 10)])
 }
 
 // Custom caption with year selector
@@ -37,7 +37,7 @@ function CalendarCaption({ displayMonth }: { displayMonth: Date }) {
 
   const handleYearChange = (year: string) => {
     const newDate = new Date(displayMonth)
-    newDate.setFullYear(parseInt(year))
+    newDate.setFullYear(parseInt(year, 10))
     goToMonth(newDate)
   }
 

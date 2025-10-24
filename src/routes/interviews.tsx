@@ -34,7 +34,7 @@ function InterviewsPage() {
     
     initializeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchInterviews]);
 
   const upcomingInterviews = getUpcomingInterviews();
   const pastInterviews = getPastInterviews();
@@ -78,8 +78,7 @@ function InterviewsPage() {
   };
 
   return (
-    <>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Modern Search and Actions Bar */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
@@ -301,6 +300,5 @@ function InterviewsPage() {
           </Tabs>
         )}
       </div>
-    </>
   );
 }

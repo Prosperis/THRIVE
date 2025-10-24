@@ -96,7 +96,10 @@ export function InteractiveChart({
         )}
 
         {/* Chart Content */}
+        {/* biome-ignore lint/a11y/useSemanticElements: Div is required for chart scaling transformations */}
         <div
+          role="button"
+          tabIndex={0}
           style={{
             transform: `scale(${zoomLevel})`,
             transformOrigin: 'center center',
@@ -109,6 +112,18 @@ export function InteractiveChart({
               const data = (target.closest('[data-chart-item]') as HTMLElement).dataset.chartData;
               if (data) {
                 handleDataPointClick(JSON.parse(data));
+              }
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              const target = e.target as HTMLElement;
+              if (target.closest('[data-chart-item]')) {
+                const data = (target.closest('[data-chart-item]') as HTMLElement).dataset.chartData;
+                if (data) {
+                  handleDataPointClick(JSON.parse(data));
+                }
               }
             }
           }}

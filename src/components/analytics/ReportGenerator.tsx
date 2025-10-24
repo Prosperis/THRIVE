@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { format, subDays, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import type { Application, Interview } from '@/types';
 import { calculateAnalytics } from '@/lib/analytics';
@@ -80,14 +80,14 @@ export function ReportGenerator({ applications, interviews }: ReportGeneratorPro
   );
 
   // Calculate trends
-  const calculateChange = (current: number, previous: number) => {
+  const calculateChange = useCallback((current: number, previous: number) => {
     if (previous === 0) return { value: 0, direction: 'neutral' as const };
     const change = ((current - previous) / previous) * 100;
     return {
       value: Math.abs(Math.round(change * 10) / 10),
       direction: change > 0 ? ('up' as const) : change < 0 ? ('down' as const) : ('neutral' as const),
     };
-  };
+  }, []);
 
   // Generate HTML report
   const generateHTMLReport = () => {
@@ -453,7 +453,7 @@ Keep up the great work! 💪
     responseRate: calculateChange(currentMetrics.responseRate, previousMetrics.responseRate),
     offerRate: calculateChange(currentMetrics.offerRate, previousMetrics.offerRate),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [currentMetrics.totalApplications, currentMetrics.totalInterviews, currentMetrics.responseRate, currentMetrics.offerRate, previousMetrics.totalApplications, previousMetrics.totalInterviews, previousMetrics.responseRate, previousMetrics.offerRate]);
+  }), [currentMetrics.totalApplications, currentMetrics.totalInterviews, currentMetrics.responseRate, currentMetrics.offerRate, previousMetrics.totalApplications, previousMetrics.totalInterviews, previousMetrics.responseRate, previousMetrics.offerRate, calculateChange]);
 
   return (
     <div className="space-y-6">

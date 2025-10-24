@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar, Edit, MoreVertical, Trash2, Filter } from 'lucide-react';
+import { Calendar, Edit, MoreVertical, Trash2, } from 'lucide-react';
 import { Reorder } from 'framer-motion';
 import { DraggableListItem } from '@/components/ui/draggable-list';
 import { AnimatedIconButton } from '@/components/ui/animated-icon';
@@ -12,13 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useAnnotationsStore, type AnnotationType } from '@/stores/annotationsStore';
 import { AnnotationDialog } from './AnnotationDialog';
 import { toast } from 'sonner';

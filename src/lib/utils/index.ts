@@ -250,7 +250,7 @@ export function getDocumentTypeColors(type: string): {
       badge: 'bg-slate-100 dark:bg-slate-900/50 text-slate-700 dark:text-slate-400 border-slate-300 dark:border-slate-700/50',
     },
   };
-  return colors[type] || colors['other'];
+  return colors[type] || colors.other;
 }
 
 /**

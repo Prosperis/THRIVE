@@ -22,6 +22,7 @@ import { createDebounce, createThrottle } from '@tanstack/react-pacer';
  * debouncedSave(newSettings); // Will only execute after 1s of no more calls
  * ```
  */
+// biome-ignore lint/suspicious/noExplicitAny: Generic function signature requires any for flexibility
 export function createDebouncedFn<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
@@ -55,6 +56,7 @@ export function createDebouncedFn<T extends (...args: any[]) => any>(
  * window.addEventListener('scroll', throttledScroll);
  * ```
  */
+// biome-ignore lint/suspicious/noExplicitAny: Generic function signature requires any for flexibility
 export function createThrottledFn<T extends (...args: any[]) => any>(
   func: T,
   wait: number,

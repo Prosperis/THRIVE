@@ -35,7 +35,7 @@ function ApplicationsPage() {
     
     initializeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchApplications, fetchDocuments]);
 
   return (
     <PageTransition>

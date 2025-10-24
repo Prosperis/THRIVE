@@ -203,7 +203,7 @@ export function SyncStatusExample() {
     trailing: false,
   });
 
-  const handleSync = () => {
+  const _handleSync = () => {
     // Even if this is called 100 times in 5 seconds,
     // only the first one will show
     syncToast.success('Data synced');
@@ -231,7 +231,7 @@ export function ErrorHandlingExample() {
     leading: true,
   });
 
-  const handleError = (error: Error) => {
+  const _handleError = (error: Error) => {
     // Multiple rapid errors won't spam the user
     errorToast.error('Operation failed', {
       description: error.message,

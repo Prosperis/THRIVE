@@ -28,14 +28,6 @@ export interface BatcherConfig<T> {
 }
 
 /**
- * Pending update operation
- */
-interface PendingUpdate<T> {
-  id: string;
-  changes: Partial<T>;
-}
-
-/**
  * Create a batched database updater
  * 
  * Collects multiple update operations and executes them together using bulkUpdate.
@@ -89,7 +81,7 @@ export function createDatabaseBatcher<T>(config: BatcherConfig<T>) {
     // Get all pending updates
     const updates = Array.from(pendingUpdates.entries()).map(([id, changes]) => ({
       key: id,
-      changes: { ...changes, updatedAt: new Date() as any },
+      changes: { ...changes, updatedAt: new Date() },
     }));
 
     const count = updates.length;

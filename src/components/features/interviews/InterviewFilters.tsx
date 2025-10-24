@@ -1,6 +1,5 @@
-import { Calendar as CalendarIcon, Filter, X, ChevronDown } from 'lucide-react';
+import { Filter, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import type { DateRange } from 'react-day-picker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';

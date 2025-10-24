@@ -196,7 +196,7 @@ export function useMetricChangeNotifications(
 /**
  * Hook to show periodic encouragement messages
  */
-export function useEncouragementMessages(applicationCount: number, interviewCount: number) {
+export function useEncouragementMessages(applicationCount: number, _interviewCount: number) {
   const [lastEncouragementCount, setLastEncouragementCount] = useState(0);
 
   useEffect(() => {

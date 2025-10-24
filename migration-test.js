@@ -110,7 +110,7 @@ dbRequest.onerror = () => {
 // Test 4: Migration Status Helper
 // =============================================================================
 setTimeout(() => {
-  console.log('\n' + '='.repeat(80));
+  console.log(`\n${'='.repeat(80)}`);
   console.log('🎯 MIGRATION TEST SUMMARY');
   console.log('='.repeat(80));
   
@@ -134,7 +134,7 @@ setTimeout(() => {
     console.log('\n👉 Check browser console for migration errors');
   }
   
-  console.log('\n' + '='.repeat(80));
+  console.log(`\n${'='.repeat(80)}`);
   console.log('💡 Useful commands:');
   console.log('='.repeat(80));
   console.log('// Check migration status:');

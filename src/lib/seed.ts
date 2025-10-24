@@ -943,7 +943,7 @@ export async function seedDatabase() {
       description: 'Innovative fintech startup disrupting payments with cutting-edge technology',
       techStack: ['Node.js', 'React', 'MongoDB', 'GraphQL'],
       researched: true,
-      applicationIds: [applicationIds['StartupXYZ']],
+      applicationIds: [applicationIds.StartupXYZ],
       ratings: {
         overall: 3.8,
         workLifeBalance: 3.5,
@@ -999,7 +999,7 @@ export async function seedDatabase() {
       description: 'Design systems company creating beautiful, accessible user interfaces',
       techStack: ['React', 'Figma', 'Storybook', 'TypeScript', 'CSS-in-JS'],
       researched: true,
-      applicationIds: [applicationIds['InnovateLabs']],
+      applicationIds: [applicationIds.InnovateLabs],
       ratings: {
         overall: 4.4,
         workLifeBalance: 4.6,
@@ -1195,7 +1195,7 @@ export async function seedDatabase() {
     },
     {
       name: 'Emily Rodriguez',
-      companyId: companyIds['StartupXYZ'],
+      companyId: companyIds.StartupXYZ,
       companyName: 'StartupXYZ',
       title: 'Software Engineer',
       email: 'emily@startupxyz.com',
@@ -1224,7 +1224,7 @@ export async function seedDatabase() {
     },
     {
       name: 'Olivia Taylor',
-      companyId: companyIds['InnovateLabs'],
+      companyId: companyIds.InnovateLabs,
       companyName: 'InnovateLabs',
       title: 'Design Systems Lead',
       email: 'olivia.taylor@innovatelabs.com',
@@ -1415,7 +1415,7 @@ export async function seedDatabase() {
       ],
     },
     {
-      applicationId: applicationIds['StartupXYZ'],
+      applicationId: applicationIds.StartupXYZ,
       round: 1,
       type: 'phone-screen',
       status: 'scheduled',
@@ -1466,7 +1466,7 @@ export async function seedDatabase() {
       ],
     },
     {
-      applicationId: applicationIds['InnovateLabs'],
+      applicationId: applicationIds.InnovateLabs,
       round: 1,
       type: 'video',
       status: 'scheduled',
@@ -1761,7 +1761,7 @@ export async function seedDatabase() {
       content: 'PROFESSIONAL SUMMARY\n\nFrontend specialist with 6+ years crafting exceptional user experiences. Deep expertise in React, TypeScript, state management, and component architecture...\n\nEXPERIENCE\nSenior Frontend Developer - Current Company (2022-Present)\n- Built 15+ responsive web applications serving 100K+ users\n- Reduced initial load time by 40% through code splitting and optimization\n- Led migration from JavaScript to TypeScript across 50+ components',
       tags: ['frontend', 'react', 'senior'],
       notes: 'Enhanced with metrics and achievements',
-      usedInApplicationIds: [applicationIds['TechCorp Inc'], applicationIds['InnovateLabs']],
+      usedInApplicationIds: [applicationIds['TechCorp Inc'], applicationIds.InnovateLabs],
       lastUsedDate: new Date('2025-10-15'),
     },
     {
@@ -1772,7 +1772,7 @@ export async function seedDatabase() {
       content: 'PROFESSIONAL SUMMARY\n\nVersatile full stack engineer comfortable working across the entire technology stack...\n\nSKILLS\n- Frontend: React, Vue.js, Angular\n- Backend: Node.js, Python, Java\n- Database: PostgreSQL, MongoDB, Redis\n- DevOps: Docker, CI/CD, AWS',
       tags: ['fullstack', 'backend', 'frontend'],
       notes: 'Comprehensive full stack resume',
-      usedInApplicationIds: [applicationIds['StartupXYZ']],
+      usedInApplicationIds: [applicationIds.StartupXYZ],
       lastUsedDate: new Date('2025-01-20'),
     },
     
@@ -1805,11 +1805,11 @@ export async function seedDatabase() {
       type: 'cover-letter',
       version: 1,
       versionName: 'Final',
-      applicationId: applicationIds['StartupXYZ'],
+      applicationId: applicationIds.StartupXYZ,
       content: 'Dear Hiring Team,\n\nI am writing to express my strong interest in the Full Stack Engineer position at StartupXYZ. As someone passionate about fintech innovation, I am excited about the opportunity to contribute to your mission of disrupting the payments industry.\n\nMy experience with Node.js, React, and MongoDB makes me well-suited for this role...\n\nSincerely,\n[Your Name]',
       tags: ['startup', 'fintech'],
       notes: 'Tailored for startup culture and fintech focus',
-      usedInApplicationIds: [applicationIds['StartupXYZ']],
+      usedInApplicationIds: [applicationIds.StartupXYZ],
       lastUsedDate: new Date('2025-01-20'),
     },
     {
@@ -1837,7 +1837,7 @@ export async function seedDatabase() {
       notes: 'Link to live portfolio website with project showcases',
       usedInApplicationIds: [
         applicationIds['TechCorp Inc'],
-        applicationIds['InnovateLabs'],
+        applicationIds.InnovateLabs,
         applicationIds['BigTech Solutions'],
       ],
       lastUsedDate: new Date('2025-10-15'),
@@ -1853,7 +1853,7 @@ export async function seedDatabase() {
       notes: 'GitHub profile with open source contributions',
       usedInApplicationIds: [
         applicationIds['TechCorp Inc'],
-        applicationIds['StartupXYZ'],
+        applicationIds.StartupXYZ,
       ],
       lastUsedDate: new Date('2025-01-20'),
     },
@@ -1896,7 +1896,7 @@ export async function seedDatabase() {
       notes: 'Advanced React Patterns and Performance certification',
       usedInApplicationIds: [
         applicationIds['TechCorp Inc'],
-        applicationIds['InnovateLabs'],
+        applicationIds.InnovateLabs,
         applicationIds['BigTech Solutions'],
       ],
       lastUsedDate: new Date('2025-01-05'),
@@ -1920,8 +1920,8 @@ export async function seedDatabase() {
       tags: ['projects', 'opensource', 'portfolio'],
       notes: 'Detailed side project documentation with links and metrics',
       usedInApplicationIds: [
-        applicationIds['StartupXYZ'],
-        applicationIds['InnovateLabs'],
+        applicationIds.StartupXYZ,
+        applicationIds.InnovateLabs,
       ],
       lastUsedDate: new Date('2025-01-20'),
     },
@@ -1944,7 +1944,7 @@ export async function seedDatabase() {
       notes: 'Technical blog with combined 50k+ views',
       usedInApplicationIds: [
         applicationIds['TechCorp Inc'],
-        applicationIds['InnovateLabs'],
+        applicationIds.InnovateLabs,
       ],
     },
     

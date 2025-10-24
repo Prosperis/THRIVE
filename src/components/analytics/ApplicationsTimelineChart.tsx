@@ -68,7 +68,7 @@ export function ApplicationsTimelineChart() {
     applications: Application[];
   } | null>(null);
   const [showAnnotationDialog, setShowAnnotationDialog] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, _setSelectedDate] = useState<Date | undefined>(undefined);
   const [visibleRange, setVisibleRange] = useState<{ start: number; end: number } | null>(null);
   const gradientId1 = useId();
   const gradientId2 = useId();
