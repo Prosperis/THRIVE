@@ -10,6 +10,8 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-react';
+import { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -39,6 +41,15 @@ const remotePolicyColors: Record<string, string> = {
 };
 
 export function CompaniesList({ companies, onEditCompany, onDeleteCompany }: CompaniesListProps) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: companies.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 180, // Estimated height of each card
+    overscan: 5, // Render 5 extra items above and below viewport
+  });
+
   if (companies.length === 0) {
     return (
       <div className="text-center py-12">
@@ -49,9 +60,33 @@ export function CompaniesList({ companies, onEditCompany, onDeleteCompany }: Com
   }
 
   return (
-    <div className="space-y-3">
-      {companies.map((company) => (
-        <Card key={company.id} className="p-4 hover:shadow-md transition-shadow">
+    <div
+      ref={parentRef}
+      className="overflow-auto"
+      style={{ height: '600px' }}
+    >
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const company = companies[virtualRow.index];
+          return (
+            <div
+              key={company.id}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualRow.start}px)`,
+                paddingBottom: '12px', // space-y-3 equivalent
+              }}
+            >
+              <Card className="p-4 hover:shadow-md transition-shadow">
           <div className="flex items-start gap-4">
             {/* Company Icon */}
             <div className="flex-shrink-0">
@@ -172,8 +207,11 @@ export function CompaniesList({ companies, onEditCompany, onDeleteCompany }: Com
               </div>
             </div>
           </div>
-        </Card>
-      ))}
+              </Card>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

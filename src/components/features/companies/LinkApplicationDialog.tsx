@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Link2, Briefcase, Search } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import type { Company } from '@/types';
 import { useApplicationsStore } from '@/stores/applicationsStore';
@@ -29,6 +29,7 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
   const { updateCompany } = useCompaniesStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Filter applications that could be linked
   const availableApplications = useMemo(() => {
@@ -56,6 +57,13 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
   const linkedApplications = useMemo(() => {
     return applications.filter(app => company.applicationIds.includes(app.id));
   }, [applications, company.applicationIds]);
+
+  const virtualizer = useVirtualizer({
+    count: availableApplications.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 100, // Estimated height of each application item
+    overscan: 5,
+  });
 
   const handleLink = () => {
     if (selectedAppIds.length === 0) {
@@ -157,7 +165,7 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
             </div>
 
             {/* Available Applications */}
-            <ScrollArea className="h-[300px] border rounded-lg">
+            <div className="h-[300px] border rounded-lg overflow-hidden">
               {availableApplications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
                   <Briefcase className="h-12 w-12 mb-2 opacity-50" />
@@ -166,40 +174,66 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
                   </p>
                 </div>
               ) : (
-                <div className="p-2 space-y-2">
-                  {availableApplications.map(app => (
-                    <label
-                      key={app.id}
-                      className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                      htmlFor={`app-${app.id}`}
-                    >
-                      <Checkbox
-                        id={`app-${app.id}`}
-                        checked={selectedAppIds.includes(app.id)}
-                        onCheckedChange={() => toggleSelection(app.id)}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{app.position}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {app.status}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
-                          <div>{app.companyName}</div>
-                          {app.location && <div>{app.location}</div>}
-                          {app.appliedDate && (
-                            <div>
-                              Applied {new Date(app.appliedDate).toLocaleDateString()}
+                <div
+                  ref={scrollRef}
+                  className="h-full overflow-auto"
+                  style={{ contain: 'strict' }}
+                >
+                  <div
+                    style={{
+                      height: `${virtualizer.getTotalSize()}px`,
+                      width: '100%',
+                      position: 'relative',
+                    }}
+                  >
+                    {virtualizer.getVirtualItems().map((virtualRow) => {
+                      const app = availableApplications[virtualRow.index];
+                      return (
+                        <div
+                          key={app.id}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            transform: `translateY(${virtualRow.start}px)`,
+                            padding: '8px',
+                          }}
+                        >
+                          <label
+                            className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                            htmlFor={`app-${app.id}`}
+                          >
+                            <Checkbox
+                              id={`app-${app.id}`}
+                              checked={selectedAppIds.includes(app.id)}
+                              onCheckedChange={() => toggleSelection(app.id)}
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{app.position}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {app.status}
+                                </Badge>
+                              </div>
+                              <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                                <div>{app.companyName}</div>
+                                {app.location && <div>{app.location}</div>}
+                                {app.appliedDate && (
+                                  <div>
+                                    Applied {new Date(app.appliedDate).toLocaleDateString()}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
+                          </label>
                         </div>
-                      </div>
-                    </label>
-                  ))}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-            </ScrollArea>
+            </div>
 
             {selectedAppIds.length > 0 && (
               <div className="flex items-center justify-between text-sm">

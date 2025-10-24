@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router';
+import { useRef } from 'react';
 import { AlertTriangle, Bell, CheckCheck, Clock, Timer as Snooze, X } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,9 +33,30 @@ export function NotificationsList() {
   const snoozeNotification = useNotificationsStore((state) => state.snoozeNotification);
   const settings = useNotificationsStore((state) => state.settings);
 
+  const unreadScrollRef = useRef<HTMLDivElement>(null);
+  const readScrollRef = useRef<HTMLDivElement>(null);
+
   const unreadNotifications = notifications.filter(
     (n) => n.status === 'sent' || n.status === 'pending'
   );
+
+  const readNotifications = notifications.filter(
+    (n) => n.status !== 'sent' && n.status !== 'pending'
+  ).slice(0, 10);
+
+  const unreadVirtualizer = useVirtualizer({
+    count: unreadNotifications.length,
+    getScrollElement: () => unreadScrollRef.current,
+    estimateSize: () => 150,
+    overscan: 3,
+  });
+
+  const readVirtualizer = useVirtualizer({
+    count: readNotifications.length,
+    getScrollElement: () => readScrollRef.current,
+    estimateSize: () => 150,
+    overscan: 3,
+  });
 
   const handleSnooze = (id: string) => {
     snoozeNotification(id, settings.defaultSnoozeMinutes);
@@ -148,23 +171,82 @@ export function NotificationsList() {
 
       {/* Unread Notifications */}
       {unreadNotifications.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
+        <div>
+          <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
             <AlertTriangle className="h-4 w-4 text-orange-500" />
             Unread
           </h3>
-          {unreadNotifications.map(renderNotification)}
+          <div
+            ref={unreadScrollRef}
+            className="overflow-auto"
+            style={{ maxHeight: '500px' }}
+          >
+            <div
+              style={{
+                height: `${unreadVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+            >
+              {unreadVirtualizer.getVirtualItems().map((virtualRow) => {
+                const notification = unreadNotifications[virtualRow.index];
+                return (
+                  <div
+                    key={notification.id}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${virtualRow.start}px)`,
+                      paddingBottom: '12px',
+                    }}
+                  >
+                    {renderNotification(notification)}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
       {/* Read Notifications */}
-      {notifications.filter((n) => n.status !== 'sent' && n.status !== 'pending').length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground">Earlier</h3>
-          {notifications
-            .filter((n) => n.status !== 'sent' && n.status !== 'pending')
-            .slice(0, 10)
-            .map(renderNotification)}
+      {readNotifications.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">Earlier</h3>
+          <div
+            ref={readScrollRef}
+            className="overflow-auto"
+            style={{ maxHeight: '500px' }}
+          >
+            <div
+              style={{
+                height: `${readVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+            >
+              {readVirtualizer.getVirtualItems().map((virtualRow) => {
+                const notification = readNotifications[virtualRow.index];
+                return (
+                  <div
+                    key={notification.id}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${virtualRow.start}px)`,
+                      paddingBottom: '12px',
+                    }}
+                  >
+                    {renderNotification(notification)}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>

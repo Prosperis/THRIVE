@@ -1,5 +1,6 @@
 import { Calendar, CheckCircle2, Clock, Code, Edit, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +53,7 @@ export function ChallengesTab() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<ChallengeStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const challenges = useInterviewPrepStore((state) => state.challenges);
   const addChallenge = useInterviewPrepStore((state) => state.addChallenge);
@@ -66,6 +68,13 @@ export function ChallengesTab() {
       c.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
+  });
+
+  const virtualizer = useVirtualizer({
+    count: filteredChallenges.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 300, // Estimated height of each challenge card
+    overscan: 3,
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -351,9 +360,33 @@ export function ChallengesTab() {
 
       {/* Challenges List */}
       {filteredChallenges.length > 0 ? (
-        <div className="space-y-4">
-          {filteredChallenges.map((challenge) => (
-            <Card key={challenge.id}>
+        <div
+          ref={scrollRef}
+          className="overflow-auto"
+          style={{ maxHeight: '800px' }}
+        >
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const challenge = filteredChallenges[virtualRow.index];
+              return (
+                <div
+                  key={challenge.id}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                    paddingBottom: '16px',
+                  }}
+                >
+                  <Card>
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">
@@ -484,8 +517,11 @@ export function ChallengesTab() {
                   </div>
                 )}
               </CardContent>
-            </Card>
-          ))}
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : (
         <Card>
