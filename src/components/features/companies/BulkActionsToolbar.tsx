@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, Tag, Flag, CheckCircle2, X } from 'lucide-react';
+import { Trash2, Tag, Flag, CheckCircle2, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import type { Company } from '@/types';
 import { useCompaniesStore } from '@/stores/companiesStore';
@@ -33,45 +34,102 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [updateField, setUpdateField] = useState<'status' | 'priority' | 'researched'>('status');
   const [newValue, setNewValue] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const selectedCount = selectedCompanies.length;
 
-  // Bulk delete
-  const handleBulkDelete = () => {
-    selectedCompanies.forEach(company => {
-      deleteCompany(company.id);
-    });
-    toast.success(`Deleted ${selectedCount} ${selectedCount === 1 ? 'company' : 'companies'}`);
-    setDeleteDialogOpen(false);
-    onClearSelection();
+  // Helper to process items in rate-limited batches
+  const processBatch = async <T,>(
+    items: T[],
+    processor: (item: T) => Promise<void>,
+    batchSize: number = 5,
+    delayMs: number = 50
+  ): Promise<void> => {
+    const total = items.length;
+    let completed = 0;
+
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      
+      await Promise.all(batch.map(processor));
+      
+      completed += batch.length;
+      setProgress((completed / total) * 100);
+      
+      if (i + batchSize < items.length) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
   };
 
-  // Bulk update
-  const handleBulkUpdate = () => {
+  // Bulk delete with rate limiting
+  const handleBulkDelete = async () => {
+    setIsProcessing(true);
+    setProgress(0);
+    
+    try {
+      await processBatch(
+        selectedCompanies,
+        async (company) => await deleteCompany(company.id),
+        5,
+        50
+      );
+      
+      toast.success(`Deleted ${selectedCount} ${selectedCount === 1 ? 'company' : 'companies'}`);
+      setDeleteDialogOpen(false);
+      onClearSelection();
+    } catch (error) {
+      console.error('Error deleting companies:', error);
+      toast.error('Failed to delete some companies');
+    } finally {
+      setIsProcessing(false);
+      setProgress(0);
+    }
+  };
+
+  // Bulk update with rate limiting
+  const handleBulkUpdate = async () => {
     if (!newValue && updateField !== 'researched') {
       toast.error('Please select a value');
       return;
     }
 
-    selectedCompanies.forEach(company => {
-      const updates: Partial<Company> = {};
-      
-      if (updateField === 'status') {
-        updates.status = newValue as Company['status'];
-      } else if (updateField === 'priority') {
-        updates.priority = newValue as Company['priority'];
-      } else if (updateField === 'researched') {
-        updates.researched = true;
-      }
+    setIsProcessing(true);
+    setProgress(0);
 
-      updateCompany(company.id, updates);
-    });
+    try {
+      await processBatch(
+        selectedCompanies,
+        async (company) => {
+          const updates: Partial<Company> = {};
+          
+          if (updateField === 'status') {
+            updates.status = newValue as Company['status'];
+          } else if (updateField === 'priority') {
+            updates.priority = newValue as Company['priority'];
+          } else if (updateField === 'researched') {
+            updates.researched = true;
+          }
 
-    const fieldLabel = updateField === 'researched' ? 'marked as researched' : `${updateField} updated`;
-    toast.success(`${selectedCount} ${selectedCount === 1 ? 'company' : 'companies'} ${fieldLabel}`);
-    setUpdateDialogOpen(false);
-    setNewValue('');
-    onClearSelection();
+          await updateCompany(company.id, updates);
+        },
+        10,
+        30
+      );
+
+      const fieldLabel = updateField === 'researched' ? 'marked as researched' : `${updateField} updated`;
+      toast.success(`${selectedCount} ${selectedCount === 1 ? 'company' : 'companies'} ${fieldLabel}`);
+      setUpdateDialogOpen(false);
+      setNewValue('');
+      onClearSelection();
+    } catch (error) {
+      console.error('Error updating companies:', error);
+      toast.error('Failed to update some companies');
+    } finally {
+      setIsProcessing(false);
+      setProgress(0);
+    }
   };
 
   const openUpdateDialog = (field: 'status' | 'priority' | 'researched') => {
@@ -105,6 +163,7 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
             variant="outline"
             size="sm"
             onClick={() => openUpdateDialog('status')}
+            disabled={isProcessing}
           >
             <Tag className="h-4 w-4 mr-2" />
             Update Status
@@ -114,6 +173,7 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
             variant="outline"
             size="sm"
             onClick={() => openUpdateDialog('priority')}
+            disabled={isProcessing}
           >
             <Flag className="h-4 w-4 mr-2" />
             Update Priority
@@ -123,6 +183,7 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
             variant="outline"
             size="sm"
             onClick={() => openUpdateDialog('researched')}
+            disabled={isProcessing}
           >
             <CheckCircle2 className="h-4 w-4 mr-2" />
             Mark Researched
@@ -132,8 +193,13 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
             variant="destructive"
             size="sm"
             onClick={() => setDeleteDialogOpen(true)}
+            disabled={isProcessing}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            {isProcessing ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4 mr-2" />
+            )}
             Delete
           </Button>
         </div>
@@ -149,7 +215,7 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
             </DialogDescription>
           </DialogHeader>
 
-          {selectedCount <= 5 && (
+          {!isProcessing && selectedCount <= 5 && (
             <div className="space-y-2">
               <p className="text-sm font-medium">Companies to delete:</p>
               <ul className="text-sm text-muted-foreground list-disc list-inside">
@@ -160,12 +226,30 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
             </div>
           )}
 
+          {/* Progress indicator */}
+          {isProcessing && progress > 0 && (
+            <div className="space-y-2 py-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Deleting companies...</span>
+                <span className="font-medium">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isProcessing}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleBulkDelete}>
-              Delete {selectedCount === 1 ? 'Company' : 'Companies'}
+            <Button variant="destructive" onClick={handleBulkDelete} disabled={isProcessing}>
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                `Delete ${selectedCount === 1 ? 'Company' : 'Companies'}`
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -226,12 +310,30 @@ export function BulkActionsToolbar({ selectedCompanies, onClearSelection }: Bulk
             </div>
           )}
 
+          {/* Progress indicator */}
+          {isProcessing && progress > 0 && (
+            <div className="space-y-2 py-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Updating companies...</span>
+                <span className="font-medium">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUpdateDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setUpdateDialogOpen(false)} disabled={isProcessing}>
               Cancel
             </Button>
-            <Button onClick={handleBulkUpdate}>
-              Update {selectedCount === 1 ? 'Company' : 'Companies'}
+            <Button onClick={handleBulkUpdate} disabled={isProcessing}>
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                `Update ${selectedCount === 1 ? 'Company' : 'Companies'}`
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

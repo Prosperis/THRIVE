@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useAutoSaveBatcher } from '@/hooks/useDatabaseBatching';
+import { db } from '@/lib/db';
 import type { Interview } from '@/types';
 
 interface InterviewFormProps {
@@ -43,6 +46,9 @@ export function InterviewForm({
     const date = new Date(interview.scheduledAt);
     return date.toTimeString().slice(0, 5);
   };
+
+  // Auto-save state
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -81,6 +87,28 @@ export function InterviewForm({
       await onSubmit(interviewData);
     },
   });
+
+  // Auto-save notes when editing existing interview
+  // Only auto-save if we're editing (have an interview id)
+  useAutoSaveBatcher(
+    db.interviews,
+    interview?.id || '',
+    {
+      preparationNotes: form.state.values.preparationNotes || undefined,
+      feedback: form.state.values.feedback || undefined,
+      updatedAt: new Date(),
+    },
+    [form.state.values.preparationNotes, form.state.values.feedback],
+    {
+      wait: 2000, // 2 seconds after last change
+      onSuccess: () => {
+        setLastSaved(new Date());
+      },
+      onError: (error) => {
+        console.error('Auto-save failed:', error);
+      },
+    }
+  );
 
   return (
     <form
@@ -282,7 +310,15 @@ export function InterviewForm({
 
       {/* Notes */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Notes</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Notes</h3>
+          {/* Auto-save indicator - only show for existing interviews */}
+          {interview && lastSaved && (
+            <span className="text-xs text-muted-foreground">
+              Auto-saved {lastSaved.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
 
         <form.Subscribe selector={(state) => state.values.status}>
           {(status) => (
@@ -300,6 +336,9 @@ export function InterviewForm({
                         className="resize-none"
                         rows={4}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {interview ? 'Changes auto-save as you type' : 'Save interview to enable auto-save'}
+                      </p>
                     </div>
                   )}
                 </form.Field>
@@ -318,6 +357,9 @@ export function InterviewForm({
                         className="resize-none"
                         rows={4}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {interview ? 'Changes auto-save as you type' : 'Save interview to enable auto-save'}
+                      </p>
                     </div>
                   )}
                 </form.Field>

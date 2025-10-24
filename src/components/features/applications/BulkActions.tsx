@@ -1,5 +1,6 @@
-import { ChevronDown, Download, Edit, Flag, Trash2 } from 'lucide-react';
+import { ChevronDown, Download, Edit, Flag, Trash2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Progress } from '@/components/ui/progress';
 import { APPLICATION_STATUSES, PRIORITY_LEVELS } from '@/lib/constants';
 import { useApplicationsStore } from '@/stores';
 import type { Application, ApplicationStatus } from '@/types';
@@ -33,46 +35,125 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
   const { updateApplication, deleteApplication } = useApplicationsStore();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState('');
 
   const selectedCount = selectedRows.length;
 
-  // Bulk delete handler
+  // Helper to process items in rate-limited batches
+  const processBatch = async <T,>(
+    items: T[],
+    processor: (item: T) => Promise<void>,
+    batchSize: number = 5,
+    delayMs: number = 50
+  ): Promise<void> => {
+    const total = items.length;
+    let completed = 0;
+
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      
+      // Process batch in parallel
+      await Promise.all(batch.map(processor));
+      
+      completed += batch.length;
+      setProgress((completed / total) * 100);
+      
+      // Add delay between batches to prevent overwhelming the database
+      if (i + batchSize < items.length) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  };
+
+  // Bulk delete handler with rate limiting
   const handleBulkDelete = async () => {
     setIsProcessing(true);
+    setProgress(0);
+    setProgressMessage(`Deleting ${selectedCount} applications...`);
+    
     try {
-      await Promise.all(selectedRows.map((row) => deleteApplication(row.id)));
+      await processBatch(
+        selectedRows,
+        async (row) => await deleteApplication(row.id),
+        5, // Process 5 at a time
+        50  // 50ms delay between batches
+      );
+      
+      toast.success('Success', {
+        description: `Deleted ${selectedCount} application${selectedCount > 1 ? 's' : ''}`,
+      });
       onClearSelection();
       setShowDeleteDialog(false);
     } catch (error) {
       console.error('Error deleting applications:', error);
+      toast.error('Error', {
+        description: 'Failed to delete some applications. Please try again.',
+      });
     } finally {
       setIsProcessing(false);
+      setProgress(0);
+      setProgressMessage('');
     }
   };
 
-  // Bulk status update handler
+  // Bulk status update handler with rate limiting
   const handleBulkStatusUpdate = async (status: ApplicationStatus) => {
     setIsProcessing(true);
+    setProgress(0);
+    setProgressMessage(`Updating ${selectedCount} applications...`);
+    
     try {
-      await Promise.all(selectedRows.map((row) => updateApplication(row.id, { status })));
+      await processBatch(
+        selectedRows,
+        async (row) => await updateApplication(row.id, { status }),
+        10, // Process 10 at a time (updates are faster than deletes)
+        30  // 30ms delay between batches
+      );
+      
+      toast.success('Success', {
+        description: `Updated ${selectedCount} application${selectedCount > 1 ? 's' : ''}`,
+      });
       onClearSelection();
     } catch (error) {
       console.error('Error updating applications:', error);
+      toast.error('Error', {
+        description: 'Failed to update some applications. Please try again.',
+      });
     } finally {
       setIsProcessing(false);
+      setProgress(0);
+      setProgressMessage('');
     }
   };
 
-  // Bulk priority update handler
+  // Bulk priority update handler with rate limiting
   const handleBulkPriorityUpdate = async (priority: 'low' | 'medium' | 'high') => {
     setIsProcessing(true);
+    setProgress(0);
+    setProgressMessage(`Updating priorities for ${selectedCount} applications...`);
+    
     try {
-      await Promise.all(selectedRows.map((row) => updateApplication(row.id, { priority })));
+      await processBatch(
+        selectedRows,
+        async (row) => await updateApplication(row.id, { priority }),
+        10, // Process 10 at a time
+        30  // 30ms delay between batches
+      );
+      
+      toast.success('Success', {
+        description: `Updated ${selectedCount} application${selectedCount > 1 ? 's' : ''}`,
+      });
       onClearSelection();
     } catch (error) {
       console.error('Error updating priorities:', error);
+      toast.error('Error', {
+        description: 'Failed to update some applications. Please try again.',
+      });
     } finally {
       setIsProcessing(false);
+      setProgress(0);
+      setProgressMessage('');
     }
   };
 
@@ -139,20 +220,25 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
 
   return (
     <>
-      <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-        <Badge variant="secondary" className="text-sm">
-          {selectedCount} selected
-        </Badge>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+          <Badge variant="secondary" className="text-sm">
+            {selectedCount} selected
+          </Badge>
 
-        {/* Bulk Status Update */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" disabled={isProcessing}>
-              <Edit className="mr-2 h-4 w-4" />
-              Update Status
-              <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
+          {/* Bulk Status Update */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={isProcessing}>
+                {isProcessing && progressMessage.includes('Updating') && !progressMessage.includes('priorities') ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Edit className="mr-2 h-4 w-4" />
+                )}
+                Update Status
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuLabel>Change status to:</DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -216,6 +302,18 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
         </Button>
       </div>
 
+        {/* Progress Indicator */}
+        {isProcessing && progress > 0 && (
+          <div className="px-3 pb-2 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{progressMessage}</span>
+              <span className="font-medium">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+        )}
+      </div>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
@@ -226,6 +324,18 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
               . This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          {/* Show progress during deletion */}
+          {isProcessing && progress > 0 && (
+            <div className="space-y-2 py-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Deleting applications...</span>
+                <span className="font-medium">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+          
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
             <AlertDialogAction
@@ -233,7 +343,14 @@ export function BulkActions({ selectedRows, onClearSelection }: BulkActionsProps
               disabled={isProcessing}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isProcessing ? 'Deleting...' : 'Delete'}
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

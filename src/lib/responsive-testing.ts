@@ -3,6 +3,8 @@
  * Test and validate responsive behavior
  */
 
+import { createThrottledFn } from './pacer';
+
 export interface Breakpoint {
   name: string;
   width: number;
@@ -285,11 +287,14 @@ export function observeBreakpoints(
     }
   };
 
-  window.addEventListener('resize', handleResize);
+  // Throttle resize events to 150ms for better performance
+  const throttledResize = createThrottledFn(handleResize, 150);
+
+  window.addEventListener('resize', throttledResize);
 
   // Return cleanup function
   return () => {
-    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('resize', throttledResize);
   };
 }
 

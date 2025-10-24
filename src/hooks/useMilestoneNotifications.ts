@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Trophy, Target, TrendingUp, Zap, Star, Award } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Application, Interview } from '@/types';
@@ -15,14 +15,31 @@ interface Milestone {
 
 /**
  * Hook to detect and notify about analytics milestones
+ * 
+ * Note: Milestone checks are throttled to prevent notification spam.
+ * Milestones are only checked once per 5 seconds max.
  */
 export function useMilestoneNotifications(
   applications: Application[],
   interviews: Interview[]
 ) {
   const [achievedMilestones, setAchievedMilestones] = useState<Set<string>>(new Set());
+  const lastCheckTimeRef = useRef<number>(0);
+  const THROTTLE_MS = 5000; // Check at most once per 5 seconds
 
   useEffect(() => {
+    // Throttle milestone checks to prevent spam
+    const now = Date.now();
+    const timeSinceLastCheck = now - lastCheckTimeRef.current;
+    
+    if (timeSinceLastCheck < THROTTLE_MS) {
+      // Skip this check if we checked recently
+      return;
+    }
+
+    // Update last check time
+    lastCheckTimeRef.current = now;
+
     const milestones: Milestone[] = [
       {
         id: 'apps-10',

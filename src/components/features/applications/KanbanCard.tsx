@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
+import { useThrottledCallback } from '@tanstack/react-pacer';
 import {
   Building2,
   Calendar,
@@ -70,14 +71,17 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     // Check if this is a document being dragged OR files from file system
     if (e.dataTransfer.types.includes('application/x-document-id') || e.dataTransfer.types.includes('Files')) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'link';
       setIsDragOver(true);
     }
-  };
+  }, []);
+
+  // Throttle drag over events to reduce excessive re-renders (50ms for smooth visual feedback)
+  const throttledDragOver = useThrottledCallback(handleDragOver, { wait: 50 });
 
   const handleDragLeave = () => {
     setIsDragOver(false);
@@ -181,7 +185,7 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
       <Card
         ref={setNodeRef}
         style={style}
-        onDragOver={handleDragOver}
+        onDragOver={throttledDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(

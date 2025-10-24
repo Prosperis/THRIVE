@@ -12,6 +12,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useThrottledCallback } from '@tanstack/react-pacer';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -271,6 +272,13 @@ export function CommandPalette() {
     [filteredCommands, selectedIndex]
   );
 
+  // Throttled mouse enter handler (50ms for smooth but performant hover feedback)
+  const handleMouseEnter = useCallback((index: number) => {
+    setSelectedIndex(index);
+  }, []);
+
+  const throttledMouseEnter = useThrottledCallback(handleMouseEnter, { wait: 50 });
+
   // Reset state when dialog closes
   useEffect(() => {
     if (!isOpen) {
@@ -332,7 +340,7 @@ export function CommandPalette() {
                             'hover:bg-muted/50',
                             globalIndex === selectedIndex && 'bg-muted'
                           )}
-                          onMouseEnter={() => setSelectedIndex(globalIndex)}
+                          onMouseEnter={() => throttledMouseEnter(globalIndex)}
                         >
                           {cmd.icon && (
                             <div className="flex-shrink-0 text-muted-foreground">{cmd.icon}</div>

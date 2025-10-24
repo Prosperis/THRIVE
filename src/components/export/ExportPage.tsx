@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
@@ -57,6 +58,11 @@ export function ExportPage() {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>('');
   const [importSuccess, setImportSuccess] = useState<string>('');
+  
+  // Export progress tracking
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportingType, setExportingType] = useState<string>('');
 
   const { applications, addApplication, fetchApplications, isLoading: applicationsLoading } = useApplicationsStore();
   const { interviews, addInterview, fetchInterviews, isLoading: interviewsLoading } = useInterviewsStore();
@@ -152,49 +158,106 @@ export function ExportPage() {
   };
 
   // Handle exports with filtered data
-  const handleExportApplicationsCSV = () => {
-    exportAndDownloadApplicationsCSV(filteredApplications);
-  };
+  // Helper function to simulate progress for exports
+  const withProgress = async (
+    type: string,
+    itemCount: number,
+    exportFn: () => void | Promise<void>
+  ) => {
+    setIsExporting(true);
+    setExportingType(type);
+    setExportProgress(0);
 
-  const handleExportInterviewsCSV = () => {
-    exportAndDownloadInterviewsCSV(filteredInterviews, applications);
-  };
-
-  const handleExportInterviewsJSON = () => {
-    exportAndDownloadInterviewsJSON(filteredInterviews);
-  };
-
-  const handleExportDocumentsCSV = () => {
-    exportAndDownloadDocumentsCSV(documents);
-  };
-
-  const handleExportDocumentsJSON = () => {
-    exportAndDownloadDocumentsJSON(documents);
-  };
-
-  const handleExportDocumentsZIP = async () => {
     try {
-      await exportAndDownloadDocumentsZIP(documents);
-    } catch (error) {
-      console.error('Failed to export documents as ZIP:', error);
-      await alert('Export Failed', 'Failed to export documents as ZIP. Please try again.');
+      // Simulate progress for small datasets (< 100 items)
+      if (itemCount < 100) {
+        setExportProgress(50);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        await Promise.resolve(exportFn());
+        setExportProgress(100);
+      } else {
+        // For larger datasets, show incremental progress
+        for (let i = 0; i < 10; i++) {
+          setExportProgress((i + 1) * 10);
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        await Promise.resolve(exportFn());
+        setExportProgress(100);
+      }
+
+      // Keep progress visible briefly
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } finally {
+      setIsExporting(false);
+      setExportProgress(0);
+      setExportingType('');
     }
   };
 
+  const handleExportApplicationsCSV = () => {
+    withProgress('Applications (CSV)', filteredApplications.length, () => {
+      exportAndDownloadApplicationsCSV(filteredApplications);
+    });
+  };
+
+  const handleExportInterviewsCSV = () => {
+    withProgress('Interviews (CSV)', filteredInterviews.length, () => {
+      exportAndDownloadInterviewsCSV(filteredInterviews, applications);
+    });
+  };
+
+  const handleExportInterviewsJSON = () => {
+    withProgress('Interviews (JSON)', filteredInterviews.length, () => {
+      exportAndDownloadInterviewsJSON(filteredInterviews);
+    });
+  };
+
+  const handleExportDocumentsCSV = () => {
+    withProgress('Documents (CSV)', documents.length, () => {
+      exportAndDownloadDocumentsCSV(documents);
+    });
+  };
+
+  const handleExportDocumentsJSON = () => {
+    withProgress('Documents (JSON)', documents.length, () => {
+      exportAndDownloadDocumentsJSON(documents);
+    });
+  };
+
+  const handleExportDocumentsZIP = async () => {
+    await withProgress('Documents (ZIP)', documents.length, async () => {
+      try {
+        await exportAndDownloadDocumentsZIP(documents);
+      } catch (error) {
+        console.error('Failed to export documents as ZIP:', error);
+        await alert('Export Failed', 'Failed to export documents as ZIP. Please try again.');
+      }
+    });
+  };
+
   const handleExportCompaniesCSV = () => {
-    exportAndDownloadCompaniesCSV(companies);
+    withProgress('Companies (CSV)', companies.length, () => {
+      exportAndDownloadCompaniesCSV(companies);
+    });
   };
 
   const handleExportCompaniesJSON = () => {
-    exportAndDownloadCompaniesJSON(companies);
+    withProgress('Companies (JSON)', companies.length, () => {
+      exportAndDownloadCompaniesJSON(companies);
+    });
   };
 
   const handleExportApplicationsJSON = () => {
-    exportAndDownloadApplicationsJSON(filteredApplications);
+    withProgress('Applications (JSON)', filteredApplications.length, () => {
+      exportAndDownloadApplicationsJSON(filteredApplications);
+    });
   };
 
   const handleExportBackup = () => {
-    exportBackup(applications, interviews, documents);
+    const totalItems = applications.length + interviews.length + documents.length;
+    withProgress('Full Backup', totalItems, () => {
+      exportBackup(applications, interviews, documents);
+    });
   };
 
   // Handle import/restore
@@ -566,6 +629,17 @@ export function ExportPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Export Progress Indicator */}
+              {isExporting && (
+                <div className="p-4 border rounded-lg bg-muted/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Exporting {exportingType}...</p>
+                    <span className="text-sm text-muted-foreground">{exportProgress}%</span>
+                  </div>
+                  <Progress value={exportProgress} className="h-2" />
+                </div>
+              )}
+
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Applications</p>
@@ -574,7 +648,10 @@ export function ExportPage() {
                     {exportType === 'json' && ' with all fields'}
                   </p>
                 </div>
-                <Button onClick={exportType === 'csv' ? handleExportApplicationsCSV : handleExportApplicationsJSON}>
+                <Button 
+                  onClick={exportType === 'csv' ? handleExportApplicationsCSV : handleExportApplicationsJSON}
+                  disabled={isExporting}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -587,7 +664,10 @@ export function ExportPage() {
                     {exportType === 'json' && ' with all fields'}
                   </p>
                 </div>
-                <Button onClick={exportType === 'csv' ? handleExportCompaniesCSV : handleExportCompaniesJSON}>
+                <Button 
+                  onClick={exportType === 'csv' ? handleExportCompaniesCSV : handleExportCompaniesJSON}
+                  disabled={isExporting}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -600,7 +680,10 @@ export function ExportPage() {
                     {exportType === 'json' && ' with all fields'}
                   </p>
                 </div>
-                <Button onClick={exportType === 'csv' ? handleExportInterviewsCSV : handleExportInterviewsJSON}>
+                <Button 
+                  onClick={exportType === 'csv' ? handleExportInterviewsCSV : handleExportInterviewsJSON}
+                  disabled={isExporting}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -614,11 +697,18 @@ export function ExportPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={exportType === 'csv' ? handleExportDocumentsCSV : handleExportDocumentsJSON}>
+                  <Button 
+                    onClick={exportType === 'csv' ? handleExportDocumentsCSV : handleExportDocumentsJSON}
+                    disabled={isExporting}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Export {exportType.toUpperCase()}
                   </Button>
-                  <Button onClick={handleExportDocumentsZIP} variant="outline">
+                  <Button 
+                    onClick={handleExportDocumentsZIP} 
+                    variant="outline"
+                    disabled={isExporting}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Export ZIP
                   </Button>
@@ -658,7 +748,12 @@ export function ExportPage() {
                   <li>✓ All metadata and relationships</li>
                 </ul>
               </div>
-              <Button onClick={handleExportBackup} className="w-full" size="lg">
+              <Button 
+                onClick={handleExportBackup} 
+                className="w-full" 
+                size="lg"
+                disabled={isExporting}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Create Full Backup
               </Button>

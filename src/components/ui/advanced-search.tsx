@@ -1,5 +1,6 @@
 import { ArrowRight, Clock, Search, TrendingUp, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useThrottledCallback } from '@tanstack/react-pacer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -110,6 +111,13 @@ export function AdvancedSearch({
     inputRef.current?.blur();
   };
 
+  // Throttled mouse enter handler (50ms for smooth but performant hover feedback)
+  const handleMouseEnter = useCallback((index: number) => {
+    setSelectedIndex(index);
+  }, []);
+
+  const throttledMouseEnter = useThrottledCallback(handleMouseEnter, { wait: 50 });
+
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showDropdown) {
@@ -192,7 +200,7 @@ export function AdvancedSearch({
                   key={`${item.type}-${item.text}-${index}`}
                   type="button"
                   onClick={() => handleSelectItem(item.text)}
-                  onMouseEnter={() => setSelectedIndex(index)}
+                  onMouseEnter={() => throttledMouseEnter(index)}
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-left',
                     'hover:bg-muted/50',

@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { FileText, Plus, Upload, Pencil, Download, Trash2, RotateCcw, Trash, Folder, File, FileCode, Type, FileType, Search, Filter, X, Link, ChevronRight, GitBranch, Sparkles, Clock, Calendar, CalendarDays, CalendarClock, CheckCircle2, AlertCircle, ArrowDownAZ, ArrowUpAZ, Briefcase, GraduationCap, Award, Paperclip, List } from 'lucide-react';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useThrottledCallback } from '@tanstack/react-pacer';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useConfirm } from '@/hooks/useConfirm';
@@ -18,6 +19,8 @@ import { useApplicationsStore } from '@/stores';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Document } from '@/types';
 import { LinkApplicationDialog } from '@/components/features/documents/LinkApplicationDialog';
+import { useAutoSaveBatcher } from '@/hooks/useDatabaseBatching';
+import { db } from '@/lib/db';
 import { DocumentVersionTimeline } from '@/components/features/documents/DocumentVersionTimeline';
 import { getDocumentTypeIcon, getDocumentTypeColors, isDocumentRecent, isDocumentOutdated } from '@/lib/utils';
 import {
@@ -141,6 +144,10 @@ function DocumentsPage() {
   const [editingContent, setEditingContent] = useState('');
   const [editingName, setEditingName] = useState('');
   
+  // Auto-save state
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  
   // PDF container ref for responsive width calculation
   const pdfContainerRef = useRef<HTMLDivElement>(null);
   const [pdfWidth, setPdfWidth] = useState(800);
@@ -226,20 +233,60 @@ function DocumentsPage() {
     }
   }, [isUploadDialogOpen]);
 
-  // Calculate PDF width based on container size
-  useEffect(() => {
-    const updatePdfWidth = () => {
-      if (pdfContainerRef.current) {
-        const containerWidth = pdfContainerRef.current.offsetWidth;
-        // Use 90% of container width with some padding
-        setPdfWidth(Math.max(300, containerWidth - 48));
-      }
-    };
+  // Auto-save document content while editing
+  useAutoSaveBatcher(
+    db.documents,
+    selectedDocument?.id || '',
+    { 
+      name: editingName,
+      content: editingContent,
+      updatedAt: new Date(),
+    },
+    [editingContent, editingName],
+    {
+      wait: 3000, // 3 seconds after last change
+      onSuccess: () => {
+        setLastSaved(new Date());
+        setIsSaving(false);
+      },
+      onError: (error) => {
+        console.error('Auto-save failed:', error);
+        setIsSaving(false);
+        toast.error('Auto-save Failed', {
+          description: 'Your changes could not be saved automatically',
+          duration: 3000,
+        });
+      },
+    }
+  );
 
+  // Track when content is being edited to show saving indicator
+  useEffect(() => {
+    if (isEditMode && selectedDocument && (editingContent || editingName)) {
+      setIsSaving(true);
+      // Reset last saved when entering edit mode
+      if (!lastSaved) {
+        setLastSaved(null);
+      }
+    }
+  }, [editingContent, editingName, isEditMode, selectedDocument, lastSaved]);
+
+  // Calculate PDF width based on container size (throttled for performance)
+  const updatePdfWidth = useCallback(() => {
+    if (pdfContainerRef.current) {
+      const containerWidth = pdfContainerRef.current.offsetWidth;
+      // Use 90% of container width with some padding
+      setPdfWidth(Math.max(300, containerWidth - 48));
+    }
+  }, []);
+
+  const throttledUpdatePdfWidth = useThrottledCallback(updatePdfWidth, { wait: 150 });
+
+  useEffect(() => {
     updatePdfWidth();
-    window.addEventListener('resize', updatePdfWidth);
-    return () => window.removeEventListener('resize', updatePdfWidth);
-  }, [selectedDocument, viewFormat]);
+    window.addEventListener('resize', throttledUpdatePdfWidth);
+    return () => window.removeEventListener('resize', throttledUpdatePdfWidth);
+  }, [updatePdfWidth, throttledUpdatePdfWidth]);
 
   // Cleanup PDF blob URL on unmount or when it changes
   useEffect(() => {
@@ -423,6 +470,15 @@ function DocumentsPage() {
 
     return filtered;
   }, [activeDocuments, searchQuery, filterByType, filterByUsage, filterByDate, filterByVersion, sortBy, sortOrder, documents]);
+
+  // Throttled drag over handler for application drop targets
+  const handleAppDragOver = useCallback((e: React.DragEvent, appId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'link';
+    setDropTargetAppId(appId);
+  }, []);
+
+  const throttledAppDragOver = useThrottledCallback(handleAppDragOver, { wait: 50 });
 
   // Calculate counts and filtered document lists for each category
   // Use filteredDocuments to respect search and filter criteria
@@ -1718,6 +1774,16 @@ Sincerely,
                   <div className="flex gap-1.5 shrink-0">
                     {isEditMode ? (
                       <>
+                        {/* Auto-save indicator */}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
+                          {isSaving ? (
+                            <span className="flex items-center gap-1">
+                              <span className="animate-pulse">Saving...</span>
+                            </span>
+                          ) : lastSaved ? (
+                            <span>Saved {lastSaved.toLocaleTimeString()}</span>
+                          ) : null}
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1726,6 +1792,7 @@ Sincerely,
                             setIsEditMode(false);
                             setEditingName(selectedDocument.name);
                             setEditingContent(selectedDocument.content || '');
+                            setLastSaved(null);
                           }}
                         >
                           Cancel
@@ -2347,11 +2414,7 @@ Sincerely,
                     <button
                       key={app.id}
                       type="button"
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = 'link';
-                        setDropTargetAppId(app.id);
-                      }}
+                      onDragOver={(e) => throttledAppDragOver(e, app.id)}
                       onDragLeave={() => setDropTargetAppId(null)}
                       onDrop={async (e) => {
                         e.preventDefault();

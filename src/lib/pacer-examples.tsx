@@ -109,15 +109,40 @@ async function performSearch(query: string): Promise<string[]> {
 }
 
 /**
+ * Example 5: Database Batching for Rapid Updates
+ * Used for: Tag editing, form auto-save, bulk imports
+ */
+export function DatabaseBatchingExample() {
+  const [tags, setTags] = useState<string[]>([]);
+  
+  // This would be used in a real component
+  // const batcher = useDatabaseBatcher({
+  //   table: db.applications,
+  //   wait: 500,
+  //   maxBatchSize: 10,
+  //   onSuccess: (count) => toast.success(`Saved ${count} changes`),
+  // });
+
+  const handleTagChange = (applicationId: string, newTags: string[]) => {
+    setTags(newTags);
+    // batcher.update(applicationId, { tags: newTags });
+    // Updates are automatically batched!
+  };
+
+  return null;
+}
+
+/**
  * Migration Notes:
  * ================
  * 
  * ✅ COMPLETED:
  * - Search inputs now use useDebouncedCallback
  * - Created pacer utilities wrapper in src/lib/pacer.ts
+ * - Bulk operations with rate limiting and progress tracking
+ * - Database batching utilities for rapid updates
  * 
  * 🔄 IN PROGRESS:
- * - Bulk operations rate limiting
  * - Auto-save debouncing for forms
  * - Notification throttling
  * 
