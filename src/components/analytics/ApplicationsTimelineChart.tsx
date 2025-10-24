@@ -1,4 +1,10 @@
-import { eachMonthOfInterval, eachWeekOfInterval, format, subMonths, isWithinInterval } from 'date-fns';
+import {
+  eachMonthOfInterval,
+  eachWeekOfInterval,
+  format,
+  isWithinInterval,
+  subMonths,
+} from 'date-fns';
 import { useId, useMemo, useState } from 'react';
 import {
   Area,
@@ -13,6 +19,7 @@ import {
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartRangeSelector } from '@/components/ui/chart-range-selector';
 import {
   Dialog,
   DialogContent,
@@ -20,11 +27,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ChartRangeSelector } from '@/components/ui/chart-range-selector';
-import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useAnnotationsStore } from '@/stores/annotationsStore';
-import { AnnotationDialog } from './AnnotationDialog';
+import { useApplicationsStore } from '@/stores/applicationsStore';
 import type { Application } from '@/types';
+import { AnnotationDialog } from './AnnotationDialog';
 
 type TimeRange = 'week' | 'month';
 
@@ -216,7 +222,8 @@ export function ApplicationsTimelineChart() {
           </div>
           {visibleAnnotations.length > 0 && (
             <div className="text-xs text-muted-foreground">
-              📍 {visibleAnnotations.length} annotation{visibleAnnotations.length !== 1 ? 's' : ''} shown
+              📍 {visibleAnnotations.length} annotation{visibleAnnotations.length !== 1 ? 's' : ''}{' '}
+              shown
             </div>
           )}
         </div>

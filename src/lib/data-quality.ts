@@ -48,7 +48,7 @@ export function calculateDataQuality(company: Company): DataQualityScore {
   ];
 
   // Check essential fields (weight: 3x)
-  essentialFields.forEach(field => {
+  essentialFields.forEach((field) => {
     totalFields += 3;
     if (field.check()) {
       filledFields += 3;
@@ -65,7 +65,7 @@ export function calculateDataQuality(company: Company): DataQualityScore {
   });
 
   // Check important fields (weight: 2x)
-  importantFields.forEach(field => {
+  importantFields.forEach((field) => {
     totalFields += 2;
     if (field.check()) {
       filledFields += 2;
@@ -80,7 +80,7 @@ export function calculateDataQuality(company: Company): DataQualityScore {
   });
 
   // Check optional fields (weight: 1x)
-  optionalFields.forEach(field => {
+  optionalFields.forEach((field) => {
     totalFields += 1;
     if (field.check()) {
       filledFields += 1;
@@ -148,14 +148,11 @@ export function getQualityBadgeLabel(category: DataQualityScore['category']) {
 /**
  * Detect potential duplicate companies by name similarity
  */
-export function findPotentialDuplicates(
-  company: Company,
-  allCompanies: Company[]
-): Company[] {
+export function findPotentialDuplicates(company: Company, allCompanies: Company[]): Company[] {
   const duplicates: Company[] = [];
   const companyName = company.name.toLowerCase().trim();
 
-  allCompanies.forEach(other => {
+  allCompanies.forEach((other) => {
     if (other.id === company.id) return;
 
     const otherName = other.name.toLowerCase().trim();
@@ -173,10 +170,7 @@ export function findPotentialDuplicates(
     }
 
     // Check if one name contains the other (e.g., "Google" and "Google Inc.")
-    if (
-      companyName.includes(otherName) ||
-      otherName.includes(companyName)
-    ) {
+    if (companyName.includes(otherName) || otherName.includes(companyName)) {
       duplicates.push(other);
     }
   });

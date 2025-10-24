@@ -1,28 +1,55 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { FileText, Plus, Upload, Pencil, Download, Trash2, RotateCcw, Trash, Folder, File, FileCode, Type, FileType, Search, Filter, X, Link, ChevronRight, GitBranch, Sparkles, Clock, Calendar, CalendarDays, CalendarClock, CheckCircle2, AlertCircle, ArrowDownAZ, ArrowUpAZ, Briefcase, GraduationCap, Award, Paperclip, List } from 'lucide-react';
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useThrottledCallback } from '@tanstack/react-pacer';
+import { createFileRoute } from '@tanstack/react-router';
+import { jsPDF } from 'jspdf';
+import {
+  AlertCircle,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  Award,
+  Briefcase,
+  Calendar,
+  CalendarClock,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Download,
+  File,
+  FileCode,
+  FileText,
+  FileType,
+  Filter,
+  Folder,
+  GitBranch,
+  GraduationCap,
+  Link,
+  List,
+  Paperclip,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Search,
+  Sparkles,
+  Trash,
+  Trash2,
+  Type,
+  Upload,
+  X,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Document as PDFDocument, Page as PDFPage, pdfjs } from 'react-pdf';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useConfirm } from '@/hooks/useConfirm';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
-import { Document as PDFDocument, Page as PDFPage, pdfjs } from 'react-pdf';
-import { jsPDF } from 'jspdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-import { useDocumentsStore } from '@/stores';
-import { useApplicationsStore } from '@/stores';
-import { useSettingsStore } from '@/stores/settingsStore';
-import type { Document } from '@/types';
-import { LinkApplicationDialog } from '@/components/features/documents/LinkApplicationDialog';
-import { useAutoSaveBatcher } from '@/hooks/useDatabaseBatching';
-import { db } from '@/lib/db';
 import { DocumentVersionTimeline } from '@/components/features/documents/DocumentVersionTimeline';
-import { getDocumentTypeIcon, getDocumentTypeColors, isDocumentRecent, isDocumentOutdated } from '@/lib/utils';
+import { LinkApplicationDialog } from '@/components/features/documents/LinkApplicationDialog';
 import {
   Accordion,
   AccordionContent,
@@ -41,34 +68,36 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useAutoSaveBatcher } from '@/hooks/useDatabaseBatching';
+import { db } from '@/lib/db';
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  getDocumentTypeColors,
+  getDocumentTypeIcon,
+  isDocumentOutdated,
+  isDocumentRecent,
+} from '@/lib/utils';
+import { useApplicationsStore, useDocumentsStore } from '@/stores';
+import { useSettingsStore } from '@/stores/settingsStore';
+import type { Document } from '@/types';
 
 // Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 /**
  * Documents Page - Manage resumes, cover letters, and other job application documents
- * 
+ *
  * Features:
  * - Accordion-based sidebar for organized document groups
  * - Resumes and Cover Letters sections
  * - Recently Deleted section with restore/permanent delete options
  * - Document preview with multiple format support (PDF, Markdown, Rich Text, Plain)
  * - Version control for documents
- * 
+ *
  * Future Enhancements:
  * - Custom folders for better organization
  * - Link documents to specific job applications
@@ -89,7 +118,14 @@ export const Route = createFileRoute('/documents')({
 
 function DocumentsPage() {
   const { docId } = Route.useSearch();
-  const { documents, fetchDocuments, addDocument, updateDocument, deleteDocument, linkDocumentToApplications } = useDocumentsStore();
+  const {
+    documents,
+    fetchDocuments,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    linkDocumentToApplications,
+  } = useDocumentsStore();
   const { applications } = useApplicationsStore();
   const { documents: documentSettings } = useSettingsStore();
   const { confirm } = useConfirm();
@@ -99,18 +135,20 @@ function DocumentsPage() {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [viewFormat, setViewFormat] = useState<'pdf' | 'markdown' | 'richtext' | 'plain' | 'history'>('markdown');
+  const [viewFormat, setViewFormat] = useState<
+    'pdf' | 'markdown' | 'richtext' | 'plain' | 'history'
+  >('markdown');
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pdfLoadFailed, setPdfLoadFailed] = useState(false);
-  
+
   // Track last viewed document to prevent toast spam
   const lastViewedDocIdRef = useRef<string | null>(null);
-  
+
   // Track PDF load errors to prevent toast spam
   const pdfLoadErrorShownRef = useRef<string | null>(null);
   const pdfLoadErrorTimestampRef = useRef<number>(0);
-  
+
   // Drag & drop state
   const [isDraggingDocument, setIsDraggingDocument] = useState(false);
   const [draggingDocumentId, setDraggingDocumentId] = useState<string | null>(null);
@@ -120,19 +158,27 @@ function DocumentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterByType, setFilterByType] = useState<string>('all');
   const [filterByUsage, setFilterByUsage] = useState<'all' | 'linked' | 'unlinked'>('all');
-  const [filterByDate, setFilterByDate] = useState<'all' | 'recent' | 'old' | 'this-week' | 'this-month'>('all');
+  const [filterByDate, setFilterByDate] = useState<
+    'all' | 'recent' | 'old' | 'this-week' | 'this-month'
+  >('all');
   const [filterByVersion, setFilterByVersion] = useState<'all' | 'latest' | 'outdated'>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'date-modified' | 'document-type' | 'usage-count'>('date-modified');
+  const [sortBy, setSortBy] = useState<'name' | 'date-modified' | 'document-type' | 'usage-count'>(
+    'date-modified'
+  );
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showFilters, setShowFilters] = useState(false);
 
   // Form state for new document dialog
   const [newDocName, setNewDocName] = useState('');
-  const [newDocType, setNewDocType] = useState<'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other'>('resume');
+  const [newDocType, setNewDocType] = useState<
+    'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other'
+  >('resume');
   const [newDocContent, setNewDocContent] = useState('');
 
   // Form state for upload document dialog
-  const [uploadDocType, setUploadDocType] = useState<'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other'>('resume');
+  const [uploadDocType, setUploadDocType] = useState<
+    'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other'
+  >('resume');
 
   // Form state for cover letter dialog
   const [coverLetterName, setCoverLetterName] = useState('');
@@ -143,11 +189,11 @@ function DocumentsPage() {
   // Editing state for view/edit dialog
   const [editingContent, setEditingContent] = useState('');
   const [editingName, setEditingName] = useState('');
-  
+
   // Auto-save state
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // PDF container ref for responsive width calculation
   const pdfContainerRef = useRef<HTMLDivElement>(null);
   const [pdfWidth, setPdfWidth] = useState(800);
@@ -159,48 +205,50 @@ function DocumentsPage() {
       // fileUrl already contains base64 data URL (data:application/pdf;base64,...)
       return selectedDocument.fileUrl;
     }
-    
+
     // For text-based documents, only generate when viewing as PDF
     if (viewFormat !== 'pdf') return null;
-    
+
     // For text-based documents, generate PDF from content
     if (!selectedDocument?.content) return null;
-    
+
     try {
       // Check if content is already a PDF (starts with %PDF or is base64 PDF)
-      if (selectedDocument.content.startsWith('%PDF') || 
-          selectedDocument.content.startsWith('JVBER') || // base64 of %PDF
-          selectedDocument.mimeType === 'application/pdf') {
+      if (
+        selectedDocument.content.startsWith('%PDF') ||
+        selectedDocument.content.startsWith('JVBER') || // base64 of %PDF
+        selectedDocument.mimeType === 'application/pdf'
+      ) {
         return `data:application/pdf;base64,${btoa(selectedDocument.content)}`;
       }
-      
+
       // Generate PDF from text content
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
       });
-      
+
       // Set font and size
       doc.setFontSize(11);
       doc.setFont('helvetica');
-      
+
       // Add title
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.text(selectedDocument.name, 20, 20);
-      
+
       // Add content
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
-      
+
       const content = selectedDocument.content;
       const lines = doc.splitTextToSize(content, 170); // Split text to fit page width
-      
+
       let y = 35; // Start position
       const lineHeight = 7;
       const pageHeight = 280;
-      
+
       for (const line of lines) {
         if (y > pageHeight) {
           doc.addPage();
@@ -209,7 +257,7 @@ function DocumentsPage() {
         doc.text(line, 20, y);
         y += lineHeight;
       }
-      
+
       // Convert to blob URL
       const pdfBlob = doc.output('blob');
       return URL.createObjectURL(pdfBlob);
@@ -237,7 +285,7 @@ function DocumentsPage() {
   useAutoSaveBatcher(
     db.documents,
     selectedDocument?.id || '',
-    { 
+    {
       name: editingName,
       content: editingContent,
       updatedAt: new Date(),
@@ -301,17 +349,17 @@ function DocumentsPage() {
   useEffect(() => {
     const initDocuments = async () => {
       await fetchDocuments();
-      
+
       // Auto-delete documents older than configured days
       const autoDeleteDate = new Date();
       autoDeleteDate.setDate(autoDeleteDate.getDate() - documentSettings.autoDeleteDays);
-      
+
       // Get current documents from the store after fetching
       const currentDocs = useDocumentsStore.getState().documents;
       const oldDeletedDocs = currentDocs.filter(
-        doc => doc.deletedAt && new Date(doc.deletedAt) <= autoDeleteDate
+        (doc) => doc.deletedAt && new Date(doc.deletedAt) <= autoDeleteDate
       );
-      
+
       // Permanently delete old documents
       for (const doc of oldDeletedDocs) {
         try {
@@ -321,7 +369,7 @@ function DocumentsPage() {
           console.error(`Failed to auto-delete document ${doc.name}:`, error);
         }
       }
-      
+
       // Refresh if any were deleted
       if (oldDeletedDocs.length > 0) {
         await fetchDocuments();
@@ -330,7 +378,7 @@ function DocumentsPage() {
         });
       }
     };
-    
+
     initDocuments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deleteDocument, documentSettings.autoDeleteDays, fetchDocuments]);
@@ -338,7 +386,7 @@ function DocumentsPage() {
   // Select document from URL parameter
   useEffect(() => {
     if (docId && documents.length > 0) {
-      const doc = documents.find(d => d.id === docId);
+      const doc = documents.find((d) => d.id === docId);
       if (doc) {
         setSelectedDocument(doc);
         // Only show toast if we haven't shown it for this document yet
@@ -353,12 +401,12 @@ function DocumentsPage() {
   // Keep selectedDocument in sync with store updates (for link count updates, etc.)
   useEffect(() => {
     if (selectedDocument) {
-      const updatedDoc = documents.find(d => d.id === selectedDocument.id);
+      const updatedDoc = documents.find((d) => d.id === selectedDocument.id);
       if (updatedDoc) {
         // Check if usedInApplicationIds changed (most common update for linking)
         const currentLinks = selectedDocument.usedInApplicationIds?.length || 0;
         const newLinks = updatedDoc.usedInApplicationIds?.length || 0;
-        
+
         if (currentLinks !== newLinks || selectedDocument.updatedAt !== updatedDoc.updatedAt) {
           setSelectedDocument(updatedDoc);
         }
@@ -367,37 +415,50 @@ function DocumentsPage() {
   }, [documents, selectedDocument]);
 
   // Filter active (non-deleted) and recently deleted documents
-  const activeDocuments = documents.filter(doc => !doc.deletedAt);
+  const activeDocuments = documents.filter((doc) => !doc.deletedAt);
   const recentlyDeletedThreshold = new Date();
-  recentlyDeletedThreshold.setDate(recentlyDeletedThreshold.getDate() - documentSettings.recentlyDeletedDays);
+  recentlyDeletedThreshold.setDate(
+    recentlyDeletedThreshold.getDate() - documentSettings.recentlyDeletedDays
+  );
   const recentlyDeleted = documents.filter(
-    doc => doc.deletedAt && new Date(doc.deletedAt) > recentlyDeletedThreshold
+    (doc) => doc.deletedAt && new Date(doc.deletedAt) > recentlyDeletedThreshold
   );
 
   // Apply filters to active documents
   const filteredDocuments = useMemo(() => {
-    let filtered = activeDocuments.filter(doc => {
+    let filtered = activeDocuments.filter((doc) => {
       // Search filter
       if (searchQuery && !doc.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-      
+
       // Type filter
       if (filterByType !== 'all') {
         if (filterByType === 'resume' && !(doc.type === 'resume' || doc.type === 'cv')) {
           return false;
         } else if (filterByType === 'cover-letter' && doc.type !== 'cover-letter') {
           return false;
-        } else if (filterByType !== 'resume' && filterByType !== 'cover-letter' && doc.type !== filterByType) {
+        } else if (
+          filterByType !== 'resume' &&
+          filterByType !== 'cover-letter' &&
+          doc.type !== filterByType
+        ) {
           return false;
         }
       }
-      
+
       // Usage filter
-      if (filterByUsage === 'linked' && (!doc.usedInApplicationIds || doc.usedInApplicationIds.length === 0)) {
+      if (
+        filterByUsage === 'linked' &&
+        (!doc.usedInApplicationIds || doc.usedInApplicationIds.length === 0)
+      ) {
         return false;
       }
-      if (filterByUsage === 'unlinked' && doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0) {
+      if (
+        filterByUsage === 'unlinked' &&
+        doc.usedInApplicationIds &&
+        doc.usedInApplicationIds.length > 0
+      ) {
         return false;
       }
 
@@ -420,17 +481,15 @@ function DocumentsPage() {
 
       // Version filter
       if (filterByVersion !== 'all') {
-        const hasNewerVersions = documents.some(
-          d => d.baseDocumentId === doc.id && !d.deletedAt
-        );
-        
+        const hasNewerVersions = documents.some((d) => d.baseDocumentId === doc.id && !d.deletedAt);
+
         if (filterByVersion === 'latest' && hasNewerVersions) {
           return false;
         } else if (filterByVersion === 'outdated' && !hasNewerVersions) {
           return false;
         }
       }
-      
+
       return true;
     });
 
@@ -445,22 +504,22 @@ function DocumentsPage() {
           comparison = dateB - dateA;
           break;
         }
-        
+
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
-        
+
         case 'document-type':
           comparison = a.type.localeCompare(b.type);
           break;
-        
+
         case 'usage-count': {
           const usageA = a.usedInApplicationIds?.length || 0;
           const usageB = b.usedInApplicationIds?.length || 0;
           comparison = usageB - usageA;
           break;
         }
-        
+
         default:
           comparison = 0;
       }
@@ -469,7 +528,17 @@ function DocumentsPage() {
     });
 
     return filtered;
-  }, [activeDocuments, searchQuery, filterByType, filterByUsage, filterByDate, filterByVersion, sortBy, sortOrder, documents]);
+  }, [
+    activeDocuments,
+    searchQuery,
+    filterByType,
+    filterByUsage,
+    filterByDate,
+    filterByVersion,
+    sortBy,
+    sortOrder,
+    documents,
+  ]);
 
   // Throttled drag over handler for application drop targets
   const handleAppDragOver = useCallback((e: React.DragEvent, appId: string) => {
@@ -482,13 +551,13 @@ function DocumentsPage() {
 
   // Calculate counts and filtered document lists for each category
   // Use filteredDocuments to respect search and filter criteria
-  const resumes = filteredDocuments.filter(doc => doc.type === 'resume' || doc.type === 'cv');
-  const coverLetters = filteredDocuments.filter(doc => doc.type === 'cover-letter');
-  const portfolios = filteredDocuments.filter(doc => doc.type === 'portfolio');
-  const transcripts = filteredDocuments.filter(doc => doc.type === 'transcript');
-  const certifications = filteredDocuments.filter(doc => doc.type === 'certification');
-  const otherDocs = filteredDocuments.filter(doc => doc.type === 'other');
-  
+  const resumes = filteredDocuments.filter((doc) => doc.type === 'resume' || doc.type === 'cv');
+  const coverLetters = filteredDocuments.filter((doc) => doc.type === 'cover-letter');
+  const portfolios = filteredDocuments.filter((doc) => doc.type === 'portfolio');
+  const transcripts = filteredDocuments.filter((doc) => doc.type === 'transcript');
+  const certifications = filteredDocuments.filter((doc) => doc.type === 'certification');
+  const otherDocs = filteredDocuments.filter((doc) => doc.type === 'other');
+
   const resumeCount = resumes.length;
   const coverLetterCount = coverLetters.length;
   const portfolioCount = portfolios.length;
@@ -510,18 +579,28 @@ function DocumentsPage() {
     );
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, docType: 'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other' = 'other') => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    docType:
+      | 'resume'
+      | 'cv'
+      | 'cover-letter'
+      | 'portfolio'
+      | 'transcript'
+      | 'certification'
+      | 'other' = 'other'
+  ) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const file = files[0];
       try {
         // Read file as base64 for storage
         const reader = new FileReader();
-        
+
         reader.onload = async (e) => {
           try {
             const fileContent = e.target?.result as string;
-            
+
             await addDocument({
               name: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
               type: docType,
@@ -531,7 +610,7 @@ function DocumentsPage() {
               mimeType: file.type,
               version: 1,
             });
-            
+
             toast.success('File Uploaded', {
               description: `${file.name} has been uploaded successfully`,
             });
@@ -544,13 +623,13 @@ function DocumentsPage() {
             });
           }
         };
-        
+
         reader.onerror = () => {
           toast.error('Upload Failed', {
             description: 'Failed to read file',
           });
         };
-        
+
         // Read the file as data URL (base64)
         reader.readAsDataURL(file);
       } catch (error) {
@@ -763,25 +842,25 @@ Add your content here...`;
 
   const handleDeleteDocument = async (doc: Document) => {
     console.log('Soft deleting document:', doc.name, doc.id);
-    
+
     try {
       // Soft delete by setting deletedAt timestamp
       await updateDocument(doc.id, {
         deletedAt: new Date(),
       });
-      
+
       console.log('Document soft deleted successfully');
-      
+
       toast.success('Document Deleted', {
         description: `${doc.name} moved to recently deleted`,
       });
-      
+
       // Clear selection if the deleted document was selected
       if (selectedDocument?.id === doc.id) {
         setSelectedDocument(null);
         setIsEditMode(false);
       }
-      
+
       // Refresh the documents list to ensure UI updates
       await fetchDocuments();
     } catch (error) {
@@ -798,11 +877,11 @@ Add your content here...`;
       await updateDocument(doc.id, {
         deletedAt: undefined,
       });
-      
+
       toast.success('Document Restored', {
         description: `${doc.name} has been restored`,
       });
-      
+
       await fetchDocuments();
     } catch (error) {
       toast.error('Restore Failed', {
@@ -826,15 +905,16 @@ Add your content here...`;
 
     try {
       await deleteDocument(doc.id);
-      
+
       toast.success('Document Permanently Deleted', {
         description: `${doc.name} has been permanently deleted`,
       });
-      
+
       await fetchDocuments();
     } catch (error) {
       toast.error('Delete Failed', {
-        description: error instanceof Error ? error.message : 'Failed to permanently delete document',
+        description:
+          error instanceof Error ? error.message : 'Failed to permanently delete document',
       });
     }
   };
@@ -882,7 +962,7 @@ Sincerely,
       });
     }
   };
-  
+
   return (
     <>
       <div className="flex gap-6 h-[calc(100vh-6rem)] pb-6">
@@ -911,25 +991,34 @@ Sincerely,
               )}
               <Popover open={showFilters} onOpenChange={setShowFilters}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 relative"
-                  >
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 relative">
                     <Filter className="h-3.5 w-3.5" />
-                    {(filterByType !== 'all' || filterByUsage !== 'all' || filterByDate !== 'all' || filterByVersion !== 'all' || sortBy !== 'date-modified') && (
+                    {(filterByType !== 'all' ||
+                      filterByUsage !== 'all' ||
+                      filterByDate !== 'all' ||
+                      filterByVersion !== 'all' ||
+                      sortBy !== 'date-modified') && (
                       <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[340px] p-0 animate-scaleIn" align="start" side="right" sideOffset={8}>
+                <PopoverContent
+                  className="w-[340px] p-0 animate-scaleIn"
+                  align="start"
+                  side="right"
+                  sideOffset={8}
+                >
                   {/* Header */}
                   <div className="px-4 py-2.5 border-b flex items-center justify-between bg-muted/30">
                     <div className="flex items-center gap-2">
                       <Filter className="h-3.5 w-3.5 text-muted-foreground" />
                       <h4 className="text-sm font-semibold">Filter Documents</h4>
                     </div>
-                    {(filterByType !== 'all' || filterByUsage !== 'all' || filterByDate !== 'all' || filterByVersion !== 'all' || sortBy !== 'date-modified') && (
+                    {(filterByType !== 'all' ||
+                      filterByUsage !== 'all' ||
+                      filterByDate !== 'all' ||
+                      filterByVersion !== 'all' ||
+                      sortBy !== 'date-modified') && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -967,13 +1056,26 @@ Sincerely,
                             <button
                               key={value}
                               type="button"
-                              onClick={() => setFilterByType(value as 'all' | 'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other')}
+                              onClick={() =>
+                                setFilterByType(
+                                  value as
+                                    | 'all'
+                                    | 'resume'
+                                    | 'cv'
+                                    | 'cover-letter'
+                                    | 'portfolio'
+                                    | 'transcript'
+                                    | 'certification'
+                                    | 'other'
+                                )
+                              }
                               className={`
                                 group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
                                 transition-all duration-200
-                                ${filterByType === value
-                                  ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
-                                  : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+                                ${
+                                  filterByType === value
+                                    ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
+                                    : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
                                 }
                               `}
                             >
@@ -996,13 +1098,16 @@ Sincerely,
                             <button
                               key={value}
                               type="button"
-                              onClick={() => setFilterByUsage(value as 'all' | 'linked' | 'unlinked')}
+                              onClick={() =>
+                                setFilterByUsage(value as 'all' | 'linked' | 'unlinked')
+                              }
                               className={`
                                 group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
                                 transition-all duration-200
-                                ${filterByUsage === value
-                                  ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
-                                  : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+                                ${
+                                  filterByUsage === value
+                                    ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
+                                    : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
                                 }
                               `}
                             >
@@ -1027,13 +1132,18 @@ Sincerely,
                             <button
                               key={value}
                               type="button"
-                              onClick={() => setFilterByDate(value as 'all' | 'recent' | 'old' | 'this-week' | 'this-month')}
+                              onClick={() =>
+                                setFilterByDate(
+                                  value as 'all' | 'recent' | 'old' | 'this-week' | 'this-month'
+                                )
+                              }
                               className={`
                                 group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
                                 transition-all duration-200
-                                ${filterByDate === value
-                                  ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
-                                  : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+                                ${
+                                  filterByDate === value
+                                    ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
+                                    : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
                                 }
                               `}
                             >
@@ -1056,13 +1166,16 @@ Sincerely,
                             <button
                               key={value}
                               type="button"
-                              onClick={() => setFilterByVersion(value as 'all' | 'latest' | 'outdated')}
+                              onClick={() =>
+                                setFilterByVersion(value as 'all' | 'latest' | 'outdated')
+                              }
                               className={`
                                 group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
                                 transition-all duration-200
-                                ${filterByVersion === value
-                                  ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
-                                  : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+                                ${
+                                  filterByVersion === value
+                                    ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
+                                    : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
                                 }
                               `}
                             >
@@ -1079,7 +1192,9 @@ Sincerely,
                           <div className="w-full border-t border-border"></div>
                         </div>
                         <div className="relative flex justify-center">
-                          <span className="bg-background px-3 text-xs text-muted-foreground font-medium">Sorting</span>
+                          <span className="bg-background px-3 text-xs text-muted-foreground font-medium">
+                            Sorting
+                          </span>
                         </div>
                       </div>
 
@@ -1098,9 +1213,10 @@ Sincerely,
                                 onClick={() => setSortOrder(value as 'asc' | 'desc')}
                                 className={`
                                   p-1.5 rounded-full transition-all duration-200
-                                  ${sortOrder === value
-                                    ? 'bg-background shadow-sm text-foreground'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                  ${
+                                    sortOrder === value
+                                      ? 'bg-background shadow-sm text-foreground'
+                                      : 'text-muted-foreground hover:text-foreground'
                                   }
                                 `}
                                 title={value === 'desc' ? 'Descending' : 'Ascending'}
@@ -1120,13 +1236,22 @@ Sincerely,
                             <button
                               key={value}
                               type="button"
-                              onClick={() => setSortBy(value as 'name' | 'date-modified' | 'document-type' | 'usage-count')}
+                              onClick={() =>
+                                setSortBy(
+                                  value as
+                                    | 'name'
+                                    | 'date-modified'
+                                    | 'document-type'
+                                    | 'usage-count'
+                                )
+                              }
                               className={`
                                 group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
                                 transition-all duration-200
-                                ${sortBy === value
-                                  ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
-                                  : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+                                ${
+                                  sortBy === value
+                                    ? 'bg-primary text-primary-foreground shadow-sm hover:shadow-md'
+                                    : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
                                 }
                               `}
                             >
@@ -1145,7 +1270,12 @@ Sincerely,
 
           {/* Actions */}
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => setIsUploadDialogOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => setIsUploadDialogOpen(true)}
+            >
               <Upload className="h-4 w-4 mr-2" />
               Upload
             </Button>
@@ -1157,7 +1287,11 @@ Sincerely,
 
           {/* Document Groups with Accordion */}
           <ScrollArea className="flex-1 scrollbar-hide">
-            <Accordion type="multiple" defaultValue={["resumes", "cover-letters"]} className="w-full max-w-full overflow-hidden">
+            <Accordion
+              type="multiple"
+              defaultValue={['resumes', 'cover-letters']}
+              className="w-full max-w-full overflow-hidden"
+            >
               {/* Resumes Section */}
               <AccordionItem value="resumes" className="border-b-0 overflow-hidden">
                 <AccordionTrigger className="px-2 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
@@ -1177,9 +1311,9 @@ Sincerely,
                       <div className="px-2 py-6 text-center">
                         <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
                         <p className="text-xs text-muted-foreground mb-2">No resumes yet</p>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="h-7 text-xs"
                           onClick={() => {
                             setNewDocType('resume');
@@ -1194,64 +1328,66 @@ Sincerely,
                       resumes.map((doc) => {
                         const colors = getDocumentTypeColors(doc.type);
                         return (
-                        <button
-                          key={doc.id}
-                          type="button"
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('application/x-document-id', doc.id);
-                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
-                            e.dataTransfer.effectAllowed = 'link';
-                            setIsDraggingDocument(true);
-                            setDraggingDocumentId(doc.id);
-                            // Add visual feedback
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '0.5';
-                            }
-                          }}
-                          onDragEnd={(e) => {
-                            setIsDraggingDocument(false);
-                            setDraggingDocumentId(null);
-                            // Reset visual feedback
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '1';
-                            }
-                          }}
-                          onClick={() => handleViewDocument(doc)}
-                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
-                            selectedDocument?.id === doc.id
-                              ? 'bg-accent text-accent-foreground border-primary'
-                              : `hover:bg-muted ${colors.border}`
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{doc.name}</p>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {renderLinkedApplicationsBadge(doc)}
-                                {isDocumentRecent(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                  >
-                                    <Sparkles className="h-2.5 w-2.5" />
-                                    New
-                                  </Badge>
-                                )}
-                                {isDocumentOutdated(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                  >
-                                    <Clock className="h-2.5 w-2.5" />
-                                    Old
-                                  </Badge>
-                                )}
+                          <button
+                            key={doc.id}
+                            type="button"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('application/x-document-id', doc.id);
+                              e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                              e.dataTransfer.effectAllowed = 'link';
+                              setIsDraggingDocument(true);
+                              setDraggingDocumentId(doc.id);
+                              // Add visual feedback
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '0.5';
+                              }
+                            }}
+                            onDragEnd={(e) => {
+                              setIsDraggingDocument(false);
+                              setDraggingDocumentId(null);
+                              // Reset visual feedback
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '1';
+                              }
+                            }}
+                            onClick={() => handleViewDocument(doc)}
+                            className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                              selectedDocument?.id === doc.id
+                                ? 'bg-accent text-accent-foreground border-primary'
+                                : `hover:bg-muted ${colors.border}`
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base shrink-0">
+                                {getDocumentTypeIcon(doc.type)}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{doc.name}</p>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {renderLinkedApplicationsBadge(doc)}
+                                  {isDocumentRecent(doc.updatedAt) && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                    >
+                                      <Sparkles className="h-2.5 w-2.5" />
+                                      New
+                                    </Badge>
+                                  )}
+                                  {isDocumentOutdated(doc.updatedAt) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                    >
+                                      <Clock className="h-2.5 w-2.5" />
+                                      Old
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
                         );
                       })
                     )}
@@ -1278,9 +1414,9 @@ Sincerely,
                       <div className="px-2 py-6 text-center">
                         <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
                         <p className="text-xs text-muted-foreground mb-2">No cover letters yet</p>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="h-7 text-xs"
                           onClick={() => setIsCoverLetterDialogOpen(true)}
                         >
@@ -1292,62 +1428,64 @@ Sincerely,
                       coverLetters.map((doc) => {
                         const colors = getDocumentTypeColors(doc.type);
                         return (
-                        <button
-                          key={doc.id}
-                          type="button"
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('application/x-document-id', doc.id);
-                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
-                            e.dataTransfer.effectAllowed = 'link';
-                            setIsDraggingDocument(true);
-                            setDraggingDocumentId(doc.id);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '0.5';
-                            }
-                          }}
-                          onDragEnd={(e) => {
-                            setIsDraggingDocument(false);
-                            setDraggingDocumentId(null);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '1';
-                            }
-                          }}
-                          onClick={() => handleViewDocument(doc)}
-                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
-                            selectedDocument?.id === doc.id
-                              ? 'bg-accent text-accent-foreground border-primary'
-                              : `hover:bg-muted ${colors.border}`
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{doc.name}</p>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {renderLinkedApplicationsBadge(doc)}
-                                {isDocumentRecent(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                  >
-                                    <Sparkles className="h-2.5 w-2.5" />
-                                    New
-                                  </Badge>
-                                )}
-                                {isDocumentOutdated(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                  >
-                                    <Clock className="h-2.5 w-2.5" />
-                                    Old
-                                  </Badge>
-                                )}
+                          <button
+                            key={doc.id}
+                            type="button"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('application/x-document-id', doc.id);
+                              e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                              e.dataTransfer.effectAllowed = 'link';
+                              setIsDraggingDocument(true);
+                              setDraggingDocumentId(doc.id);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '0.5';
+                              }
+                            }}
+                            onDragEnd={(e) => {
+                              setIsDraggingDocument(false);
+                              setDraggingDocumentId(null);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '1';
+                              }
+                            }}
+                            onClick={() => handleViewDocument(doc)}
+                            className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                              selectedDocument?.id === doc.id
+                                ? 'bg-accent text-accent-foreground border-primary'
+                                : `hover:bg-muted ${colors.border}`
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base shrink-0">
+                                {getDocumentTypeIcon(doc.type)}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{doc.name}</p>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {renderLinkedApplicationsBadge(doc)}
+                                  {isDocumentRecent(doc.updatedAt) && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                    >
+                                      <Sparkles className="h-2.5 w-2.5" />
+                                      New
+                                    </Badge>
+                                  )}
+                                  {isDocumentOutdated(doc.updatedAt) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                    >
+                                      <Clock className="h-2.5 w-2.5" />
+                                      Old
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
                         );
                       })
                     )}
@@ -1374,62 +1512,64 @@ Sincerely,
                       {portfolios.map((doc) => {
                         const colors = getDocumentTypeColors(doc.type);
                         return (
-                        <button
-                          key={doc.id}
-                          type="button"
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('application/x-document-id', doc.id);
-                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
-                            e.dataTransfer.effectAllowed = 'link';
-                            setIsDraggingDocument(true);
-                            setDraggingDocumentId(doc.id);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '0.5';
-                            }
-                          }}
-                          onDragEnd={(e) => {
-                            setIsDraggingDocument(false);
-                            setDraggingDocumentId(null);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '1';
-                            }
-                          }}
-                          onClick={() => handleViewDocument(doc)}
-                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
-                            selectedDocument?.id === doc.id
-                              ? 'bg-accent text-accent-foreground border-primary'
-                              : `hover:bg-muted ${colors.border}`
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{doc.name}</p>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {renderLinkedApplicationsBadge(doc)}
-                                {isDocumentRecent(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                  >
-                                    <Sparkles className="h-2.5 w-2.5" />
-                                    New
-                                  </Badge>
-                                )}
-                                {isDocumentOutdated(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                  >
-                                    <Clock className="h-2.5 w-2.5" />
-                                    Old
-                                  </Badge>
-                                )}
+                          <button
+                            key={doc.id}
+                            type="button"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('application/x-document-id', doc.id);
+                              e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                              e.dataTransfer.effectAllowed = 'link';
+                              setIsDraggingDocument(true);
+                              setDraggingDocumentId(doc.id);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '0.5';
+                              }
+                            }}
+                            onDragEnd={(e) => {
+                              setIsDraggingDocument(false);
+                              setDraggingDocumentId(null);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '1';
+                              }
+                            }}
+                            onClick={() => handleViewDocument(doc)}
+                            className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                              selectedDocument?.id === doc.id
+                                ? 'bg-accent text-accent-foreground border-primary'
+                                : `hover:bg-muted ${colors.border}`
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base shrink-0">
+                                {getDocumentTypeIcon(doc.type)}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{doc.name}</p>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {renderLinkedApplicationsBadge(doc)}
+                                  {isDocumentRecent(doc.updatedAt) && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                    >
+                                      <Sparkles className="h-2.5 w-2.5" />
+                                      New
+                                    </Badge>
+                                  )}
+                                  {isDocumentOutdated(doc.updatedAt) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                    >
+                                      <Clock className="h-2.5 w-2.5" />
+                                      Old
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
                         );
                       })}
                     </div>
@@ -1456,62 +1596,64 @@ Sincerely,
                       {transcripts.map((doc) => {
                         const colors = getDocumentTypeColors(doc.type);
                         return (
-                        <button
-                          key={doc.id}
-                          type="button"
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('application/x-document-id', doc.id);
-                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
-                            e.dataTransfer.effectAllowed = 'link';
-                            setIsDraggingDocument(true);
-                            setDraggingDocumentId(doc.id);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '0.5';
-                            }
-                          }}
-                          onDragEnd={(e) => {
-                            setIsDraggingDocument(false);
-                            setDraggingDocumentId(null);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '1';
-                            }
-                          }}
-                          onClick={() => handleViewDocument(doc)}
-                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
-                            selectedDocument?.id === doc.id
-                              ? 'bg-accent text-accent-foreground border-primary'
-                              : `hover:bg-muted ${colors.border}`
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{doc.name}</p>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {renderLinkedApplicationsBadge(doc)}
-                                {isDocumentRecent(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                  >
-                                    <Sparkles className="h-2.5 w-2.5" />
-                                    New
-                                  </Badge>
-                                )}
-                                {isDocumentOutdated(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                  >
-                                    <Clock className="h-2.5 w-2.5" />
-                                    Old
-                                  </Badge>
-                                )}
+                          <button
+                            key={doc.id}
+                            type="button"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('application/x-document-id', doc.id);
+                              e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                              e.dataTransfer.effectAllowed = 'link';
+                              setIsDraggingDocument(true);
+                              setDraggingDocumentId(doc.id);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '0.5';
+                              }
+                            }}
+                            onDragEnd={(e) => {
+                              setIsDraggingDocument(false);
+                              setDraggingDocumentId(null);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '1';
+                              }
+                            }}
+                            onClick={() => handleViewDocument(doc)}
+                            className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                              selectedDocument?.id === doc.id
+                                ? 'bg-accent text-accent-foreground border-primary'
+                                : `hover:bg-muted ${colors.border}`
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base shrink-0">
+                                {getDocumentTypeIcon(doc.type)}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{doc.name}</p>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {renderLinkedApplicationsBadge(doc)}
+                                  {isDocumentRecent(doc.updatedAt) && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                    >
+                                      <Sparkles className="h-2.5 w-2.5" />
+                                      New
+                                    </Badge>
+                                  )}
+                                  {isDocumentOutdated(doc.updatedAt) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                    >
+                                      <Clock className="h-2.5 w-2.5" />
+                                      Old
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
                         );
                       })}
                     </div>
@@ -1538,62 +1680,64 @@ Sincerely,
                       {certifications.map((doc) => {
                         const colors = getDocumentTypeColors(doc.type);
                         return (
-                        <button
-                          key={doc.id}
-                          type="button"
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('application/x-document-id', doc.id);
-                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
-                            e.dataTransfer.effectAllowed = 'link';
-                            setIsDraggingDocument(true);
-                            setDraggingDocumentId(doc.id);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '0.5';
-                            }
-                          }}
-                          onDragEnd={(e) => {
-                            setIsDraggingDocument(false);
-                            setDraggingDocumentId(null);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '1';
-                            }
-                          }}
-                          onClick={() => handleViewDocument(doc)}
-                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
-                            selectedDocument?.id === doc.id
-                              ? 'bg-accent text-accent-foreground border-primary'
-                              : `hover:bg-muted ${colors.border}`
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{doc.name}</p>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {renderLinkedApplicationsBadge(doc)}
-                                {isDocumentRecent(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                  >
-                                    <Sparkles className="h-2.5 w-2.5" />
-                                    New
-                                  </Badge>
-                                )}
-                                {isDocumentOutdated(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                  >
-                                    <Clock className="h-2.5 w-2.5" />
-                                    Old
-                                  </Badge>
-                                )}
+                          <button
+                            key={doc.id}
+                            type="button"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('application/x-document-id', doc.id);
+                              e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                              e.dataTransfer.effectAllowed = 'link';
+                              setIsDraggingDocument(true);
+                              setDraggingDocumentId(doc.id);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '0.5';
+                              }
+                            }}
+                            onDragEnd={(e) => {
+                              setIsDraggingDocument(false);
+                              setDraggingDocumentId(null);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '1';
+                              }
+                            }}
+                            onClick={() => handleViewDocument(doc)}
+                            className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                              selectedDocument?.id === doc.id
+                                ? 'bg-accent text-accent-foreground border-primary'
+                                : `hover:bg-muted ${colors.border}`
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base shrink-0">
+                                {getDocumentTypeIcon(doc.type)}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{doc.name}</p>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {renderLinkedApplicationsBadge(doc)}
+                                  {isDocumentRecent(doc.updatedAt) && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                    >
+                                      <Sparkles className="h-2.5 w-2.5" />
+                                      New
+                                    </Badge>
+                                  )}
+                                  {isDocumentOutdated(doc.updatedAt) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                    >
+                                      <Clock className="h-2.5 w-2.5" />
+                                      Old
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
                         );
                       })}
                     </div>
@@ -1620,62 +1764,64 @@ Sincerely,
                       {otherDocs.map((doc) => {
                         const colors = getDocumentTypeColors(doc.type);
                         return (
-                        <button
-                          key={doc.id}
-                          type="button"
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('application/x-document-id', doc.id);
-                            e.dataTransfer.setData('text/plain', JSON.stringify(doc));
-                            e.dataTransfer.effectAllowed = 'link';
-                            setIsDraggingDocument(true);
-                            setDraggingDocumentId(doc.id);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '0.5';
-                            }
-                          }}
-                          onDragEnd={(e) => {
-                            setIsDraggingDocument(false);
-                            setDraggingDocumentId(null);
-                            if (e.currentTarget instanceof HTMLElement) {
-                              e.currentTarget.style.opacity = '1';
-                            }
-                          }}
-                          onClick={() => handleViewDocument(doc)}
-                          className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
-                            selectedDocument?.id === doc.id
-                              ? 'bg-accent text-accent-foreground border-primary'
-                              : `hover:bg-muted ${colors.border}`
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0">{getDocumentTypeIcon(doc.type)}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{doc.name}</p>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {renderLinkedApplicationsBadge(doc)}
-                                {isDocumentRecent(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
-                                  >
-                                    <Sparkles className="h-2.5 w-2.5" />
-                                    New
-                                  </Badge>
-                                )}
-                                {isDocumentOutdated(doc.updatedAt) && (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
-                                  >
-                                    <Clock className="h-2.5 w-2.5" />
-                                    Old
-                                  </Badge>
-                                )}
+                          <button
+                            key={doc.id}
+                            type="button"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('application/x-document-id', doc.id);
+                              e.dataTransfer.setData('text/plain', JSON.stringify(doc));
+                              e.dataTransfer.effectAllowed = 'link';
+                              setIsDraggingDocument(true);
+                              setDraggingDocumentId(doc.id);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '0.5';
+                              }
+                            }}
+                            onDragEnd={(e) => {
+                              setIsDraggingDocument(false);
+                              setDraggingDocumentId(null);
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = '1';
+                              }
+                            }}
+                            onClick={() => handleViewDocument(doc)}
+                            className={`w-full max-w-[13rem] text-left px-3 py-2 rounded-md border transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                              selectedDocument?.id === doc.id
+                                ? 'bg-accent text-accent-foreground border-primary'
+                                : `hover:bg-muted ${colors.border}`
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base shrink-0">
+                                {getDocumentTypeIcon(doc.type)}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{doc.name}</p>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {renderLinkedApplicationsBadge(doc)}
+                                  {isDocumentRecent(doc.updatedAt) && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-4 text-[10px] px-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-0.5 animate-pulse-subtle shrink-0"
+                                    >
+                                      <Sparkles className="h-2.5 w-2.5" />
+                                      New
+                                    </Badge>
+                                  )}
+                                  {isDocumentOutdated(doc.updatedAt) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="h-4 text-[10px] px-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 flex items-center gap-0.5 opacity-70 shrink-0"
+                                    >
+                                      <Clock className="h-2.5 w-2.5" />
+                                      Old
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
                         );
                       })}
                     </div>
@@ -1758,16 +1904,21 @@ Sincerely,
                     ) : (
                       <div className="flex-1 min-w-0 flex items-center gap-2">
                         <div className="flex-1 min-w-0">
-                          <h2 className="text-sm font-semibold truncate">{selectedDocument.name}</h2>
+                          <h2 className="text-sm font-semibold truncate">
+                            {selectedDocument.name}
+                          </h2>
                           <p className="text-xs text-muted-foreground">
-                            {selectedDocument.type} · v{selectedDocument.version} · {new Date(selectedDocument.updatedAt).toLocaleDateString()}
+                            {selectedDocument.type} · v{selectedDocument.version} ·{' '}
+                            {new Date(selectedDocument.updatedAt).toLocaleDateString()}
                           </p>
                         </div>
-                        {selectedDocument.fileUrl && selectedDocument.mimeType === 'application/pdf' && !selectedDocument.content && (
-                          <Badge variant="secondary" className="text-xs shrink-0">
-                            Uploaded File
-                          </Badge>
-                        )}
+                        {selectedDocument.fileUrl &&
+                          selectedDocument.mimeType === 'application/pdf' &&
+                          !selectedDocument.content && (
+                            <Badge variant="secondary" className="text-xs shrink-0">
+                              Uploaded File
+                            </Badge>
+                          )}
                       </div>
                     )}
                   </div>
@@ -1803,12 +1954,16 @@ Sincerely,
                       </>
                     ) : (
                       <>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0" 
-                          onClick={() => setIsEditMode(true)} 
-                          title={selectedDocument.fileUrl && !selectedDocument.content ? "Cannot edit uploaded file (no text content)" : "Edit"}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => setIsEditMode(true)}
+                          title={
+                            selectedDocument.fileUrl && !selectedDocument.content
+                              ? 'Cannot edit uploaded file (no text content)'
+                              : 'Edit'
+                          }
                           disabled={!!(selectedDocument.fileUrl && !selectedDocument.content)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -1821,7 +1976,8 @@ Sincerely,
                           onClick={() => setIsLinkDialogOpen(true)}
                         >
                           <Link className="h-3.5 w-3.5 mr-1" />
-                          {selectedDocument.usedInApplicationIds && selectedDocument.usedInApplicationIds.length > 0 ? (
+                          {selectedDocument.usedInApplicationIds &&
+                          selectedDocument.usedInApplicationIds.length > 0 ? (
                             <Badge variant="secondary" className="h-4 px-1 text-[10px]">
                               {selectedDocument.usedInApplicationIds.length}
                             </Badge>
@@ -1840,16 +1996,17 @@ Sincerely,
                               if (selectedDocument.fileUrl && !selectedDocument.content) {
                                 const a = document.createElement('a');
                                 a.href = selectedDocument.fileUrl;
-                                a.download = selectedDocument.fileName || `${selectedDocument.name}.pdf`;
+                                a.download =
+                                  selectedDocument.fileName || `${selectedDocument.name}.pdf`;
                                 a.click();
                                 return;
                               }
-                              
+
                               // Handle text-based documents
                               const content = selectedDocument.content || '';
                               let fileName = selectedDocument.name;
                               let mimeType = 'text/plain';
-                              
+
                               // Set file extension based on current view format
                               if (viewFormat === 'pdf') {
                                 fileName = `${fileName}.pdf`;
@@ -1863,7 +2020,7 @@ Sincerely,
                               } else {
                                 fileName = `${fileName}.txt`;
                               }
-                              
+
                               const blob = new Blob([content], { type: mimeType });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a');
@@ -1892,7 +2049,9 @@ Sincerely,
               </CardHeader>
               <Separator />
               <CardContent className="flex-1 p-0 overflow-auto scrollbar-hide flex flex-col">
-                {selectedDocument.fileName && !selectedDocument.fileUrl && !selectedDocument.content ? (
+                {selectedDocument.fileName &&
+                !selectedDocument.fileUrl &&
+                !selectedDocument.content ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center space-y-4">
                       <FileText className="h-16 w-16 mx-auto text-muted-foreground" />
@@ -1916,7 +2075,9 @@ Sincerely,
                     className="w-full h-full min-h-full font-mono text-sm resize-none border-0 rounded-none focus-visible:ring-0"
                     placeholder="Write your document content here..."
                   />
-                ) : selectedDocument.fileUrl && selectedDocument.mimeType === 'application/pdf' && !selectedDocument.content ? (
+                ) : selectedDocument.fileUrl &&
+                  selectedDocument.mimeType === 'application/pdf' &&
+                  !selectedDocument.content ? (
                   // Uploaded PDF file - only show PDF viewer (no text content to convert)
                   <div className="flex-1 flex flex-col">
                     {numPages && numPages > 1 && (
@@ -1926,7 +2087,7 @@ Sincerely,
                           size="sm"
                           className="h-7 w-7 p-0"
                           disabled={currentPage <= 1}
-                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                         >
                           ←
                         </Button>
@@ -1938,14 +2099,17 @@ Sincerely,
                           size="sm"
                           className="h-7 w-7 p-0"
                           disabled={currentPage >= numPages}
-                          onClick={() => setCurrentPage(prev => Math.min(numPages, prev + 1))}
+                          onClick={() => setCurrentPage((prev) => Math.min(numPages, prev + 1))}
                         >
                           →
                         </Button>
                       </div>
                     )}
                     <ScrollArea className="flex-1 scrollbar-hide">
-                      <div ref={pdfContainerRef} className="flex flex-col items-center p-6 space-y-4 w-full">
+                      <div
+                        ref={pdfContainerRef}
+                        className="flex flex-col items-center p-6 space-y-4 w-full"
+                      >
                         {pdfLoadFailed ? (
                           <div className="text-center py-12 space-y-4">
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4">
@@ -1982,12 +2146,13 @@ Sincerely,
                             onLoadError={(error) => {
                               console.error('PDF load error:', error);
                               setPdfLoadFailed(true);
-                              
+
                               const errorKey = `${selectedDocument?.id}-${generatedPdfUrl}`;
                               if (pdfLoadErrorShownRef.current !== errorKey) {
                                 pdfLoadErrorShownRef.current = errorKey;
                                 toast.error('Failed to load PDF', {
-                                  description: 'Unable to render PDF file. Try downloading instead.',
+                                  description:
+                                    'Unable to render PDF file. Try downloading instead.',
                                 });
                               }
                             }}
@@ -2003,16 +2168,20 @@ Sincerely,
                         ) : (
                           <div className="text-center py-12">
                             <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                            <p className="text-sm text-muted-foreground">
-                              Generating preview...
-                            </p>
+                            <p className="text-sm text-muted-foreground">Generating preview...</p>
                           </div>
                         )}
                       </div>
                     </ScrollArea>
                   </div>
                 ) : (
-                  <Tabs value={viewFormat} onValueChange={(value) => setViewFormat(value as 'pdf' | 'markdown' | 'richtext' | 'plain' | 'history')} className="flex-1 flex flex-col">
+                  <Tabs
+                    value={viewFormat}
+                    onValueChange={(value) =>
+                      setViewFormat(value as 'pdf' | 'markdown' | 'richtext' | 'plain' | 'history')
+                    }
+                    className="flex-1 flex flex-col"
+                  >
                     <div className="px-6 pt-4 pb-2 border-b">
                       <TabsList className="grid w-full max-w-3xl grid-cols-5">
                         <TabsTrigger value="pdf" className="text-xs">
@@ -2037,7 +2206,7 @@ Sincerely,
                         </TabsTrigger>
                       </TabsList>
                     </div>
-                    
+
                     <TabsContent value="pdf" className="flex-1 m-0 overflow-hidden flex flex-col">
                       {numPages && numPages > 1 && (
                         <div className="border-b px-4 py-2 flex items-center justify-center gap-4 bg-muted/30">
@@ -2046,7 +2215,7 @@ Sincerely,
                             size="sm"
                             className="h-7 w-7 p-0"
                             disabled={currentPage <= 1}
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                           >
                             ←
                           </Button>
@@ -2058,14 +2227,17 @@ Sincerely,
                             size="sm"
                             className="h-7 w-7 p-0"
                             disabled={currentPage >= numPages}
-                            onClick={() => setCurrentPage(prev => Math.min(numPages, prev + 1))}
+                            onClick={() => setCurrentPage((prev) => Math.min(numPages, prev + 1))}
                           >
                             →
                           </Button>
                         </div>
                       )}
                       <ScrollArea className="flex-1 scrollbar-hide">
-                        <div ref={pdfContainerRef} className="flex flex-col items-center p-6 space-y-4 w-full">
+                        <div
+                          ref={pdfContainerRef}
+                          className="flex flex-col items-center p-6 space-y-4 w-full"
+                        >
                           {pdfLoadFailed ? (
                             <div className="text-center py-12 space-y-4">
                               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4">
@@ -2074,7 +2246,8 @@ Sincerely,
                               <div>
                                 <h3 className="text-lg font-semibold mb-2">Failed to load PDF</h3>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                  Unable to render PDF. Try viewing in another format or retry loading.
+                                  Unable to render PDF. Try viewing in another format or retry
+                                  loading.
                                 </p>
                               </div>
                               <div className="flex items-center justify-center gap-2">
@@ -2089,10 +2262,7 @@ Sincerely,
                                   <RotateCcw className="h-4 w-4 mr-2" />
                                   Retry
                                 </Button>
-                                <Button
-                                  variant="outline"
-                                  onClick={() => setViewFormat('markdown')}
-                                >
+                                <Button variant="outline" onClick={() => setViewFormat('markdown')}>
                                   View as Markdown
                                 </Button>
                               </div>
@@ -2112,35 +2282,37 @@ Sincerely,
                                 console.error('PDF load error:', error);
                                 // Mark as failed to stop retry attempts
                                 setPdfLoadFailed(true);
-                                
+
                                 // Show toast notification once
                                 const errorKey = `${selectedDocument?.id}-${generatedPdfUrl}`;
                                 if (pdfLoadErrorShownRef.current !== errorKey) {
                                   pdfLoadErrorShownRef.current = errorKey;
                                   toast.error('Failed to load PDF', {
-                                    description: 'Unable to render PDF. Try viewing in another format.',
+                                    description:
+                                      'Unable to render PDF. Try viewing in another format.',
                                   });
                                 }
                               }}
                               className="w-full flex flex-col items-center"
                             >
-                              {numPages && Array.from(new Array(numPages), (_, index) => (
-                                <PDFPage
-                                  key={`page_${index + 1}`}
-                                  pageNumber={index + 1}
-                                  className="mb-4 shadow-lg max-w-full"
-                                  renderTextLayer={true}
-                                  renderAnnotationLayer={true}
-                                  width={pdfWidth}
-                                />
-                              ))}
+                              {numPages &&
+                                Array.from(new Array(numPages), (_, index) => (
+                                  <PDFPage
+                                    key={`page_${index + 1}`}
+                                    pageNumber={index + 1}
+                                    className="mb-4 shadow-lg max-w-full"
+                                    renderTextLayer={true}
+                                    renderAnnotationLayer={true}
+                                    width={pdfWidth}
+                                  />
+                                ))}
                             </PDFDocument>
                           ) : (
                             <div className="text-center py-12">
                               <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
                               <p className="text-sm text-muted-foreground mb-2">
-                                {selectedDocument.content 
-                                  ? 'Generating PDF preview...' 
+                                {selectedDocument.content
+                                  ? 'Generating PDF preview...'
                                   : 'No content available to display as PDF'}
                               </p>
                               <p className="text-xs text-muted-foreground">
@@ -2151,7 +2323,7 @@ Sincerely,
                         </div>
                       </ScrollArea>
                     </TabsContent>
-                    
+
                     <TabsContent value="markdown" className="flex-1 m-0 overflow-hidden">
                       <ScrollArea className="h-full scrollbar-hide">
                         <div className="prose prose-sm dark:prose-invert max-w-none p-6">
@@ -2164,7 +2336,7 @@ Sincerely,
                         </div>
                       </ScrollArea>
                     </TabsContent>
-                    
+
                     <TabsContent value="richtext" className="flex-1 m-0 overflow-hidden">
                       <ScrollArea className="h-full scrollbar-hide">
                         <div className="prose prose-sm dark:prose-invert max-w-none p-6 whitespace-pre-wrap">
@@ -2172,7 +2344,7 @@ Sincerely,
                         </div>
                       </ScrollArea>
                     </TabsContent>
-                    
+
                     <TabsContent value="plain" className="flex-1 m-0 overflow-hidden">
                       <ScrollArea className="h-full scrollbar-hide">
                         <pre className="whitespace-pre-wrap font-mono text-sm p-6">
@@ -2180,7 +2352,7 @@ Sincerely,
                         </pre>
                       </ScrollArea>
                     </TabsContent>
-                    
+
                     <TabsContent value="history" className="flex-1 m-0 overflow-hidden">
                       <div className="p-6">
                         <DocumentVersionTimeline document={selectedDocument} />
@@ -2231,7 +2403,18 @@ Sincerely,
               <select
                 id="upload-doc-type"
                 value={uploadDocType}
-                onChange={(e) => setUploadDocType(e.target.value as 'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other')}
+                onChange={(e) =>
+                  setUploadDocType(
+                    e.target.value as
+                      | 'resume'
+                      | 'cv'
+                      | 'cover-letter'
+                      | 'portfolio'
+                      | 'transcript'
+                      | 'certification'
+                      | 'other'
+                  )
+                }
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="resume">Resume</option>
@@ -2276,8 +2459,8 @@ Sincerely,
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="doc-name">Document Name</Label>
-              <Input 
-                id="doc-name" 
+              <Input
+                id="doc-name"
                 placeholder="My Resume v2"
                 value={newDocName}
                 onChange={(e) => setNewDocName(e.target.value)}
@@ -2288,7 +2471,18 @@ Sincerely,
               <select
                 id="doc-type"
                 value={newDocType}
-                onChange={(e) => setNewDocType(e.target.value as 'resume' | 'cv' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other')}
+                onChange={(e) =>
+                  setNewDocType(
+                    e.target.value as
+                      | 'resume'
+                      | 'cv'
+                      | 'cover-letter'
+                      | 'portfolio'
+                      | 'transcript'
+                      | 'certification'
+                      | 'other'
+                  )
+                }
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="resume">Resume</option>
@@ -2335,8 +2529,8 @@ Sincerely,
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="letter-name">Cover Letter Name</Label>
-              <Input 
-                id="letter-name" 
+              <Input
+                id="letter-name"
                 placeholder="Software Engineer - Google"
                 value={coverLetterName}
                 onChange={(e) => setCoverLetterName(e.target.value)}
@@ -2344,8 +2538,8 @@ Sincerely,
             </div>
             <div className="space-y-2">
               <Label htmlFor="company">Company Name</Label>
-              <Input 
-                id="company" 
+              <Input
+                id="company"
                 placeholder="Google"
                 value={coverLetterCompany}
                 onChange={(e) => setCoverLetterCompany(e.target.value)}
@@ -2353,8 +2547,8 @@ Sincerely,
             </div>
             <div className="space-y-2">
               <Label htmlFor="position">Position</Label>
-              <Input 
-                id="position" 
+              <Input
+                id="position"
                 placeholder="Senior Software Engineer"
                 value={coverLetterPosition}
                 onChange={(e) => setCoverLetterPosition(e.target.value)}
@@ -2407,9 +2601,9 @@ Sincerely,
                 </div>
               ) : (
                 applications.map((app) => {
-                  const doc = documents.find(d => d.id === draggingDocumentId);
+                  const doc = documents.find((d) => d.id === draggingDocumentId);
                   const isAlreadyLinked = doc?.usedInApplicationIds?.includes(app.id);
-                  
+
                   return (
                     <button
                       key={app.id}
@@ -2419,14 +2613,14 @@ Sincerely,
                       onDrop={async (e) => {
                         e.preventDefault();
                         setDropTargetAppId(null);
-                        
+
                         if (!draggingDocumentId) return;
-                        
+
                         if (isAlreadyLinked) {
                           toast.info('Document already linked to this application');
                           return;
                         }
-                        
+
                         try {
                           await linkDocumentToApplications(draggingDocumentId, [app.id]);
                           toast.success(`Document linked to ${app.position}`);
@@ -2443,9 +2637,13 @@ Sincerely,
                       disabled={isAlreadyLinked}
                     >
                       <div className="font-medium text-sm truncate">{app.position}</div>
-                      <div className="text-xs text-muted-foreground truncate">{app.companyName}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {app.companyName}
+                      </div>
                       {isAlreadyLinked && (
-                        <Badge variant="outline" className="text-xs mt-1">Already linked</Badge>
+                        <Badge variant="outline" className="text-xs mt-1">
+                          Already linked
+                        </Badge>
                       )}
                     </button>
                   );

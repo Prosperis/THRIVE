@@ -39,9 +39,7 @@ export const useGoalsStore = create<GoalsState>()(
 
       updateGoal: (id, updates) => {
         set((state) => ({
-          goals: state.goals.map((goal) =>
-            goal.id === id ? { ...goal, ...updates } : goal
-          ),
+          goals: state.goals.map((goal) => (goal.id === id ? { ...goal, ...updates } : goal)),
         }));
       },
 

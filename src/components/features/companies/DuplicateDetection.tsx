@@ -1,13 +1,9 @@
 import { AlertTriangle, Copy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert';
-import type { Company } from '@/types';
+import { Button } from '@/components/ui/button';
 import { findPotentialDuplicates } from '@/lib/data-quality';
+import type { Company } from '@/types';
 
 interface DuplicateDetectionProps {
   company: Company;
@@ -15,7 +11,11 @@ interface DuplicateDetectionProps {
   onViewDuplicate?: (company: Company) => void;
 }
 
-export function DuplicateDetection({ company, allCompanies, onViewDuplicate }: DuplicateDetectionProps) {
+export function DuplicateDetection({
+  company,
+  allCompanies,
+  onViewDuplicate,
+}: DuplicateDetectionProps) {
   const duplicates = findPotentialDuplicates(company, allCompanies);
 
   if (duplicates.length === 0) {
@@ -23,7 +23,10 @@ export function DuplicateDetection({ company, allCompanies, onViewDuplicate }: D
   }
 
   return (
-    <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100">
+    <Alert
+      variant="destructive"
+      className="bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100"
+    >
       <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
       <AlertTitle className="text-amber-900 dark:text-amber-100">
         Potential Duplicate{duplicates.length > 1 ? 's' : ''} Detected

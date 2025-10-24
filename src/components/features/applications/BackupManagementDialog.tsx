@@ -1,7 +1,6 @@
 import { AlertCircle, CheckCircle2, Clock, Download, HardDrive, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useConfirm } from '@/hooks/useConfirm';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { useConfirm } from '@/hooks/useConfirm';
 import { exportBackup, formatBytes } from '@/lib/backup';
 import { notify } from '@/lib/notifications';
 import { formatDate } from '@/lib/utils';

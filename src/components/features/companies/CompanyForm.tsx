@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, CheckCircle2, Star } from 'lucide-react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { useEffect, useMemo, useCallback } from 'react';
 import { z } from 'zod';
-import { useConfirm } from '@/hooks/useConfirm';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -13,7 +15,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { FormSalarySlider } from '@/components/ui/form-salary-slider';
 import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import { RatingSlider } from '@/components/ui/rating-slider';
 import {
   Select,
   SelectContent,
@@ -21,21 +26,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { RatingSlider } from '@/components/ui/rating-slider';
-import { FormSalarySlider } from '@/components/ui/form-salary-slider';
-import { CheckCircle2, AlertCircle, Star } from 'lucide-react';
-import { 
-  COMPANY_SIZES, 
-  INDUSTRIES, 
-  COMPANY_STATUSES, 
-  REMOTE_POLICIES,
-  PRIORITY_LEVELS,
+import { Textarea } from '@/components/ui/textarea';
+import { useConfirm } from '@/hooks/useConfirm';
+import {
+  COMPANY_SIZES,
+  COMPANY_STATUSES,
   CURRENCIES,
+  INDUSTRIES,
+  PRIORITY_LEVELS,
+  REMOTE_POLICIES,
 } from '@/lib/constants';
 import type { Company } from '@/types';
 
@@ -103,11 +103,21 @@ function calculateAverageRating(ratings: {
 // Helper function to calculate form completeness
 function calculateCompleteness(values: Partial<CompanyFormValues>): number {
   const fields = [
-    'name', 'website', 'industry', 'size', 'location', 'founded',
-    'status', 'priority', 'remotePolicy', 'description', 'culture',
-    'linkedinUrl', 'glassdoorUrl'
+    'name',
+    'website',
+    'industry',
+    'size',
+    'location',
+    'founded',
+    'status',
+    'priority',
+    'remotePolicy',
+    'description',
+    'culture',
+    'linkedinUrl',
+    'glassdoorUrl',
   ];
-  const filled = fields.filter(field => {
+  const filled = fields.filter((field) => {
     const value = values[field as keyof CompanyFormValues];
     return value !== undefined && value !== '' && value !== null;
   });
@@ -125,7 +135,13 @@ function isValidUrl(url: string | undefined): boolean {
   }
 }
 
-export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, onSaveAndAddAnother }: CompanyFormProps) {
+export function CompanyForm({
+  company,
+  onSubmit,
+  onCancel,
+  isLoading = false,
+  onSaveAndAddAnother,
+}: CompanyFormProps) {
   const { confirm } = useConfirm();
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -169,7 +185,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
 
   // Watch all form values for smart features
   const formValues = useWatch({ control: form.control });
-  
+
   // Calculate completeness percentage
   const completeness = useMemo(() => {
     return calculateCompleteness(formValues);
@@ -184,9 +200,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
       management: formValues.managementRating,
       culture: formValues.cultureRating,
     };
-    
+
     const average = calculateAverageRating(ratings);
-    
+
     // Only update if there's a calculated average and it's different
     if (average > 0 && formValues.overallRating !== average) {
       form.setValue('overallRating', average, { shouldValidate: false });
@@ -198,7 +214,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
     formValues.managementRating,
     formValues.cultureRating,
     formValues.overallRating,
-    form
+    form,
   ]);
 
   // Track if form has unsaved changes
@@ -254,141 +270,153 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
-  const handleSubmit = useCallback((values: CompanyFormValues) => {
-    // Transform form values to Company format
-    const companyData: Partial<Company> = {
-      name: values.name,
-      website: values.website || undefined,
-      industry: values.industry ? [values.industry] : undefined,
-      size: values.size || undefined,
-      location: values.location || undefined,
-      founded: values.founded || undefined,
-      remotePolicy: (values.remotePolicy as Company['remotePolicy']) || undefined,
-      status: (values.status as Company['status']) || undefined,
-      priority: (values.priority as Company['priority']) || undefined,
-      researched: values.researched || false,
-      description: values.description || undefined,
-      culture: values.culture || undefined,
-      techStack: values.techStack
-        ? values.techStack
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      benefits: values.benefits
-        ? values.benefits
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      pros: values.pros
-        ? values.pros
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      cons: values.cons
-        ? values.cons
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      notes: values.notes || undefined,
-      // Company Links
-      companyLinks: {
+  const handleSubmit = useCallback(
+    (values: CompanyFormValues) => {
+      // Transform form values to Company format
+      const companyData: Partial<Company> = {
+        name: values.name,
         website: values.website || undefined,
-        linkedin: values.linkedinUrl || undefined,
-        glassdoor: values.glassdoorUrl || undefined,
-        careers: values.careersUrl || undefined,
-        news: values.newsUrl || undefined,
-      },
-      // Ratings
-      ratings: {
-        overall: values.overallRating || undefined,
-        workLifeBalance: values.workLifeBalanceRating || undefined,
-        compensation: values.compensationRating || undefined,
-        careerGrowth: values.careerGrowthRating || undefined,
-        management: values.managementRating || undefined,
-        culture: values.cultureRating || undefined,
-      },
-      // Salary Range
-      salaryRange: values.salaryMin || values.salaryMax ? {
-        min: values.salaryMin,
-        max: values.salaryMax,
-        currency: values.salaryCurrency || 'USD',
-      } : undefined,
-    };
+        industry: values.industry ? [values.industry] : undefined,
+        size: values.size || undefined,
+        location: values.location || undefined,
+        founded: values.founded || undefined,
+        remotePolicy: (values.remotePolicy as Company['remotePolicy']) || undefined,
+        status: (values.status as Company['status']) || undefined,
+        priority: (values.priority as Company['priority']) || undefined,
+        researched: values.researched || false,
+        description: values.description || undefined,
+        culture: values.culture || undefined,
+        techStack: values.techStack
+          ? values.techStack
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        benefits: values.benefits
+          ? values.benefits
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        pros: values.pros
+          ? values.pros
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        cons: values.cons
+          ? values.cons
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        notes: values.notes || undefined,
+        // Company Links
+        companyLinks: {
+          website: values.website || undefined,
+          linkedin: values.linkedinUrl || undefined,
+          glassdoor: values.glassdoorUrl || undefined,
+          careers: values.careersUrl || undefined,
+          news: values.newsUrl || undefined,
+        },
+        // Ratings
+        ratings: {
+          overall: values.overallRating || undefined,
+          workLifeBalance: values.workLifeBalanceRating || undefined,
+          compensation: values.compensationRating || undefined,
+          careerGrowth: values.careerGrowthRating || undefined,
+          management: values.managementRating || undefined,
+          culture: values.cultureRating || undefined,
+        },
+        // Salary Range
+        salaryRange:
+          values.salaryMin || values.salaryMax
+            ? {
+                min: values.salaryMin,
+                max: values.salaryMax,
+                currency: values.salaryCurrency || 'USD',
+              }
+            : undefined,
+      };
 
-    onSubmit(companyData);
-  }, [onSubmit]);
+      onSubmit(companyData);
+    },
+    [onSubmit]
+  );
 
-  const handleSaveAndAddAnother = useCallback(async (values: CompanyFormValues) => {
-    // Transform form values to Company format (reuse the same logic)
-    const companyData: Partial<Company> = {
-      name: values.name,
-      website: values.website || undefined,
-      industry: values.industry ? [values.industry] : undefined,
-      size: values.size || undefined,
-      location: values.location || undefined,
-      founded: values.founded || undefined,
-      remotePolicy: (values.remotePolicy as Company['remotePolicy']) || undefined,
-      status: (values.status as Company['status']) || undefined,
-      priority: (values.priority as Company['priority']) || undefined,
-      researched: values.researched || false,
-      description: values.description || undefined,
-      culture: values.culture || undefined,
-      techStack: values.techStack
-        ? values.techStack
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      benefits: values.benefits
-        ? values.benefits
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      pros: values.pros
-        ? values.pros
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      cons: values.cons
-        ? values.cons
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
-        : undefined,
-      notes: values.notes || undefined,
-      companyLinks: {
+  const handleSaveAndAddAnother = useCallback(
+    async (values: CompanyFormValues) => {
+      // Transform form values to Company format (reuse the same logic)
+      const companyData: Partial<Company> = {
+        name: values.name,
         website: values.website || undefined,
-        linkedin: values.linkedinUrl || undefined,
-        glassdoor: values.glassdoorUrl || undefined,
-        careers: values.careersUrl || undefined,
-        news: values.newsUrl || undefined,
-      },
-      ratings: {
-        overall: values.overallRating || undefined,
-        workLifeBalance: values.workLifeBalanceRating || undefined,
-        compensation: values.compensationRating || undefined,
-        careerGrowth: values.careerGrowthRating || undefined,
-        management: values.managementRating || undefined,
-        culture: values.cultureRating || undefined,
-      },
-      salaryRange: values.salaryMin || values.salaryMax ? {
-        min: values.salaryMin,
-        max: values.salaryMax,
-        currency: values.salaryCurrency || 'USD',
-      } : undefined,
-    };
+        industry: values.industry ? [values.industry] : undefined,
+        size: values.size || undefined,
+        location: values.location || undefined,
+        founded: values.founded || undefined,
+        remotePolicy: (values.remotePolicy as Company['remotePolicy']) || undefined,
+        status: (values.status as Company['status']) || undefined,
+        priority: (values.priority as Company['priority']) || undefined,
+        researched: values.researched || false,
+        description: values.description || undefined,
+        culture: values.culture || undefined,
+        techStack: values.techStack
+          ? values.techStack
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        benefits: values.benefits
+          ? values.benefits
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        pros: values.pros
+          ? values.pros
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        cons: values.cons
+          ? values.cons
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : undefined,
+        notes: values.notes || undefined,
+        companyLinks: {
+          website: values.website || undefined,
+          linkedin: values.linkedinUrl || undefined,
+          glassdoor: values.glassdoorUrl || undefined,
+          careers: values.careersUrl || undefined,
+          news: values.newsUrl || undefined,
+        },
+        ratings: {
+          overall: values.overallRating || undefined,
+          workLifeBalance: values.workLifeBalanceRating || undefined,
+          compensation: values.compensationRating || undefined,
+          careerGrowth: values.careerGrowthRating || undefined,
+          management: values.managementRating || undefined,
+          culture: values.cultureRating || undefined,
+        },
+        salaryRange:
+          values.salaryMin || values.salaryMax
+            ? {
+                min: values.salaryMin,
+                max: values.salaryMax,
+                currency: values.salaryCurrency || 'USD',
+              }
+            : undefined,
+      };
 
-    if (onSaveAndAddAnother) {
-      await onSaveAndAddAnother(companyData);
-      form.reset(); // Reset form for next entry
-    }
-  }, [onSaveAndAddAnother, form]);
+      if (onSaveAndAddAnother) {
+        await onSaveAndAddAnother(companyData);
+        form.reset(); // Reset form for next entry
+      }
+    },
+    [onSaveAndAddAnother, form]
+  );
 
   return (
     <Form {...form}>
@@ -410,12 +438,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
                 ) : (
                   <AlertCircle className="h-4 w-4 text-amber-500" />
                 )}
-                <span className="text-sm font-medium">
-                  Profile Completeness: {completeness}%
-                </span>
+                <span className="text-sm font-medium">Profile Completeness: {completeness}%</span>
               </div>
               <Badge variant={completeness === 100 ? 'default' : 'secondary'}>
-                {completeness < 50 ? 'Getting Started' : completeness < 80 ? 'Good Progress' : completeness < 100 ? 'Almost There' : 'Complete'}
+                {completeness < 50
+                  ? 'Getting Started'
+                  : completeness < 80
+                    ? 'Good Progress'
+                    : completeness < 100
+                      ? 'Almost There'
+                      : 'Complete'}
               </Badge>
             </div>
             <Progress value={completeness} className="h-2" />
@@ -425,635 +457,630 @@ export function CompanyForm({ company, onSubmit, onCancel, isLoading = false, on
           </div>
 
           <TabsContent value="basic" className="space-y-6 mt-6">
-        {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Basic Information</h3>
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Basic Information</h3>
 
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Company Name *</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., TechCorp Inc" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., TechCorp Inc" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="website"
-            render={({ field }) => {
-              const isValid = isValidUrl(field.value);
-              return (
-                <FormItem>
-                  <FormLabel>Website</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input type="url" placeholder="https://company.com" {...field} />
-                      {field.value && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {isValid ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-4 w-4 text-amber-500" />
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => {
+                  const isValid = isValidUrl(field.value);
+                  return (
+                    <FormItem>
+                      <FormLabel>Website</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input type="url" placeholder="https://company.com" {...field} />
+                          {field.value && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              {isValid ? (
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <AlertCircle className="h-4 w-4 text-amber-500" />
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
-          />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="industry"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Industry</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="industry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Industry</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select industry" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {INDUSTRIES.map((industry) => (
+                            <SelectItem key={industry.value} value={industry.value}>
+                              {industry.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="size"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Size</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select size" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {COMPANY_SIZES.map((size) => (
+                            <SelectItem key={size.value} value={size.value}>
+                              {size.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select industry" />
-                      </SelectTrigger>
+                      <Input placeholder="e.g., San Francisco, CA" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {INDUSTRIES.map((industry) => (
-                        <SelectItem key={industry.value} value={industry.value}>
-                          {industry.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormDescription>Headquarters or main office location</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Size</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select size" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {COMPANY_SIZES.map((size) => (
-                        <SelectItem key={size.value} value={size.value}>
-                          {size.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="founded"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Founded</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 2010" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Location</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., San Francisco, CA" {...field} />
-                </FormControl>
-                <FormDescription>Headquarters or main office location</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {COMPANY_STATUSES.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="founded"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Founded</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 2010" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="priority"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Priority</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select priority" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PRIORITY_LEVELS.map((priority) => (
+                            <SelectItem key={priority.value} value={priority.value}>
+                              {priority.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {COMPANY_STATUSES.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="remotePolicy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Remote Policy</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select remote policy" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {REMOTE_POLICIES.map((policy) => (
+                            <SelectItem key={policy.value} value={policy.value}>
+                              {policy.icon} {policy.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PRIORITY_LEVELS.map((priority) => (
-                        <SelectItem key={priority.value} value={priority.value}>
-                          {priority.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="remotePolicy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Remote Policy</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select remote policy" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {REMOTE_POLICIES.map((policy) => (
-                        <SelectItem key={policy.value} value={policy.value}>
-                          {policy.icon} {policy.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="researched"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Researched</FormLabel>
-                    <FormDescription>
-                      Mark if you've completed research on this company
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+                <FormField
+                  control={form.control}
+                  name="researched"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Researched</FormLabel>
+                        <FormDescription>
+                          Mark if you've completed research on this company
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="links" className="space-y-6 mt-6">
-        {/* Company Links */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Company Links</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="linkedinUrl"
-              render={({ field }) => {
-                const isValid = isValidUrl(field.value);
-                return (
-                  <FormItem>
-                    <FormLabel>LinkedIn URL</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input placeholder="https://www.linkedin.com/company/..." {...field} />
-                        {field.value && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {isValid ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-amber-500" />
+            {/* Company Links */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Company Links</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="linkedinUrl"
+                  render={({ field }) => {
+                    const isValid = isValidUrl(field.value);
+                    return (
+                      <FormItem>
+                        <FormLabel>LinkedIn URL</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input placeholder="https://www.linkedin.com/company/..." {...field} />
+                            {field.value && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {isValid ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                                )}
+                              </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
 
-            <FormField
-              control={form.control}
-              name="glassdoorUrl"
-              render={({ field }) => {
-                const isValid = isValidUrl(field.value);
-                return (
-                  <FormItem>
-                    <FormLabel>Glassdoor URL</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input placeholder="https://www.glassdoor.com/..." {...field} />
-                        {field.value && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {isValid ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-amber-500" />
+                <FormField
+                  control={form.control}
+                  name="glassdoorUrl"
+                  render={({ field }) => {
+                    const isValid = isValidUrl(field.value);
+                    return (
+                      <FormItem>
+                        <FormLabel>Glassdoor URL</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input placeholder="https://www.glassdoor.com/..." {...field} />
+                            {field.value && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {isValid ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                                )}
+                              </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
 
-            <FormField
-              control={form.control}
-              name="careersUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Careers Page URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://company.com/careers" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="careersUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Careers Page URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://company.com/careers" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="newsUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>News/Blog URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://company.com/blog" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+                <FormField
+                  control={form.control}
+                  name="newsUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>News/Blog URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://company.com/blog" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-        {/* Company Research section stays here */}
-        </div>
+              {/* Company Research section stays here */}
+            </div>
           </TabsContent>
 
           <TabsContent value="ratings" className="space-y-6 mt-6">
-        {/* Ratings */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Ratings</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="overallRating"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between mb-2">
-                    <FormLabel className="flex items-center gap-2">
-                      Overall Rating
-                      <Badge variant="outline" className="text-xs font-normal">
-                        <Star className="h-3 w-3 mr-1" />
-                        Auto-calculated
-                      </Badge>
-                    </FormLabel>
-                  </div>
-                  <FormControl>
-                    <RatingSlider
-                      value={field.value || 0}
-                      onChange={field.onChange}
-                      disabled
-                      showValue
-                      className="opacity-60"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Automatically calculated from ratings below
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Ratings */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Ratings</h3>
 
-            <FormField
-              control={form.control}
-              name="workLifeBalanceRating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RatingSlider
-                      value={field.value || 0}
-                      onChange={field.onChange}
-                      label="Work-Life Balance"
-                      showValue
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="overallRating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between mb-2">
+                        <FormLabel className="flex items-center gap-2">
+                          Overall Rating
+                          <Badge variant="outline" className="text-xs font-normal">
+                            <Star className="h-3 w-3 mr-1" />
+                            Auto-calculated
+                          </Badge>
+                        </FormLabel>
+                      </div>
+                      <FormControl>
+                        <RatingSlider
+                          value={field.value || 0}
+                          onChange={field.onChange}
+                          disabled
+                          showValue
+                          className="opacity-60"
+                        />
+                      </FormControl>
+                      <FormDescription>Automatically calculated from ratings below</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="compensationRating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RatingSlider
-                      value={field.value || 0}
-                      onChange={field.onChange}
-                      label="Compensation"
-                      showValue
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="workLifeBalanceRating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RatingSlider
+                          value={field.value || 0}
+                          onChange={field.onChange}
+                          label="Work-Life Balance"
+                          showValue
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="careerGrowthRating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RatingSlider
-                      value={field.value || 0}
-                      onChange={field.onChange}
-                      label="Career Growth"
-                      showValue
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="compensationRating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RatingSlider
+                          value={field.value || 0}
+                          onChange={field.onChange}
+                          label="Compensation"
+                          showValue
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="managementRating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RatingSlider
-                      value={field.value || 0}
-                      onChange={field.onChange}
-                      label="Management"
-                      showValue
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="careerGrowthRating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RatingSlider
+                          value={field.value || 0}
+                          onChange={field.onChange}
+                          label="Career Growth"
+                          showValue
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="cultureRating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <RatingSlider
-                      value={field.value || 0}
-                      onChange={field.onChange}
-                      label="Culture"
-                      showValue
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+                <FormField
+                  control={form.control}
+                  name="managementRating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RatingSlider
+                          value={field.value || 0}
+                          onChange={field.onChange}
+                          label="Management"
+                          showValue
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-        {/* Salary Range */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Salary Range</h3>
-            <FormField
-              control={form.control}
-              name="salaryCurrency"
-              render={({ field }) => (
-                <FormItem className="w-[180px]">
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormField
+                  control={form.control}
+                  name="cultureRating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RatingSlider
+                          value={field.value || 0}
+                          onChange={field.onChange}
+                          label="Culture"
+                          showValue
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Salary Range */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Salary Range</h3>
+                <FormField
+                  control={form.control}
+                  name="salaryCurrency"
+                  render={({ field }) => (
+                    <FormItem className="w-[180px]">
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {CURRENCIES.map((currency) => (
+                            <SelectItem key={currency.value} value={currency.value}>
+                              {currency.symbol} {currency.value}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="pt-2">
+                <FormSalarySlider
+                  minValue={form.watch('salaryMin')}
+                  maxValue={form.watch('salaryMax')}
+                  currency={form.watch('salaryCurrency') || 'USD'}
+                  onChange={(range) => {
+                    form.setValue('salaryMin', range.min);
+                    form.setValue('salaryMax', range.max);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Company Research */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Company Research</h3>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Currency" />
-                      </SelectTrigger>
+                      <Textarea
+                        placeholder="What does the company do?"
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {CURRENCIES.map((currency) => (
-                        <SelectItem key={currency.value} value={currency.value}>
-                          {currency.symbol} {currency.value}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <div className="pt-2">
-            <FormSalarySlider
-              minValue={form.watch('salaryMin')}
-              maxValue={form.watch('salaryMax')}
-              currency={form.watch('salaryCurrency') || 'USD'}
-              onChange={(range) => {
-                form.setValue('salaryMin', range.min);
-                form.setValue('salaryMax', range.max);
-              }}
-            />
-          </div>
-        </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        {/* Company Research */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Company Research</h3>
+              <FormField
+                control={form.control}
+                name="culture"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Culture</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Notes about company culture, values, work environment..."
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="What does the company do?"
-                    className="resize-none"
-                    rows={3}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="techStack"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tech Stack</FormLabel>
+                    <FormControl>
+                      <Input placeholder="React, TypeScript, Node.js, PostgreSQL" {...field} />
+                    </FormControl>
+                    <FormDescription>Comma-separated list of technologies</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="culture"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Culture</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Notes about company culture, values, work environment..."
-                    className="resize-none"
-                    rows={3}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="techStack"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tech Stack</FormLabel>
-                <FormControl>
-                  <Input placeholder="React, TypeScript, Node.js, PostgreSQL" {...field} />
-                </FormControl>
-                <FormDescription>Comma-separated list of technologies</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="benefits"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Benefits</FormLabel>
-                <FormControl>
-                  <Input placeholder="Health insurance, 401k, Remote work, PTO" {...field} />
-                </FormControl>
-                <FormDescription>Comma-separated list of benefits and perks</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+              <FormField
+                control={form.control}
+                name="benefits"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Benefits</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Health insurance, 401k, Remote work, PTO" {...field} />
+                    </FormControl>
+                    <FormDescription>Comma-separated list of benefits and perks</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-6 mt-6">
-        {/* Analysis */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Analysis</h3>
+            {/* Analysis */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Analysis</h3>
 
-          <FormField
-            control={form.control}
-            name="pros"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Pros</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Great culture, Competitive salary, Growth opportunities"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>Comma-separated list of positive aspects</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="pros"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pros</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Great culture, Competitive salary, Growth opportunities"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>Comma-separated list of positive aspects</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="cons"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cons</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Long commute, Startup uncertainty, Limited benefits"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>Comma-separated list of concerns or drawbacks</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="cons"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cons</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Long commute, Startup uncertainty, Limited benefits"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>Comma-separated list of concerns or drawbacks</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Additional Notes</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Any other notes about this company..."
-                    className="resize-none"
-                    rows={4}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Notes</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Any other notes about this company..."
+                        className="resize-none"
+                        rows={4}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </TabsContent>
         </Tabs>
 

@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useMemo, useEffect } from 'react';
 import type { Table } from '@tanstack/react-table';
-import { CompaniesToolbar } from '@/components/features/companies/CompaniesToolbar';
-import { CompaniesTable } from '@/components/features/companies/CompaniesTable';
+import { useEffect, useMemo, useState } from 'react';
 import { CompaniesList } from '@/components/features/companies/CompaniesList';
+import { CompaniesTable } from '@/components/features/companies/CompaniesTable';
+import { CompaniesToolbar } from '@/components/features/companies/CompaniesToolbar';
 import { CompanyResearchHub } from '@/components/interview-prep/CompanyResearchHub';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import type { Company } from '@/types';
@@ -34,7 +34,7 @@ function CompaniesRoute() {
         console.error('Failed to initialize companies data:', error);
       }
     };
-    
+
     initializeData();
   }, [fetchCompanies]);
 
@@ -65,15 +65,15 @@ function CompaniesRoute() {
 
     // Apply status filter
     if (filters.status?.length) {
-      result = result.filter((company) => 
-        company.status && filters.status?.includes(company.status)
+      result = result.filter(
+        (company) => company.status && filters.status?.includes(company.status)
       );
     }
 
     // Apply remote policy filter
     if (filters.remotePolicy?.length) {
-      result = result.filter((company) =>
-        company.remotePolicy && filters.remotePolicy?.includes(company.remotePolicy)
+      result = result.filter(
+        (company) => company.remotePolicy && filters.remotePolicy?.includes(company.remotePolicy)
       );
     }
 
@@ -110,19 +110,12 @@ function CompaniesRoute() {
       />
 
       {activeView === 'table' && (
-        <CompaniesTable
-          companies={filteredCompanies}
-          onTableReady={setTable}
-        />
+        <CompaniesTable companies={filteredCompanies} onTableReady={setTable} />
       )}
 
-      {activeView === 'cards' && (
-        <CompanyResearchHub />
-      )}
+      {activeView === 'cards' && <CompanyResearchHub />}
 
-      {activeView === 'list' && (
-        <CompaniesList companies={filteredCompanies} />
-      )}
+      {activeView === 'list' && <CompaniesList companies={filteredCompanies} />}
     </div>
   );
 }

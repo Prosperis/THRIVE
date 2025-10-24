@@ -1,8 +1,23 @@
-import { useState, useMemo, useCallback } from 'react';
-import type { Application, Interview } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Clock, DollarSign, Plus, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -10,8 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { X, Plus, TrendingUp, TrendingDown, Clock, DollarSign } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import type { Application, Interview } from '@/types';
 
 interface CompanyMetrics {
   companyName: string;
@@ -39,81 +53,84 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
   }, [applications]);
 
   // Calculate metrics for each company
-  const calculateCompanyMetrics = useCallback((companyName: string): CompanyMetrics => {
-    const companyApps = applications.filter((app) => app.companyName === companyName);
-    const totalApplications = companyApps.length;
+  const calculateCompanyMetrics = useCallback(
+    (companyName: string): CompanyMetrics => {
+      const companyApps = applications.filter((app) => app.companyName === companyName);
+      const totalApplications = companyApps.length;
 
-    if (totalApplications === 0) {
+      if (totalApplications === 0) {
+        return {
+          companyName,
+          totalApplications: 0,
+          interviewRate: 0,
+          offerRate: 0,
+          avgResponseTime: 0,
+          avgSalary: 0,
+          activeApplications: 0,
+          rejectedApplications: 0,
+          successRate: 0,
+        };
+      }
+
+      // Interview rate
+      const appsWithInterviews = companyApps.filter((app) =>
+        interviews.some((interview) => interview.applicationId === app.id)
+      ).length;
+      const interviewRate = (appsWithInterviews / totalApplications) * 100;
+
+      // Offer rate
+      const offersReceived = companyApps.filter(
+        (app) => app.status === 'offer' || app.status === 'accepted'
+      ).length;
+      const offerRate = (offersReceived / totalApplications) * 100;
+
+      // Success rate (offers / total)
+      const successRate = offerRate;
+
+      // Average response time
+      const responseTimes = companyApps
+        .filter((app) => app.appliedDate && app.firstInterviewDate)
+        .map((app) => {
+          if (!app.appliedDate || !app.firstInterviewDate) return 0;
+          const applied = new Date(app.appliedDate);
+          const firstInterview = new Date(app.firstInterviewDate);
+          return Math.floor((firstInterview.getTime() - applied.getTime()) / (1000 * 60 * 60 * 24));
+        });
+      const avgResponseTime =
+        responseTimes.length > 0
+          ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+          : 0;
+
+      // Average salary
+      const salaries = companyApps
+        .filter((app) => app.salary?.min && app.salary?.max)
+        .map((app) => {
+          if (!app.salary?.min || !app.salary?.max) return 0;
+          return (app.salary.min + app.salary.max) / 2;
+        });
+      const avgSalary =
+        salaries.length > 0 ? salaries.reduce((sum, sal) => sum + sal, 0) / salaries.length : 0;
+
+      // Active vs rejected
+      const activeApplications = companyApps.filter(
+        (app) => !['rejected', 'withdrawn', 'accepted'].includes(app.status)
+      ).length;
+      const rejectedApplications = companyApps.filter((app) => app.status === 'rejected').length;
+
       return {
         companyName,
-        totalApplications: 0,
-        interviewRate: 0,
-        offerRate: 0,
-        avgResponseTime: 0,
-        avgSalary: 0,
-        activeApplications: 0,
-        rejectedApplications: 0,
-        successRate: 0,
+        totalApplications,
+        interviewRate,
+        offerRate,
+        avgResponseTime,
+        avgSalary,
+        activeApplications,
+        rejectedApplications,
+        successRate,
       };
-    }
-
-    // Interview rate
-    const appsWithInterviews = companyApps.filter((app) =>
-      interviews.some((interview) => interview.applicationId === app.id)
-    ).length;
-    const interviewRate = (appsWithInterviews / totalApplications) * 100;
-
-    // Offer rate
-    const offersReceived = companyApps.filter(
-      (app) => app.status === 'offer' || app.status === 'accepted'
-    ).length;
-    const offerRate = (offersReceived / totalApplications) * 100;
-
-    // Success rate (offers / total)
-    const successRate = offerRate;
-
-    // Average response time
-    const responseTimes = companyApps
-      .filter((app) => app.appliedDate && app.firstInterviewDate)
-      .map((app) => {
-        if (!app.appliedDate || !app.firstInterviewDate) return 0;
-        const applied = new Date(app.appliedDate);
-        const firstInterview = new Date(app.firstInterviewDate);
-        return Math.floor((firstInterview.getTime() - applied.getTime()) / (1000 * 60 * 60 * 24));
-      });
-    const avgResponseTime =
-      responseTimes.length > 0
-        ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
-        : 0;
-
-    // Average salary
-    const salaries = companyApps
-      .filter((app) => app.salary?.min && app.salary?.max)
-      .map((app) => {
-        if (!app.salary?.min || !app.salary?.max) return 0;
-        return (app.salary.min + app.salary.max) / 2;
-      });
-    const avgSalary =
-      salaries.length > 0 ? salaries.reduce((sum, sal) => sum + sal, 0) / salaries.length : 0;
-
-    // Active vs rejected
-    const activeApplications = companyApps.filter(
-      (app) => !['rejected', 'withdrawn', 'accepted'].includes(app.status)
-    ).length;
-    const rejectedApplications = companyApps.filter((app) => app.status === 'rejected').length;
-
-    return {
-      companyName,
-      totalApplications,
-      interviewRate,
-      offerRate,
-      avgResponseTime,
-      avgSalary,
-      activeApplications,
-      rejectedApplications,
-      successRate,
-    };
-  }, [applications, interviews]);
+    },
+    [applications, interviews]
+  );
 
   const companyMetrics = useMemo(() => {
     return selectedCompanies.map(calculateCompanyMetrics);
@@ -148,7 +165,9 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
       },
       {
         metric: 'Interview Rate',
-        ...Object.fromEntries(companyMetrics.map((m) => [m.companyName, m.interviewRate.toFixed(1)])),
+        ...Object.fromEntries(
+          companyMetrics.map((m) => [m.companyName, m.interviewRate.toFixed(1)])
+        ),
       },
       {
         metric: 'Offer Rate',
@@ -156,23 +175,20 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
       },
       {
         metric: 'Response Time',
-        ...Object.fromEntries(companyMetrics.map((m) => [m.companyName, m.avgResponseTime.toFixed(0)])),
+        ...Object.fromEntries(
+          companyMetrics.map((m) => [m.companyName, m.avgResponseTime.toFixed(0)])
+        ),
       },
     ];
   }, [companyMetrics]);
 
   // Prepare data for radar chart
   const radarData = useMemo(() => {
-    const metrics = [
-      'Interview Rate',
-      'Offer Rate',
-      'Active Apps',
-      'Success Rate',
-    ];
+    const metrics = ['Interview Rate', 'Offer Rate', 'Active Apps', 'Success Rate'];
 
     return metrics.map((metric) => {
       const dataPoint: Record<string, string | number> = { metric };
-      
+
       companyMetrics.forEach((company) => {
         let value = 0;
         switch (metric) {
@@ -183,9 +199,10 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
             value = company.offerRate;
             break;
           case 'Active Apps':
-            value = company.totalApplications > 0
-              ? (company.activeApplications / company.totalApplications) * 100
-              : 0;
+            value =
+              company.totalApplications > 0
+                ? (company.activeApplications / company.totalApplications) * 100
+                : 0;
             break;
           case 'Success Rate':
             value = company.successRate;
@@ -405,7 +422,10 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
                       <tr className="border-b">
                         <th className="text-left py-3 px-4 font-semibold">Metric</th>
                         {companyMetrics.map((company) => (
-                          <th key={company.companyName} className="text-right py-3 px-4 font-semibold">
+                          <th
+                            key={company.companyName}
+                            className="text-right py-3 px-4 font-semibold"
+                          >
                             {company.companyName}
                           </th>
                         ))}
@@ -413,7 +433,9 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
                     </thead>
                     <tbody>
                       <tr className="border-b">
-                        <td className="py-3 px-4 text-sm text-muted-foreground">Total Applications</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          Total Applications
+                        </td>
                         {companyMetrics.map((company) => (
                           <td key={company.companyName} className="text-right py-3 px-4">
                             {company.totalApplications}
@@ -450,7 +472,9 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
                         ))}
                       </tr>
                       <tr className="border-b">
-                        <td className="py-3 px-4 text-sm text-muted-foreground">Avg Response Time</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          Avg Response Time
+                        </td>
                         {companyMetrics.map((company) => (
                           <td key={company.companyName} className="text-right py-3 px-4">
                             {company.avgResponseTime > 0
@@ -468,7 +492,9 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
                         ))}
                       </tr>
                       <tr className="border-b">
-                        <td className="py-3 px-4 text-sm text-muted-foreground">Active Applications</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          Active Applications
+                        </td>
                         {companyMetrics.map((company) => (
                           <td key={company.companyName} className="text-right py-3 px-4">
                             {company.activeApplications}
@@ -476,7 +502,9 @@ export function CompanyComparison({ applications, interviews }: CompanyCompariso
                         ))}
                       </tr>
                       <tr>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">Rejected Applications</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          Rejected Applications
+                        </td>
                         {companyMetrics.map((company) => (
                           <td key={company.companyName} className="text-right py-3 px-4">
                             {company.rejectedApplications}

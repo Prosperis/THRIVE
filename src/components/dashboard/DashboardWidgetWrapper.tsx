@@ -9,21 +9,11 @@ interface DashboardWidgetWrapperProps {
   children: ReactNode;
 }
 
-export function DashboardWidgetWrapper({
-  id,
-  children,
-}: DashboardWidgetWrapperProps) {
-  const { 
-    attributes, 
-    listeners, 
-    setNodeRef, 
-    transform, 
-    transition, 
-    isDragging,
-    isOver 
-  } = useSortable({
-    id,
-  });
+export function DashboardWidgetWrapper({ id, children }: DashboardWidgetWrapperProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } =
+    useSortable({
+      id,
+    });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -44,7 +34,7 @@ export function DashboardWidgetWrapper({
       {isOver && (
         <div className="absolute inset-0 bg-primary/5 rounded-lg pointer-events-none z-0" />
       )}
-      
+
       {/* Drag handle - only this is draggable */}
       <div
         {...attributes}
@@ -53,7 +43,7 @@ export function DashboardWidgetWrapper({
       >
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
-      
+
       {/* Widget content - fully interactive */}
       <div className="relative z-[1]">{children}</div>
     </div>

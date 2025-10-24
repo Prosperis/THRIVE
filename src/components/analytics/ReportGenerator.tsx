@@ -1,10 +1,26 @@
-import { useState, useMemo, useCallback } from 'react';
-import { format, subDays, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import type { Application, Interview } from '@/types';
-import { calculateAnalytics } from '@/lib/analytics';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import {
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+  subMonths,
+  subWeeks,
+} from 'date-fns';
+import {
+  Calendar,
+  CheckCircle2,
+  Download,
+  FileText,
+  Minus,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -12,15 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  FileText,
-  Download,
-  Calendar,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  CheckCircle2,
-} from 'lucide-react';
+import { calculateAnalytics } from '@/lib/analytics';
+import type { Application, Interview } from '@/types';
 
 interface ReportGeneratorProps {
   applications: Application[];
@@ -85,14 +94,18 @@ export function ReportGenerator({ applications, interviews }: ReportGeneratorPro
     const change = ((current - previous) / previous) * 100;
     return {
       value: Math.abs(Math.round(change * 10) / 10),
-      direction: change > 0 ? ('up' as const) : change < 0 ? ('down' as const) : ('neutral' as const),
+      direction:
+        change > 0 ? ('up' as const) : change < 0 ? ('down' as const) : ('neutral' as const),
     };
   }, []);
 
   // Generate HTML report
   const generateHTMLReport = () => {
     const trends = {
-      applications: calculateChange(currentMetrics.totalApplications, previousMetrics.totalApplications),
+      applications: calculateChange(
+        currentMetrics.totalApplications,
+        previousMetrics.totalApplications
+      ),
       interviews: calculateChange(currentMetrics.totalInterviews, previousMetrics.totalInterviews),
       responseRate: calculateChange(currentMetrics.responseRate, previousMetrics.responseRate),
       offerRate: calculateChange(currentMetrics.offerRate, previousMetrics.offerRate),
@@ -332,7 +345,10 @@ export function ReportGenerator({ applications, interviews }: ReportGeneratorPro
   // Generate text report
   const generateTextReport = () => {
     const trends = {
-      applications: calculateChange(currentMetrics.totalApplications, previousMetrics.totalApplications),
+      applications: calculateChange(
+        currentMetrics.totalApplications,
+        previousMetrics.totalApplications
+      ),
       interviews: calculateChange(currentMetrics.totalInterviews, previousMetrics.totalInterviews),
       responseRate: calculateChange(currentMetrics.responseRate, previousMetrics.responseRate),
       offerRate: calculateChange(currentMetrics.offerRate, previousMetrics.offerRate),
@@ -447,13 +463,29 @@ Keep up the great work! 💪
   };
 
   // Calculate all trends for preview
-  const trends = useMemo(() => ({
-    applications: calculateChange(currentMetrics.totalApplications, previousMetrics.totalApplications),
-    interviews: calculateChange(currentMetrics.totalInterviews, previousMetrics.totalInterviews),
-    responseRate: calculateChange(currentMetrics.responseRate, previousMetrics.responseRate),
-    offerRate: calculateChange(currentMetrics.offerRate, previousMetrics.offerRate),
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [currentMetrics.totalApplications, currentMetrics.totalInterviews, currentMetrics.responseRate, currentMetrics.offerRate, previousMetrics.totalApplications, previousMetrics.totalInterviews, previousMetrics.responseRate, previousMetrics.offerRate, calculateChange]);
+  const trends = useMemo(
+    () => ({
+      applications: calculateChange(
+        currentMetrics.totalApplications,
+        previousMetrics.totalApplications
+      ),
+      interviews: calculateChange(currentMetrics.totalInterviews, previousMetrics.totalInterviews),
+      responseRate: calculateChange(currentMetrics.responseRate, previousMetrics.responseRate),
+      offerRate: calculateChange(currentMetrics.offerRate, previousMetrics.offerRate),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }),
+    [
+      currentMetrics.totalApplications,
+      currentMetrics.totalInterviews,
+      currentMetrics.responseRate,
+      currentMetrics.offerRate,
+      previousMetrics.totalApplications,
+      previousMetrics.totalInterviews,
+      previousMetrics.responseRate,
+      previousMetrics.offerRate,
+      calculateChange,
+    ]
+  );
 
   return (
     <div className="space-y-6">
@@ -463,9 +495,7 @@ Keep up the great work! 💪
             <FileText className="h-5 w-5" />
             Automated Report Generation
           </CardTitle>
-          <CardDescription>
-            Generate comprehensive reports with insights and trends
-          </CardDescription>
+          <CardDescription>Generate comprehensive reports with insights and trends</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
@@ -485,7 +515,10 @@ Keep up the great work! 💪
 
             <div className="space-y-2">
               <div className="text-sm font-medium">Report Format</div>
-              <Select value={reportFormat} onValueChange={(v) => setReportFormat(v as ReportFormat)}>
+              <Select
+                value={reportFormat}
+                onValueChange={(v) => setReportFormat(v as ReportFormat)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -500,7 +533,8 @@ Keep up the great work! 💪
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
             <span>
-              {reportPeriod.label}: {format(reportPeriod.start, 'MMM dd')} - {format(reportPeriod.end, 'MMM dd, yyyy')}
+              {reportPeriod.label}: {format(reportPeriod.start, 'MMM dd')} -{' '}
+              {format(reportPeriod.end, 'MMM dd, yyyy')}
             </span>
           </div>
 
@@ -522,9 +556,7 @@ Keep up the great work! 💪
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Report Preview</CardTitle>
-          <CardDescription>
-            Preview of metrics that will be included in your report
-          </CardDescription>
+          <CardDescription>Preview of metrics that will be included in your report</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
@@ -533,11 +565,15 @@ Keep up the great work! 💪
               <div className="text-2xl font-bold">{currentMetrics.totalApplications}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getTrendIcon(trends.applications.direction)}
-                <span className={
-                  trends.applications.direction === 'up' ? 'text-green-600' :
-                  trends.applications.direction === 'down' ? 'text-red-600' :
-                  'text-gray-600'
-                }>
+                <span
+                  className={
+                    trends.applications.direction === 'up'
+                      ? 'text-green-600'
+                      : trends.applications.direction === 'down'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
+                  }
+                >
                   {trends.applications.value}% vs previous
                 </span>
               </div>
@@ -548,11 +584,15 @@ Keep up the great work! 💪
               <div className="text-2xl font-bold">{currentMetrics.totalInterviews}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getTrendIcon(trends.interviews.direction)}
-                <span className={
-                  trends.interviews.direction === 'up' ? 'text-green-600' :
-                  trends.interviews.direction === 'down' ? 'text-red-600' :
-                  'text-gray-600'
-                }>
+                <span
+                  className={
+                    trends.interviews.direction === 'up'
+                      ? 'text-green-600'
+                      : trends.interviews.direction === 'down'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
+                  }
+                >
                   {trends.interviews.value}% vs previous
                 </span>
               </div>
@@ -563,11 +603,15 @@ Keep up the great work! 💪
               <div className="text-2xl font-bold">{currentMetrics.responseRate.toFixed(1)}%</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getTrendIcon(trends.responseRate.direction)}
-                <span className={
-                  trends.responseRate.direction === 'up' ? 'text-green-600' :
-                  trends.responseRate.direction === 'down' ? 'text-red-600' :
-                  'text-gray-600'
-                }>
+                <span
+                  className={
+                    trends.responseRate.direction === 'up'
+                      ? 'text-green-600'
+                      : trends.responseRate.direction === 'down'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
+                  }
+                >
                   {trends.responseRate.value}% vs previous
                 </span>
               </div>
@@ -578,11 +622,15 @@ Keep up the great work! 💪
               <div className="text-2xl font-bold">{currentMetrics.offerRate.toFixed(1)}%</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getTrendIcon(trends.offerRate.direction)}
-                <span className={
-                  trends.offerRate.direction === 'up' ? 'text-green-600' :
-                  trends.offerRate.direction === 'down' ? 'text-red-600' :
-                  'text-gray-600'
-                }>
+                <span
+                  className={
+                    trends.offerRate.direction === 'up'
+                      ? 'text-green-600'
+                      : trends.offerRate.direction === 'down'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
+                  }
+                >
                   {trends.offerRate.value}% vs previous
                 </span>
               </div>
@@ -609,19 +657,27 @@ Keep up the great work! 💪
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">Weekly</Badge>
+            <Badge variant="outline" className="mt-0.5">
+              Weekly
+            </Badge>
             <p>Best for tracking short-term progress and maintaining momentum</p>
           </div>
           <div className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">Monthly</Badge>
+            <Badge variant="outline" className="mt-0.5">
+              Monthly
+            </Badge>
             <p>Ideal for comprehensive reviews and identifying long-term trends</p>
           </div>
           <div className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">HTML</Badge>
+            <Badge variant="outline" className="mt-0.5">
+              HTML
+            </Badge>
             <p>Styled report perfect for viewing in browser or sharing</p>
           </div>
           <div className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">Text</Badge>
+            <Badge variant="outline" className="mt-0.5">
+              Text
+            </Badge>
             <p>Plain text format suitable for email or note-taking apps</p>
           </div>
         </CardContent>

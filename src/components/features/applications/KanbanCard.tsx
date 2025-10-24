@@ -1,20 +1,21 @@
-import { useState, useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { motion } from 'framer-motion';
 import { useThrottledCallback } from '@tanstack/react-pacer';
+import { motion } from 'framer-motion';
 import {
   Building2,
   Calendar,
   DollarSign,
   Eye,
+  FileText,
   GripVertical,
   MapPin,
   MoreHorizontal,
   Pencil,
   Trash2,
-  FileText,
 } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { AnimatedBadge } from '@/components/ui/animated-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,11 +29,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn, formatDate } from '@/lib/utils';
-import { useApplicationsStore } from '@/stores';
-import { useDocumentsStore } from '@/stores';
+import { useApplicationsStore, useDocumentsStore } from '@/stores';
 import type { Application } from '@/types';
 import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
-import { toast } from 'sonner';
 
 interface KanbanCardProps {
   application: Application;
@@ -73,7 +72,10 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     // Check if this is a document being dragged OR files from file system
-    if (e.dataTransfer.types.includes('application/x-document-id') || e.dataTransfer.types.includes('Files')) {
+    if (
+      e.dataTransfer.types.includes('application/x-document-id') ||
+      e.dataTransfer.types.includes('Files')
+    ) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'link';
       setIsDragOver(true);
@@ -95,7 +97,7 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
     const documentId = e.dataTransfer.getData('application/x-document-id');
     if (documentId) {
       // Handle existing document linking
-      const isAlreadyLinked = linkedDocuments.some(doc => doc.id === documentId);
+      const isAlreadyLinked = linkedDocuments.some((doc) => doc.id === documentId);
       if (isAlreadyLinked) {
         toast.info('Document already linked to this application');
         return;
@@ -125,8 +127,8 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
       'text/html',
     ];
 
-    const validFiles = files.filter(file => supportedTypes.includes(file.type));
-    
+    const validFiles = files.filter((file) => supportedTypes.includes(file.type));
+
     if (validFiles.length === 0) {
       toast.error('Unsupported file type. Please drop PDF, Word, or text files.');
       return;
@@ -138,11 +140,17 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
     for (const file of validFiles) {
       try {
         const content = await file.text();
-        
+
         // Detect document type based on filename
         const fileName = file.name.toLowerCase();
-        let type: 'resume' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other' = 'other';
-        
+        let type:
+          | 'resume'
+          | 'cover-letter'
+          | 'portfolio'
+          | 'transcript'
+          | 'certification'
+          | 'other' = 'other';
+
         if (fileName.includes('resume') || fileName.includes('cv')) {
           type = 'resume';
         } else if (fileName.includes('cover') || fileName.includes('letter')) {
@@ -167,7 +175,7 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
 
         // Link to this application
         await linkDocumentToApplications(newDocument.id, [application.id]);
-        
+
         toast.success(`${file.name} uploaded and linked`);
       } catch (error) {
         toast.error(`Failed to process ${file.name}`);
@@ -316,17 +324,16 @@ export function KanbanCard({ application, isOverlay = false }: KanbanCardProps) 
 
           {/* Linked Documents */}
           {linkedDocuments.length > 0 && (
-            <LinkedDocumentsPopover 
-              documents={linkedDocuments}
-              applicationId={application.id}
-            >
+            <LinkedDocumentsPopover documents={linkedDocuments} applicationId={application.id}>
               <button
                 type="button"
                 className="w-full flex items-center gap-1 text-xs text-muted-foreground pt-1 border-t hover:text-foreground transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 <FileText className="h-3 w-3" />
-                <span>{linkedDocuments.length} document{linkedDocuments.length > 1 ? 's' : ''}</span>
+                <span>
+                  {linkedDocuments.length} document{linkedDocuments.length > 1 ? 's' : ''}
+                </span>
               </button>
             </LinkedDocumentsPopover>
           )}

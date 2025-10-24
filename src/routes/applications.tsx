@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
 import type { Table } from '@tanstack/react-table';
+import { useEffect, useState } from 'react';
 import { ApplicationsTable } from '@/components/features/applications/ApplicationsTable';
 import { ApplicationsToolbar } from '@/components/features/applications/ApplicationsToolbar';
 import { KanbanBoard } from '@/components/features/applications/KanbanBoard';
 import { PageTransition } from '@/components/layout';
-import { useApplicationsStore, useUIStore, useDocumentsStore } from '@/stores';
+import { useApplicationsStore, useDocumentsStore, useUIStore } from '@/stores';
 import type { Application } from '@/types';
 
 export const Route = createFileRoute('/applications')({
@@ -32,7 +32,7 @@ function ApplicationsPage() {
         setIsInitialized(true);
       }
     };
-    
+
     initializeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchApplications, fetchDocuments]);

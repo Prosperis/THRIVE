@@ -35,9 +35,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { INTERVIEW_DIFFICULTIES, INTERVIEW_EXPERIENCES, REMOTE_POLICIES } from '@/lib/constants';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
-import { REMOTE_POLICIES, INTERVIEW_DIFFICULTIES, INTERVIEW_EXPERIENCES } from '@/lib/constants';
 
 export function CompanyResearchHub() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -123,12 +123,13 @@ export function CompanyResearchHub() {
     const salaryCurrency = formData.get('salaryCurrency') as string;
 
     const applicationIdValue = formData.get('applicationId') as string;
-    
+
     const companyData = {
       name: formData.get('companyName') as string,
       notes: (formData.get('notes') as string) || undefined,
       researched: formData.get('researched') === 'true',
-      applicationIds: applicationIdValue && applicationIdValue !== 'none' ? [applicationIdValue] : [],
+      applicationIds:
+        applicationIdValue && applicationIdValue !== 'none' ? [applicationIdValue] : [],
       website: (formData.get('website') as string) || undefined,
       companyLinks: {
         website: (formData.get('website') as string) || undefined,
@@ -245,9 +246,7 @@ export function CompanyResearchHub() {
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {companies.filter((c) => c.researched).length}
-            </div>
+            <div className="text-2xl font-bold">{companies.filter((c) => c.researched).length}</div>
             <p className="text-xs text-muted-foreground">
               {companies.length > 0
                 ? `${Math.round((companies.filter((c) => c.researched).length / companies.length) * 100)}%`
@@ -265,7 +264,9 @@ export function CompanyResearchHub() {
             <div className="text-2xl font-bold">
               {
                 companies.filter(
-                  (c) => (c.applicationIds && c.applicationIds.length > 0) || getApplicationsForCompany(c.name).length > 0
+                  (c) =>
+                    (c.applicationIds && c.applicationIds.length > 0) ||
+                    getApplicationsForCompany(c.name).length > 0
                 ).length
               }
             </div>
@@ -346,11 +347,7 @@ export function CompanyResearchHub() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2 col-span-2">
                           <Label htmlFor="companyName">Company Name *</Label>
-                          <Input
-                            name="companyName"
-                            required
-                            defaultValue={editingCompany?.name}
-                          />
+                          <Input name="companyName" required defaultValue={editingCompany?.name} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="founded">Founded (Year)</Label>
@@ -398,7 +395,10 @@ export function CompanyResearchHub() {
                     {applications.length > 0 && (
                       <div className="space-y-2">
                         <Label htmlFor="applicationId">Link to Application (Optional)</Label>
-                        <Select name="applicationId" defaultValue={editingCompany?.applicationIds?.[0] || 'none'}>
+                        <Select
+                          name="applicationId"
+                          defaultValue={editingCompany?.applicationIds?.[0] || 'none'}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select an application" />
                           </SelectTrigger>
@@ -810,7 +810,9 @@ export function CompanyResearchHub() {
                           </div>
                         )}
                       </div>
-                      {company.ratings?.overall && <div>{renderStarRating(company.ratings.overall)}</div>}
+                      {company.ratings?.overall && (
+                        <div>{renderStarRating(company.ratings.overall)}</div>
+                      )}
                     </div>
                   </div>
                   <div className="absolute top-4 right-4 flex gap-2">
@@ -920,34 +922,40 @@ export function CompanyResearchHub() {
                           {company.ratings.workLifeBalance && (
                             <div>
                               <span className="text-muted-foreground">Work-Life:</span>{' '}
-                              {company.ratings.workLifeBalance.toFixed(1)} �?                            </div>
+                              {company.ratings.workLifeBalance.toFixed(1)} �?{' '}
+                            </div>
                           )}
                           {company.ratings.compensation && (
                             <div>
                               <span className="text-muted-foreground">Compensation:</span>{' '}
-                              {company.ratings.compensation.toFixed(1)} �?                            </div>
+                              {company.ratings.compensation.toFixed(1)} �?{' '}
+                            </div>
                           )}
                           {company.ratings.careerGrowth && (
                             <div>
                               <span className="text-muted-foreground">Career Growth:</span>{' '}
-                              {company.ratings.careerGrowth.toFixed(1)} �?                            </div>
+                              {company.ratings.careerGrowth.toFixed(1)} �?{' '}
+                            </div>
                           )}
                           {company.ratings.management && (
                             <div>
                               <span className="text-muted-foreground">Management:</span>{' '}
-                              {company.ratings.management.toFixed(1)} �?                            </div>
+                              {company.ratings.management.toFixed(1)} �?{' '}
+                            </div>
                           )}
                           {company.ratings.culture && (
                             <div>
                               <span className="text-muted-foreground">Culture:</span>{' '}
-                              {company.ratings.culture.toFixed(1)} �?                            </div>
+                              {company.ratings.culture.toFixed(1)} �?{' '}
+                            </div>
                           )}
                         </div>
                       </div>
                     )}
 
                   {/* Pros and Cons */}
-                  {((company.pros && company.pros.length > 0) || (company.cons && company.cons.length > 0)) && (
+                  {((company.pros && company.pros.length > 0) ||
+                    (company.cons && company.cons.length > 0)) && (
                     <div className="grid grid-cols-2 gap-4 pt-2 border-t">
                       {company.pros && company.pros.length > 0 && (
                         <div className="space-y-1">

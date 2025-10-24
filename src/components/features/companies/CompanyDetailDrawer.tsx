@@ -1,5 +1,20 @@
+import {
+  Briefcase,
+  Building2,
+  Calendar,
+  Edit,
+  ExternalLink,
+  FileText,
+  Globe,
+  Link2,
+  MapPin,
+  Star,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
-import { useConfirm } from '@/hooks/useConfirm';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
   SheetContent,
@@ -7,31 +22,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Building2, 
-  MapPin, 
-  Globe, 
-  Calendar,
-  Briefcase,
-  FileText,
-  Star,
-  Edit,
-  ExternalLink,
-  Trash2,
-  Link2,
-} from 'lucide-react';
-import type { Company } from '@/types';
-import { COMPANY_STATUSES, REMOTE_POLICIES, PRIORITY_LEVELS } from '@/lib/constants';
-import { CompanyDialog } from './CompanyDialog';
-import { LinkApplicationDialog } from './LinkApplicationDialog';
-import { DataQualityIndicator } from './DataQualityIndicator';
-import { DuplicateDetection } from './DuplicateDetection';
+import { useConfirm } from '@/hooks/useConfirm';
+import { COMPANY_STATUSES, PRIORITY_LEVELS, REMOTE_POLICIES } from '@/lib/constants';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
+import type { Company } from '@/types';
+import { CompanyDialog } from './CompanyDialog';
+import { DataQualityIndicator } from './DataQualityIndicator';
+import { DuplicateDetection } from './DuplicateDetection';
+import { LinkApplicationDialog } from './LinkApplicationDialog';
 
 interface CompanyDetailDrawerProps {
   company: Company | null;
@@ -40,7 +40,12 @@ interface CompanyDetailDrawerProps {
   onDelete?: (company: Company) => void;
 }
 
-export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: CompanyDetailDrawerProps) {
+export function CompanyDetailDrawer({
+  company,
+  open,
+  onOpenChange,
+  onDelete,
+}: CompanyDetailDrawerProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const { applications } = useApplicationsStore();
@@ -50,12 +55,12 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
   if (!company) return null;
 
   // Find linked applications - use applicationIds from company
-  const linkedApplications = applications.filter(app => company.applicationIds.includes(app.id));
+  const linkedApplications = applications.filter((app) => company.applicationIds.includes(app.id));
 
   // Get status badge
-  const status = COMPANY_STATUSES.find(s => s.value === company.status);
-  const remotePolicy = REMOTE_POLICIES.find(p => p.value === company.remotePolicy);
-  const priority = PRIORITY_LEVELS.find(p => p.value === company.priority);
+  const status = COMPANY_STATUSES.find((s) => s.value === company.status);
+  const remotePolicy = REMOTE_POLICIES.find((p) => p.value === company.remotePolicy);
+  const priority = PRIORITY_LEVELS.find((p) => p.value === company.priority);
 
   // Calculate completeness
   const totalFields = 15;
@@ -114,9 +119,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                   {company.website && (
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4" />
-                      <a 
-                        href={company.website} 
-                        target="_blank" 
+                      <a
+                        href={company.website}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline flex items-center gap-1"
                       >
@@ -128,18 +133,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                 </SheetDescription>
               </div>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setEditDialogOpen(true)}
-                >
+                <Button variant="outline" size="icon" onClick={() => setEditDialogOpen(true)}>
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleDelete}
-                >
+                <Button variant="outline" size="icon" onClick={handleDelete}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -162,12 +159,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                   {remotePolicy.icon} {remotePolicy.label}
                 </Badge>
               )}
-              {company.researched && (
-                <Badge variant="default">Researched</Badge>
-              )}
-              <Badge variant="secondary">
-                {completeness}% Complete
-              </Badge>
+              {company.researched && <Badge variant="default">Researched</Badge>}
+              <Badge variant="secondary">{completeness}% Complete</Badge>
             </div>
           </SheetHeader>
 
@@ -177,19 +170,14 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="research">Research</TabsTrigger>
-              <TabsTrigger value="applications">
-                Apps ({linkedApplications.length})
-              </TabsTrigger>
+              <TabsTrigger value="applications">Apps ({linkedApplications.length})</TabsTrigger>
               <TabsTrigger value="links">Links</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6 mt-6">
               {/* Duplicate Detection */}
-              <DuplicateDetection 
-                company={company} 
-                allCompanies={companies}
-              />
+              <DuplicateDetection company={company} allCompanies={companies} />
 
               {/* Data Quality Indicator */}
               <DataQualityIndicator company={company} variant="detailed" />
@@ -221,7 +209,8 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                   <div className="space-y-1">
                     <div className="text-sm text-muted-foreground">Salary Range</div>
                     <div className="font-medium">
-                      {company.salaryRange.currency} {company.salaryRange.min?.toLocaleString()} - {company.salaryRange.max?.toLocaleString()}
+                      {company.salaryRange.currency} {company.salaryRange.min?.toLocaleString()} -{' '}
+                      {company.salaryRange.max?.toLocaleString()}
                     </div>
                   </div>
                 )}
@@ -304,7 +293,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                   <h3 className="font-semibold">Tech Stack</h3>
                   <div className="flex flex-wrap gap-2">
                     {company.techStack.map((tech, i) => (
-                      <Badge key={i} variant="secondary">{tech}</Badge>
+                      <Badge key={i} variant="secondary">
+                        {tech}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -316,7 +307,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                   <h3 className="font-semibold">Benefits</h3>
                   <div className="flex flex-wrap gap-2">
                     {company.benefits.map((benefit, i) => (
-                      <Badge key={i} variant="outline">{benefit}</Badge>
+                      <Badge key={i} variant="outline">
+                        {benefit}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -361,13 +354,10 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
             <TabsContent value="applications" className="space-y-4 mt-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  {linkedApplications.length} {linkedApplications.length === 1 ? 'application' : 'applications'}
+                  {linkedApplications.length}{' '}
+                  {linkedApplications.length === 1 ? 'application' : 'applications'}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLinkDialogOpen(true)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setLinkDialogOpen(true)}>
                   <Link2 className="h-4 w-4 mr-2" />
                   Link Application
                 </Button>
@@ -384,14 +374,16 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                         <div>
                           <h4 className="font-medium">{app.position}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {app.appliedDate && `Applied ${new Date(app.appliedDate).toLocaleDateString()}`}
+                            {app.appliedDate &&
+                              `Applied ${new Date(app.appliedDate).toLocaleDateString()}`}
                           </p>
                         </div>
                         <Badge>{app.status}</Badge>
                       </div>
                       {app.salary && (
                         <p className="text-sm">
-                          {app.salary.currency} {app.salary.min?.toLocaleString()} - {app.salary.max?.toLocaleString()}
+                          {app.salary.currency} {app.salary.min?.toLocaleString()} -{' '}
+                          {app.salary.max?.toLocaleString()}
                         </p>
                       )}
                     </div>
@@ -401,7 +393,9 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
                 <div className="text-center py-8 text-muted-foreground">
                   <Briefcase className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>No linked applications yet</p>
-                  <p className="text-xs mt-1">Click the button above to link existing applications</p>
+                  <p className="text-xs mt-1">
+                    Click the button above to link existing applications
+                  </p>
                 </div>
               )}
             </TabsContent>
@@ -486,11 +480,7 @@ export function CompanyDetailDrawer({ company, open, onOpenChange, onDelete }: C
       </Sheet>
 
       {/* Edit Dialog */}
-      <CompanyDialog
-        company={company}
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-      />
+      <CompanyDialog company={company} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
 
       {/* Link Application Dialog */}
       <LinkApplicationDialog

@@ -19,14 +19,14 @@ interface ChartRangeSelectorProps extends ChartRangeConfig {
 
 /**
  * ChartRangeSelector - Mini range selector for zooming/filtering chart data
- * 
+ *
  * Features:
  * - Dual handles for selecting data range
  * - Visual representation of selected vs total data
  * - Compact design for placement below charts
  * - Auto-formats numeric labels or accepts custom formatter
  * - Smooth drag interactions
- * 
+ *
  * @example
  * ```tsx
  * <ChartRangeSelector

@@ -1,3 +1,4 @@
+import { isWithinInterval } from 'date-fns';
 import { useMemo, useState } from 'react';
 import {
   Bar,
@@ -18,7 +19,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { isWithinInterval } from 'date-fns';
 import type { Application } from '@/types';
 
 const STAGE_COLORS: Record<string, string> = {
@@ -98,7 +98,7 @@ export function ApplicationFunnelChart({ period }: ApplicationFunnelChartProps =
   // Filter applications by period if provided
   const filteredApplications = useMemo(() => {
     if (!period) return applications;
-    
+
     return applications.filter((app) => {
       const appDate = new Date(app.appliedDate || app.createdAt);
       return isWithinInterval(appDate, { start: period.start, end: period.end });

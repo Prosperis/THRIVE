@@ -10,14 +10,14 @@ import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
 
 export function InterviewPrepPage() {
   const [activeTab, setActiveTab] = useState('questions');
-  
+
   // Get the raw data from the store
   const questions = useInterviewPrepStore((state) => state.questions);
   const answers = useInterviewPrepStore((state) => state.answers);
   const companyNotes = useInterviewPrepStore((state) => state.companyNotes);
   const challenges = useInterviewPrepStore((state) => state.challenges);
   const practiceSessions = useInterviewPrepStore((state) => state.practiceSessions);
-  
+
   // Calculate stats using useMemo to prevent recalculation on every render
   const stats = useMemo(() => {
     const totalQuestions = questions.length;

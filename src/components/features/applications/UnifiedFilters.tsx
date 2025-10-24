@@ -1,21 +1,17 @@
-import { Filter, X, Bookmark } from 'lucide-react';
+import { Bookmark, Filter, X } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { SalaryRangeSlider } from '@/components/ui/salary-range-slider';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { SalaryRangeSlider } from '@/components/ui/salary-range-slider';
 import { APPLICATION_STATUSES, PRIORITY_LEVELS, WORK_TYPES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useApplicationsStore } from '@/stores';
-import type { ApplicationStatus, ApplicationFilters as ApplicationFiltersType } from '@/types';
+import type { ApplicationFilters as ApplicationFiltersType, ApplicationStatus } from '@/types';
 import { SavedFiltersDialog } from '../filters/SavedFiltersDialog';
 
 export function UnifiedFilters() {
@@ -302,9 +298,7 @@ export function UnifiedFilters() {
                 onChange={(range) => setFilters({ salaryRange: range })}
                 currency="USD"
               />
-              <p className="text-[10px] text-muted-foreground">
-                Filter by expected salary range
-              </p>
+              <p className="text-[10px] text-muted-foreground">Filter by expected salary range</p>
             </div>
           </div>
         </ScrollArea>

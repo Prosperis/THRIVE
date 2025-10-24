@@ -273,7 +273,11 @@ export const INTERVIEW_EXPERIENCES = [
  */
 export const COMPANY_RATING_CATEGORIES = [
   { key: 'overall', label: 'Overall', description: 'Overall company rating' },
-  { key: 'workLifeBalance', label: 'Work-Life Balance', description: 'Balance between work and personal life' },
+  {
+    key: 'workLifeBalance',
+    label: 'Work-Life Balance',
+    description: 'Balance between work and personal life',
+  },
   { key: 'compensation', label: 'Compensation', description: 'Salary and benefits package' },
   { key: 'careerGrowth', label: 'Career Growth', description: 'Opportunities for advancement' },
   { key: 'management', label: 'Management', description: 'Quality of leadership and management' },

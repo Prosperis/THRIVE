@@ -28,7 +28,7 @@ export async function hasUserData(): Promise<boolean> {
     db.interviews.count(),
     db.documents.count(),
   ]);
-  
+
   return counts.some((count) => count > 0);
 }
 
@@ -66,25 +66,29 @@ export async function clearAllData(): Promise<void> {
     const contactCount = await db.contacts.count();
     const interviewCount = await db.interviews.count();
     const documentCount = await db.documents.count();
-    
-    console.log(`📊 Current counts - Apps: ${appCount}, Companies: ${companyCount}, Contacts: ${contactCount}, Interviews: ${interviewCount}, Docs: ${documentCount}`);
-    
+
+    console.log(
+      `📊 Current counts - Apps: ${appCount}, Companies: ${companyCount}, Contacts: ${contactCount}, Interviews: ${interviewCount}, Docs: ${documentCount}`
+    );
+
     await db.applications.clear();
     await db.companies.clear();
     await db.contacts.clear();
     await db.interviews.clear();
     await db.documents.clear();
-    
+
     // Verify counts after clearing
     const newAppCount = await db.applications.count();
     const newCompanyCount = await db.companies.count();
     const newContactCount = await db.contacts.count();
     const newInterviewCount = await db.interviews.count();
     const newDocumentCount = await db.documents.count();
-    
-    console.log(`📊 After clear - Apps: ${newAppCount}, Companies: ${newCompanyCount}, Contacts: ${newContactCount}, Interviews: ${newInterviewCount}, Docs: ${newDocumentCount}`);
+
+    console.log(
+      `📊 After clear - Apps: ${newAppCount}, Companies: ${newCompanyCount}, Contacts: ${newContactCount}, Interviews: ${newInterviewCount}, Docs: ${newDocumentCount}`
+    );
     console.log('✅ Database cleared');
-    
+
     // Clear all Zustand persisted stores from localStorage
     // This ensures the UI also reflects empty state
     const storageKeysToKeep = [
@@ -94,11 +98,11 @@ export async function clearAllData(): Promise<void> {
       'dashboard-layout-storage', // Keep layout
       'thrive-backup-storage', // Keep backup settings
     ];
-    
+
     console.log('🗑️ Clearing localStorage...');
     // Get all localStorage keys
     const allKeys = Object.keys(localStorage);
-    
+
     // Remove all keys except the ones we want to keep
     for (const key of allKeys) {
       if (!storageKeysToKeep.includes(key)) {
@@ -106,7 +110,7 @@ export async function clearAllData(): Promise<void> {
         console.log(`🗑️ Cleared localStorage key: ${key}`);
       }
     }
-    
+
     console.log('✅ All data cleared from database and localStorage');
   } catch (error) {
     console.error('❌ Failed to clear database:', error);
@@ -120,7 +124,7 @@ export async function clearAllData(): Promise<void> {
 export async function restoreUserData(): Promise<void> {
   try {
     const backupData = localStorage.getItem(BACKUP_KEY);
-    
+
     if (!backupData) {
       console.log('ℹ️ No backup found, database will remain empty');
       return;

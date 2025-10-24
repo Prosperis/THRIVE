@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react';
-import { RangeSlider } from './range-slider';
 import { cn } from '@/lib/utils';
+import { RangeSlider } from './range-slider';
 
 interface RatingSliderProps {
   value: number;
@@ -40,12 +40,7 @@ export function RatingSlider({
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         // Full star
-        stars.push(
-          <Star
-            key={i}
-            className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
-          />
-        );
+        stars.push(<Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />);
       } else if (i === fullStars && hasHalfStar) {
         // Half star
         stars.push(
@@ -58,12 +53,7 @@ export function RatingSlider({
         );
       } else {
         // Empty star
-        stars.push(
-          <Star
-            key={i}
-            className="h-3.5 w-3.5 text-yellow-400"
-          />
-        );
+        stars.push(<Star key={i} className="h-3.5 w-3.5 text-yellow-400" />);
       }
     }
 
@@ -75,17 +65,11 @@ export function RatingSlider({
       {/* Label and value display */}
       {(label || showValue) && (
         <div className="flex items-center justify-between">
-          {label && (
-            <span className="text-sm font-medium">{label}</span>
-          )}
+          {label && <span className="text-sm font-medium">{label}</span>}
           {showValue && (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold tabular-nums">
-                {formatRating(value)}
-              </span>
-              <div className="flex items-center gap-0.5">
-                {renderStars()}
-              </div>
+              <span className="text-sm font-semibold tabular-nums">{formatRating(value)}</span>
+              <div className="flex items-center gap-0.5">{renderStars()}</div>
             </div>
           )}
         </div>
@@ -106,16 +90,11 @@ export function RatingSlider({
       {/* Tick marks with star indicators */}
       <div className="flex justify-between px-1">
         {[0, 1, 2, 3, 4, 5].map((rating) => (
-          <div
-            key={rating}
-            className="flex flex-col items-center gap-0.5"
-          >
+          <div key={rating} className="flex flex-col items-center gap-0.5">
             <Star
               className={cn(
                 'h-2.5 w-2.5',
-                value >= rating
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-muted-foreground/30'
+                value >= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'
               )}
             />
             <span className="text-[10px] text-muted-foreground">{rating}</span>

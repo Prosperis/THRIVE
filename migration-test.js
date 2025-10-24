@@ -62,20 +62,20 @@ const dbRequest = indexedDB.open('thrive_db');
 
 dbRequest.onsuccess = (event) => {
   const db = event.target.result;
-  
+
   if (!db.objectStoreNames.contains('companies')) {
     console.log('❌ Companies object store not found in IndexedDB');
     console.groupEnd();
     return;
   }
-  
+
   const transaction = db.transaction(['companies'], 'readonly');
   const store = transaction.objectStore('companies');
   const countRequest = store.count();
-  
+
   countRequest.onsuccess = () => {
     console.log('🗄️ Total companies in IndexedDB:', countRequest.result);
-    
+
     if (countRequest.result > 0) {
       // Get first few companies as sample
       const getAllRequest = store.getAll(5);
@@ -95,7 +95,7 @@ dbRequest.onsuccess = (event) => {
       console.groupEnd();
     }
   };
-  
+
   countRequest.onerror = () => {
     console.log('❌ Error counting companies:', countRequest.error);
     console.groupEnd();
@@ -113,10 +113,10 @@ setTimeout(() => {
   console.log(`\n${'='.repeat(80)}`);
   console.log('🎯 MIGRATION TEST SUMMARY');
   console.log('='.repeat(80));
-  
+
   const hasFlag = localStorage.getItem('thrive_companies_migration_completed') === 'true';
   const hasNewStore = localStorage.getItem('companies-storage') !== null;
-  
+
   if (hasFlag && hasNewStore) {
     console.log('✅ Migration appears successful!');
     console.log('\n📝 Next steps:');
@@ -133,7 +133,7 @@ setTimeout(() => {
     console.log('⚠️ Partial migration state detected');
     console.log('\n👉 Check browser console for migration errors');
   }
-  
+
   console.log(`\n${'='.repeat(80)}`);
   console.log('💡 Useful commands:');
   console.log('='.repeat(80));

@@ -1,20 +1,20 @@
-import { useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar, Edit, MoreVertical, Trash2, } from 'lucide-react';
 import { Reorder } from 'framer-motion';
-import { DraggableListItem } from '@/components/ui/draggable-list';
+import { Calendar, Edit, MoreVertical, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { AnimatedIconButton } from '@/components/ui/animated-icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DraggableListItem } from '@/components/ui/draggable-list';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAnnotationsStore, type AnnotationType } from '@/stores/annotationsStore';
+import { type AnnotationType, useAnnotationsStore } from '@/stores/annotationsStore';
 import { AnnotationDialog } from './AnnotationDialog';
-import { toast } from 'sonner';
 
 const ANNOTATION_TYPE_ICONS: Record<AnnotationType, string> = {
   milestone: '🎯',
@@ -35,9 +35,8 @@ export function AnnotationsList() {
   const [filterType, setFilterType] = useState<AnnotationType | 'all'>('all');
   const [enableReorder, setEnableReorder] = useState(false);
 
-  const filteredAnnotations = filterType === 'all'
-    ? annotations
-    : annotations.filter((a) => a.type === filterType);
+  const filteredAnnotations =
+    filterType === 'all' ? annotations : annotations.filter((a) => a.type === filterType);
 
   const [localAnnotations, setLocalAnnotations] = useState(filteredAnnotations);
 
@@ -171,61 +170,62 @@ export function AnnotationsList() {
                   className="flex items-start gap-3"
                   style={{ borderLeftWidth: '3px', borderLeftColor: annotation.color }}
                 >
-                <div className="text-2xl flex-shrink-0">
-                  {ANNOTATION_TYPE_ICONS[annotation.type]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">{annotation.title}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(annotation.date), 'MMM dd, yyyy')} · {ANNOTATION_TYPE_LABELS[annotation.type]}
-                      </p>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <AnimatedIconButton
-                          icon={MoreVertical}
-                          size={16}
-                          animation="rotate"
-                          className="h-8 w-8"
-                        />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem disabled>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(annotation.id, annotation.title)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <div className="text-2xl flex-shrink-0">
+                    {ANNOTATION_TYPE_ICONS[annotation.type]}
                   </div>
-                  {annotation.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      {annotation.description}
-                    </p>
-                  )}
-                  {annotation.tags && annotation.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {annotation.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-block px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">{annotation.title}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(annotation.date), 'MMM dd, yyyy')} ·{' '}
+                          {ANNOTATION_TYPE_LABELS[annotation.type]}
+                        </p>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <AnimatedIconButton
+                            icon={MoreVertical}
+                            size={16}
+                            animation="rotate"
+                            className="h-8 w-8"
+                          />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem disabled>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(annotation.id, annotation.title)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                  )}
+                    {annotation.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {annotation.description}
+                      </p>
+                    )}
+                    {annotation.tags && annotation.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {annotation.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-block px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </DraggableListItem>
+              </DraggableListItem>
             ))}
           </Reorder.Group>
         )}

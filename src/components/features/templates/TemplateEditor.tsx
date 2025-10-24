@@ -1,6 +1,5 @@
 import { Eye, Plus, Save, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
-import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useConfirm } from '@/hooks/useConfirm';
 import type {
   Template,
   TemplateCategory,

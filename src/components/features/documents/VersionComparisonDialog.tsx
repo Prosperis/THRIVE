@@ -1,13 +1,8 @@
-import { X, GitCompare, Clock } from 'lucide-react';
+import { Clock, GitCompare, X } from 'lucide-react';
 import { useMemo } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Document } from '@/types';
 
@@ -37,17 +32,17 @@ export function VersionComparisonDialog({
   const diffLines = useMemo(() => {
     const oldContent = linkedContent || '';
     const newContent = currentDocument.content || '';
-    
+
     const oldLines = oldContent.split('\n');
     const newLines = newContent.split('\n');
-    
+
     const maxLines = Math.max(oldLines.length, newLines.length);
     const diffs: DiffLine[] = [];
-    
+
     for (let i = 0; i < maxLines; i++) {
       const oldLine = oldLines[i];
       const newLine = newLines[i];
-      
+
       if (oldLine === undefined && newLine !== undefined) {
         // Line was added
         diffs.push({
@@ -80,7 +75,7 @@ export function VersionComparisonDialog({
         });
       }
     }
-    
+
     return diffs;
   }, [linkedContent, currentDocument.content]);
 
@@ -88,7 +83,7 @@ export function VersionComparisonDialog({
     const added = diffLines.filter((d) => d.type === 'added').length;
     const removed = diffLines.filter((d) => d.type === 'removed').length;
     const modified = diffLines.filter((d) => d.type === 'modified').length;
-    
+
     return { added, removed, modified };
   }, [diffLines]);
 
@@ -114,9 +109,7 @@ export function VersionComparisonDialog({
               <GitCompare className="h-5 w-5 text-muted-foreground" />
               <div>
                 <DialogTitle className="text-lg">Version Comparison</DialogTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {currentDocument.name}
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">{currentDocument.name}</p>
               </div>
             </div>
             <Button
@@ -128,7 +121,7 @@ export function VersionComparisonDialog({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          
+
           {/* Version badges and stats */}
           <div className="flex items-center gap-4 mt-3 pt-3 border-t">
             <div className="flex items-center gap-2">
@@ -142,7 +135,7 @@ export function VersionComparisonDialog({
                 Current: v{currentDocument.version}
               </Badge>
             </div>
-            
+
             <div className="flex items-center gap-3 text-xs ml-auto">
               {stats.added > 0 && (
                 <span className="flex items-center gap-1">
@@ -171,20 +164,13 @@ export function VersionComparisonDialog({
             {/* Left side - Linked Version */}
             <div className="flex flex-col bg-background">
               <div className="px-4 py-2 border-b bg-muted/30">
-                <h3 className="text-sm font-medium">
-                  Linked Version (v{linkedVersion})
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Version used in this application
-                </p>
+                <h3 className="text-sm font-medium">Linked Version (v{linkedVersion})</h3>
+                <p className="text-xs text-muted-foreground">Version used in this application</p>
               </div>
               <ScrollArea className="flex-1">
                 <div className="font-mono text-xs">
                   {diffLines.map((diff, idx) => (
-                    <div
-                      key={`old-${idx}`}
-                      className={`px-4 py-1 ${getLineClassName(diff.type)}`}
-                    >
+                    <div key={`old-${idx}`} className={`px-4 py-1 ${getLineClassName(diff.type)}`}>
                       <span className="inline-block w-10 text-muted-foreground select-none">
                         {diff.type !== 'added' ? diff.lineNumber : ''}
                       </span>
@@ -203,17 +189,12 @@ export function VersionComparisonDialog({
                 <h3 className="text-sm font-medium">
                   Current Version (v{currentDocument.version})
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  Latest version of the document
-                </p>
+                <p className="text-xs text-muted-foreground">Latest version of the document</p>
               </div>
               <ScrollArea className="flex-1">
                 <div className="font-mono text-xs">
                   {diffLines.map((diff, idx) => (
-                    <div
-                      key={`new-${idx}`}
-                      className={`px-4 py-1 ${getLineClassName(diff.type)}`}
-                    >
+                    <div key={`new-${idx}`} className={`px-4 py-1 ${getLineClassName(diff.type)}`}>
                       <span className="inline-block w-10 text-muted-foreground select-none">
                         {diff.type !== 'removed' ? diff.lineNumber : ''}
                       </span>

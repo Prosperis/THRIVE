@@ -1,3 +1,4 @@
+import { useThrottledCallback } from '@tanstack/react-pacer';
 import { useNavigate } from '@tanstack/react-router';
 import {
   BarChart3,
@@ -12,7 +13,6 @@ import {
   Upload,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useThrottledCallback } from '@tanstack/react-pacer';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';

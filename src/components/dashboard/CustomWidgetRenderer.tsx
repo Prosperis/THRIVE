@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
+import { useMemo } from 'react';
 import { AnimatedCard } from '@/components/ui/animated-card';
 import { Badge } from '@/components/ui/badge';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { useInterviewsStore } from '@/stores/interviewsStore';
 import type { CustomWidget } from '@/stores/customWidgetsStore';
+import { useInterviewsStore } from '@/stores/interviewsStore';
 import type { Application, Interview } from '@/types';
 
 interface CustomWidgetRendererProps {
@@ -18,7 +18,7 @@ export function CustomWidgetRenderer({ widget }: CustomWidgetRendererProps) {
 
   const data = useMemo(() => {
     const source = widget.dataSource === 'applications' ? applications : interviews;
-    
+
     // Apply filters
     if (widget.filters.length === 0) {
       return source;
@@ -28,14 +28,17 @@ export function CustomWidgetRenderer({ widget }: CustomWidgetRendererProps) {
       return widget.filters.every((filter) => {
         const record = item as unknown as Record<string, unknown>;
         const value = record[filter.field];
-        
+
         switch (filter.operator) {
           case 'equals':
             return value === filter.value;
           case 'notEquals':
             return value !== filter.value;
           case 'contains':
-            return typeof value === 'string' && value.toLowerCase().includes((filter.value as string).toLowerCase());
+            return (
+              typeof value === 'string' &&
+              value.toLowerCase().includes((filter.value as string).toLowerCase())
+            );
           case 'greaterThan':
             return typeof value === 'number' && value > Number(filter.value);
           case 'lessThan':
@@ -80,8 +83,8 @@ export function CustomWidgetRenderer({ widget }: CustomWidgetRendererProps) {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {widget.dataSource === 'applications' 
-                          ? `${String(record.position)} at ${String(record.companyName)}` 
+                        {widget.dataSource === 'applications'
+                          ? `${String(record.position)} at ${String(record.companyName)}`
                           : String(record.type)}
                       </p>
                       {typeof record.status === 'string' && record.status && (
@@ -105,12 +108,15 @@ export function CustomWidgetRenderer({ widget }: CustomWidgetRendererProps) {
 
       case 'bar-chart': {
         // Group by status
-        const statusCounts: Record<string, number> = data.reduce((acc: Record<string, number>, item: Application | Interview) => {
-          const record = item as unknown as Record<string, unknown>;
-          const status = String(record.status) || 'unknown';
-          acc[status] = (acc[status] || 0) + 1;
-          return acc;
-        }, {});
+        const statusCounts: Record<string, number> = data.reduce(
+          (acc: Record<string, number>, item: Application | Interview) => {
+            const record = item as unknown as Record<string, unknown>;
+            const status = String(record.status) || 'unknown';
+            acc[status] = (acc[status] || 0) + 1;
+            return acc;
+          },
+          {}
+        );
 
         const maxCount = Math.max(...Object.values(statusCounts).map(Number), 1);
 
@@ -163,9 +169,7 @@ export function CustomWidgetRenderer({ widget }: CustomWidgetRendererProps) {
           <Sparkles className={`h-5 w-5 ${getColorClass()}`} />
           {widget.title}
         </CardTitle>
-        {widget.description && (
-          <CardDescription>{widget.description}</CardDescription>
-        )}
+        {widget.description && <CardDescription>{widget.description}</CardDescription>}
       </CardHeader>
       <CardContent>{renderContent()}</CardContent>
     </AnimatedCard>

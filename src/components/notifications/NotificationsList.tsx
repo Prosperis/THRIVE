@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
-import { useRef } from 'react';
-import { AlertTriangle, Bell, CheckCheck, Clock, Timer as Snooze, X } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { AlertTriangle, Bell, CheckCheck, Clock, Timer as Snooze, X } from 'lucide-react';
+import { useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,9 +40,9 @@ export function NotificationsList() {
     (n) => n.status === 'sent' || n.status === 'pending'
   );
 
-  const readNotifications = notifications.filter(
-    (n) => n.status !== 'sent' && n.status !== 'pending'
-  ).slice(0, 10);
+  const readNotifications = notifications
+    .filter((n) => n.status !== 'sent' && n.status !== 'pending')
+    .slice(0, 10);
 
   const unreadVirtualizer = useVirtualizer({
     count: unreadNotifications.length,
@@ -176,11 +176,7 @@ export function NotificationsList() {
             <AlertTriangle className="h-4 w-4 text-orange-500" />
             Unread
           </h3>
-          <div
-            ref={unreadScrollRef}
-            className="overflow-auto"
-            style={{ maxHeight: '500px' }}
-          >
+          <div ref={unreadScrollRef} className="overflow-auto" style={{ maxHeight: '500px' }}>
             <div
               style={{
                 height: `${unreadVirtualizer.getTotalSize()}px`,
@@ -215,11 +211,7 @@ export function NotificationsList() {
       {readNotifications.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-muted-foreground mb-3">Earlier</h3>
-          <div
-            ref={readScrollRef}
-            className="overflow-auto"
-            style={{ maxHeight: '500px' }}
-          >
+          <div ref={readScrollRef} className="overflow-auto" style={{ maxHeight: '500px' }}>
             <div
               style={{
                 height: `${readVirtualizer.getTotalSize()}px`,

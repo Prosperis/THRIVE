@@ -1,3 +1,4 @@
+import { Maximize2, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { X, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 export interface DrillDownData {
   title: string;
@@ -156,7 +156,8 @@ export function InteractiveChart({
           <DialogHeader>
             <DialogTitle>{drillDownData?.title}</DialogTitle>
             <DialogDescription>
-              {drillDownData?.items.length} application{drillDownData?.items.length !== 1 ? 's' : ''}
+              {drillDownData?.items.length} application
+              {drillDownData?.items.length !== 1 ? 's' : ''}
             </DialogDescription>
           </DialogHeader>
           <div className="overflow-auto max-h-[60vh]">
@@ -240,7 +241,10 @@ export function EnhancedTooltip({
       {/* Metrics */}
       <div className="space-y-2">
         {payload.map((entry, index) => (
-          <div key={`${entry.dataKey || entry.name}-${index}`} className="flex items-center justify-between gap-4">
+          <div
+            key={`${entry.dataKey || entry.name}-${index}`}
+            className="flex items-center justify-between gap-4"
+          >
             <div className="flex items-center gap-2 min-w-0">
               {entry.color && (
                 <div

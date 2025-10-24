@@ -38,24 +38,21 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const alert = React.useCallback(
-    (title: string, description?: string): Promise<void> => {
-      return new Promise<void>((resolve) => {
-        resolveRef.current = () => resolve();
-        setOptions({
-          title,
-          description,
-          type: 'alert',
-          confirmText: 'OK',
-          onConfirm: () => {
-            resolve();
-          },
-        });
-        setOpen(true);
+  const alert = React.useCallback((title: string, description?: string): Promise<void> => {
+    return new Promise<void>((resolve) => {
+      resolveRef.current = () => resolve();
+      setOptions({
+        title,
+        description,
+        type: 'alert',
+        confirmText: 'OK',
+        onConfirm: () => {
+          resolve();
+        },
       });
-    },
-    []
-  );
+      setOpen(true);
+    });
+  }, []);
 
   const handleOpenChange = React.useCallback((isOpen: boolean) => {
     setOpen(isOpen);

@@ -59,9 +59,7 @@ export const useAnnotationsStore = create<AnnotationsState>()(
       updateAnnotation: (id, updates) => {
         set((state) => ({
           annotations: state.annotations.map((annotation) =>
-            annotation.id === id
-              ? { ...annotation, ...updates, updatedAt: new Date() }
-              : annotation
+            annotation.id === id ? { ...annotation, ...updates, updatedAt: new Date() } : annotation
           ),
         }));
       },
@@ -98,9 +96,7 @@ export const useAnnotationsStore = create<AnnotationsState>()(
       },
 
       getAnnotationsByTag: (tag) => {
-        return get().annotations.filter(
-          (annotation) => annotation.tags?.includes(tag)
-        );
+        return get().annotations.filter((annotation) => annotation.tags?.includes(tag));
       },
     }),
     {

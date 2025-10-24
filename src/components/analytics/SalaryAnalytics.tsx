@@ -1,15 +1,27 @@
+import { DollarSign, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useMemo } from 'react';
-import type { Application } from '@/types';
 import {
-  calculateSalaryByStatus,
-  calculateSalaryDistribution,
-  calculateExpectedValue,
-  calculateOfferedVsExpected,
-} from '@/lib/analytics';
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { DollarSign, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import {
+  calculateExpectedValue,
+  calculateOfferedVsExpected,
+  calculateSalaryByStatus,
+  calculateSalaryDistribution,
+} from '@/lib/analytics';
+import type { Application } from '@/types';
 
 interface SalaryAnalyticsProps {
   applications: Application[];
@@ -33,7 +45,7 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
   // Filter by period if specified
   const filteredApplications = useMemo(() => {
     if (!period) return applications;
-    
+
     return applications.filter((app) => {
       if (!app.appliedDate) return false;
       const date = new Date(app.appliedDate);
@@ -86,9 +98,7 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(expectedValue.averageSalary)}
-            </div>
+            <div className="text-2xl font-bold">{formatCurrency(expectedValue.averageSalary)}</div>
             <p className="text-xs text-muted-foreground">
               {expectedValue.withSalary} of {expectedValue.totalApplications} applications
             </p>
@@ -101,12 +111,8 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {expectedValue.successRate.toFixed(1)}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              For applications with salary
-            </p>
+            <div className="text-2xl font-bold">{expectedValue.successRate.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground">For applications with salary</p>
           </CardContent>
         </Card>
 
@@ -116,12 +122,8 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(expectedValue.expectedValue)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Avg salary × success rate
-            </p>
+            <div className="text-2xl font-bold">{formatCurrency(expectedValue.expectedValue)}</div>
+            <p className="text-xs text-muted-foreground">Avg salary × success rate</p>
           </CardContent>
         </Card>
 
@@ -167,9 +169,7 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
                       dataKey="status"
                       tickFormatter={(value) => STATUS_LABELS[value] || value}
                     />
-                    <YAxis
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                    />
+                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                     <Tooltip
                       formatter={(value: number) => [formatCurrency(value), 'Avg Salary']}
                       labelFormatter={(label) => STATUS_LABELS[label] || label}
@@ -193,9 +193,7 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
             <Card>
               <CardHeader>
                 <CardTitle>Salary Distribution</CardTitle>
-                <CardDescription>
-                  Number of applications in each salary range
-                </CardDescription>
+                <CardDescription>Number of applications in each salary range</CardDescription>
               </CardHeader>
               <CardContent>
                 {salaryDistribution.some((d) => d.count > 0) ? (
@@ -236,9 +234,7 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
             <Card>
               <CardHeader>
                 <CardTitle>Distribution Details</CardTitle>
-                <CardDescription>
-                  Average salary within each range
-                </CardDescription>
+                <CardDescription>Average salary within each range</CardDescription>
               </CardHeader>
               <CardContent>
                 {salaryDistribution.some((d) => d.count > 0) ? (
@@ -246,9 +242,7 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
                     <BarChart data={salaryDistribution.filter((d) => d.count > 0)}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="label" />
-                      <YAxis
-                        tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                      />
+                      <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                       <Tooltip
                         formatter={(value: number) => [formatCurrency(value), 'Avg Salary']}
                         contentStyle={{ backgroundColor: 'hsl(var(--background))' }}
@@ -314,13 +308,15 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
                       </div>
                       <div className="flex items-center gap-2">
                         {getTrendIcon(offeredVsExpected.difference)}
-                        <span className={`text-2xl font-bold ${
-                          offeredVsExpected.difference > 0
-                            ? 'text-green-500'
-                            : offeredVsExpected.difference < 0
-                              ? 'text-red-500'
-                              : 'text-gray-500'
-                        }`}>
+                        <span
+                          className={`text-2xl font-bold ${
+                            offeredVsExpected.difference > 0
+                              ? 'text-green-500'
+                              : offeredVsExpected.difference < 0
+                                ? 'text-red-500'
+                                : 'text-gray-500'
+                          }`}
+                        >
                           {offeredVsExpected.percentDifference > 0 ? '+' : ''}
                           {offeredVsExpected.percentDifference.toFixed(1)}%
                         </span>
@@ -343,9 +339,7 @@ export function SalaryAnalytics({ applications, period }: SalaryAnalyticsProps) 
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
-                      <YAxis
-                        tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                      />
+                      <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                       <Tooltip
                         formatter={(value: number) => [formatCurrency(value), 'Salary']}
                         contentStyle={{ backgroundColor: 'hsl(var(--background))' }}

@@ -1,19 +1,19 @@
 /**
  * Batched Tag Input Example
- * 
+ *
  * This example shows how to wrap the existing TagInput component
  * with database batching to reduce writes during rapid tag editing.
- * 
+ *
  * Use this pattern when tags are stored directly in the database
  * and you want to batch multiple rapid edits together.
  */
 
-import { useState, useEffect } from 'react';
+import type { Table } from 'dexie';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { TagInput } from '@/components/ui/tag-input';
 import { useDatabaseBatcher } from '@/hooks/useDatabaseBatching';
 import { db } from '@/lib/db';
-import { toast } from 'sonner';
-import type { Table } from 'dexie';
 
 interface BatchedTagInputProps {
   /** The ID of the record being edited */
@@ -29,16 +29,11 @@ interface BatchedTagInputProps {
 
 /**
  * Example 1: Basic Batched Tag Input
- * 
+ *
  * Wraps TagInput with database batching. Multiple rapid tag changes
  * are grouped together and written to the database in one operation.
  */
-export function BatchedTagInput({
-  recordId,
-  initialTags,
-  table,
-  onSave,
-}: BatchedTagInputProps) {
+export function BatchedTagInput({ recordId, initialTags, table, onSave }: BatchedTagInputProps) {
   const [tags, setTags] = useState(initialTags);
 
   // Create a batcher that waits 500ms after the last change
@@ -62,18 +57,12 @@ export function BatchedTagInput({
     batcher.update(recordId, { tags: newTags });
   };
 
-  return (
-    <TagInput
-      value={tags}
-      onChange={handleTagsChange}
-      placeholder="Add tags..."
-    />
-  );
+  return <TagInput value={tags} onChange={handleTagsChange} placeholder="Add tags..." />;
 }
 
 /**
  * Example 2: Application Tags with Batching
- * 
+ *
  * Specific implementation for application tags.
  */
 interface ApplicationTagsProps {
@@ -81,10 +70,7 @@ interface ApplicationTagsProps {
   initialTags: string;
 }
 
-export function ApplicationTagsBatched({
-  applicationId,
-  initialTags,
-}: ApplicationTagsProps) {
+export function ApplicationTagsBatched({ applicationId, initialTags }: ApplicationTagsProps) {
   const [tags, setTags] = useState(initialTags);
 
   const batcher = useDatabaseBatcher({
@@ -99,7 +85,10 @@ export function ApplicationTagsBatched({
   const handleChange = (newTags: string) => {
     setTags(newTags);
     // Convert string to array for database storage
-    const tagsArray = newTags.split(',').map((t) => t.trim()).filter(Boolean);
+    const tagsArray = newTags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
     batcher.update(applicationId, { tags: tagsArray });
   };
 
@@ -116,19 +105,19 @@ export function ApplicationTagsBatched({
 
 /**
  * Example 3: Using useAutoSaveBatcher for Simpler Code
- * 
+ *
  * useAutoSaveBatcher automatically batches whenever the value changes.
  */
 import { useAutoSaveBatcher } from '@/hooks/useDatabaseBatching';
 
-export function ApplicationTagsAutoSave({
-  applicationId,
-  initialTags,
-}: ApplicationTagsProps) {
+export function ApplicationTagsAutoSave({ applicationId, initialTags }: ApplicationTagsProps) {
   const [tags, setTags] = useState(initialTags);
 
   // Convert tags to array for database
-  const tagsArray = tags.split(',').map((t) => t.trim()).filter(Boolean);
+  const tagsArray = tags
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
 
   // Automatically batch and save whenever tags change
   useAutoSaveBatcher(
@@ -142,18 +131,12 @@ export function ApplicationTagsAutoSave({
     }
   );
 
-  return (
-    <TagInput
-      value={tags}
-      onChange={setTags}
-      placeholder="Add tags (auto-saves)..."
-    />
-  );
+  return <TagInput value={tags} onChange={setTags} placeholder="Add tags (auto-saves)..." />;
 }
 
 /**
  * Example 4: Real-world Integration
- * 
+ *
  * Shows how to integrate batched tags in an application form.
  */
 import type { Application } from '@/types';
@@ -180,14 +163,14 @@ export function ApplicationFormWithBatchedTags({ applicationId }: ApplicationFor
     return <div>Loading...</div>;
   }
 
-  const tagsString = Array.isArray(application.tags) 
-    ? application.tags.join(', ') 
+  const tagsString = Array.isArray(application.tags)
+    ? application.tags.join(', ')
     : application.tags || '';
 
   return (
     <div className="space-y-4">
       {/* Other form fields... */}
-      
+
       <div>
         <div className="text-sm font-medium mb-2">Company Tags</div>
         <BatchedTagInput
@@ -205,18 +188,18 @@ export function ApplicationFormWithBatchedTags({ applicationId }: ApplicationFor
 /**
  * Performance Comparison
  * ======================
- * 
+ *
  * WITHOUT BATCHING:
  * - User adds 5 tags rapidly
  * - Result: 5 database write operations
  * - Time: ~250ms (5 × 50ms)
- * 
+ *
  * WITH BATCHING:
  * - User adds 5 tags rapidly
  * - Result: 1 batched database operation (after 500ms)
  * - Time: ~50ms
  * - Improvement: 80% fewer operations, 80% less time
- * 
+ *
  * BENEFITS:
  * ✅ Reduced database load
  * ✅ Better performance on slow devices
@@ -228,20 +211,20 @@ export function ApplicationFormWithBatchedTags({ applicationId }: ApplicationFor
 /**
  * Migration Guide
  * ===============
- * 
+ *
  * To migrate an existing TagInput to use batching:
- * 
+ *
  * 1. Wrap your component with batching hook:
  *    const batcher = useDatabaseBatcher({ table, wait: 500 });
- * 
+ *
  * 2. Replace direct database calls with batcher:
  *    // Before: db.table.update(id, { tags })
  *    // After:  batcher.update(id, { tags })
- * 
+ *
  * 3. Remove async/await (batching handles it):
  *    // Before: await db.table.update(...)
  *    // After:  batcher.update(...)
- * 
+ *
  * 4. Add success/error callbacks for feedback:
  *    onSuccess: () => toast.success('Saved'),
  *    onError: (e) => toast.error('Failed'),

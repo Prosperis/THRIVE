@@ -1,4 +1,4 @@
-import { Filter, X, ChevronDown } from 'lucide-react';
+import { ChevronDown, Filter, X } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  type RelativeDateRange,
+  RelativeDateRangeSlider,
+} from '@/components/ui/relative-date-range-slider';
 import { Separator } from '@/components/ui/separator';
-import { RelativeDateRangeSlider, type RelativeDateRange } from '@/components/ui/relative-date-range-slider';
 import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useInterviewsStore } from '@/stores/interviewsStore';
@@ -118,7 +121,10 @@ export function InterviewFilters({ savedFiltersButton }: InterviewFiltersProps) 
           <div className="space-y-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="flex items-center justify-between w-full px-2 py-1.5 -mx-2 rounded-md hover:bg-accent text-left group">
+                <button
+                  type="button"
+                  className="flex items-center justify-between w-full px-2 py-1.5 -mx-2 rounded-md hover:bg-accent text-left group"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
                       Interview Type
@@ -134,10 +140,7 @@ export function InterviewFilters({ savedFiltersButton }: InterviewFiltersProps) 
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
                 {INTERVIEW_TYPES.map((type) => (
-                  <DropdownMenuItem
-                    key={type.value}
-                    onClick={() => toggleTypeFilter(type.value)}
-                  >
+                  <DropdownMenuItem key={type.value} onClick={() => toggleTypeFilter(type.value)}>
                     <div className="flex items-center justify-between w-full">
                       <span>{type.label}</span>
                       {typeFilters.includes(type.value) && (
@@ -174,7 +177,10 @@ export function InterviewFilters({ savedFiltersButton }: InterviewFiltersProps) 
           <div className="space-y-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="flex items-center justify-between w-full px-2 py-1.5 -mx-2 rounded-md hover:bg-accent text-left group">
+                <button
+                  type="button"
+                  className="flex items-center justify-between w-full px-2 py-1.5 -mx-2 rounded-md hover:bg-accent text-left group"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
                       Status
@@ -279,8 +285,8 @@ export function InterviewFilters({ savedFiltersButton }: InterviewFiltersProps) 
                         to: filters.dateRange.end,
                       }
                     : filters.dateRange?.start
-                    ? { from: filters.dateRange.start, to: undefined }
-                    : undefined
+                      ? { from: filters.dateRange.start, to: undefined }
+                      : undefined
                 }
                 onSelect={(range) => {
                   if (range?.from) {

@@ -20,7 +20,11 @@ interface CompaniesState {
 
   // Enhanced Actions
   toggleResearched: (id: string) => Promise<void>;
-  updateRating: (id: string, category: keyof NonNullable<Company['ratings']>, value: number) => Promise<void>;
+  updateRating: (
+    id: string,
+    category: keyof NonNullable<Company['ratings']>,
+    value: number
+  ) => Promise<void>;
   linkApplication: (companyId: string, applicationId: string) => Promise<void>;
   unlinkApplication: (companyId: string, applicationId: string) => Promise<void>;
   linkContact: (companyId: string, contactId: string) => Promise<void>;
@@ -143,11 +147,9 @@ export const useCompaniesStore = create<CompaniesState>()(
 
             const updated = { researched: !company.researched, updatedAt: new Date() };
             await db.companies.update(id, updated);
-            
+
             set((state) => ({
-              companies: state.companies.map((c) =>
-                c.id === id ? { ...c, ...updated } : c
-              ),
+              companies: state.companies.map((c) => (c.id === id ? { ...c, ...updated } : c)),
               isLoading: false,
             }));
           } catch (error) {
@@ -170,11 +172,9 @@ export const useCompaniesStore = create<CompaniesState>()(
               updatedAt: new Date(),
             };
             await db.companies.update(id, updated);
-            
+
             set((state) => ({
-              companies: state.companies.map((c) =>
-                c.id === id ? { ...c, ...updated } : c
-              ),
+              companies: state.companies.map((c) => (c.id === id ? { ...c, ...updated } : c)),
               isLoading: false,
             }));
           } catch (error) {
@@ -197,7 +197,7 @@ export const useCompaniesStore = create<CompaniesState>()(
               applicationIds.push(applicationId);
               const updated = { applicationIds, updatedAt: new Date() };
               await db.companies.update(companyId, updated);
-              
+
               set((state) => ({
                 companies: state.companies.map((c) =>
                   c.id === companyId ? { ...c, ...updated } : c
@@ -222,10 +222,12 @@ export const useCompaniesStore = create<CompaniesState>()(
             const company = await db.companies.get(companyId);
             if (!company) throw new Error('Company not found');
 
-            const applicationIds = (company.applicationIds || []).filter(id => id !== applicationId);
+            const applicationIds = (company.applicationIds || []).filter(
+              (id) => id !== applicationId
+            );
             const updated = { applicationIds, updatedAt: new Date() };
             await db.companies.update(companyId, updated);
-            
+
             set((state) => ({
               companies: state.companies.map((c) =>
                 c.id === companyId ? { ...c, ...updated } : c
@@ -252,7 +254,7 @@ export const useCompaniesStore = create<CompaniesState>()(
               contactIds.push(contactId);
               const updated = { contactIds, updatedAt: new Date() };
               await db.companies.update(companyId, updated);
-              
+
               set((state) => ({
                 companies: state.companies.map((c) =>
                   c.id === companyId ? { ...c, ...updated } : c
@@ -277,10 +279,10 @@ export const useCompaniesStore = create<CompaniesState>()(
             const company = await db.companies.get(companyId);
             if (!company) throw new Error('Company not found');
 
-            const contactIds = (company.contactIds || []).filter(id => id !== contactId);
+            const contactIds = (company.contactIds || []).filter((id) => id !== contactId);
             const updated = { contactIds, updatedAt: new Date() };
             await db.companies.update(companyId, updated);
-            
+
             set((state) => ({
               companies: state.companies.map((c) =>
                 c.id === companyId ? { ...c, ...updated } : c
@@ -307,7 +309,7 @@ export const useCompaniesStore = create<CompaniesState>()(
               documentIds.push(documentId);
               const updated = { documentIds, updatedAt: new Date() };
               await db.companies.update(companyId, updated);
-              
+
               set((state) => ({
                 companies: state.companies.map((c) =>
                   c.id === companyId ? { ...c, ...updated } : c
@@ -332,10 +334,10 @@ export const useCompaniesStore = create<CompaniesState>()(
             const company = await db.companies.get(companyId);
             if (!company) throw new Error('Company not found');
 
-            const documentIds = (company.documentIds || []).filter(id => id !== documentId);
+            const documentIds = (company.documentIds || []).filter((id) => id !== documentId);
             const updated = { documentIds, updatedAt: new Date() };
             await db.companies.update(companyId, updated);
-            
+
             set((state) => ({
               companies: state.companies.map((c) =>
                 c.id === companyId ? { ...c, ...updated } : c
@@ -362,7 +364,7 @@ export const useCompaniesStore = create<CompaniesState>()(
               interviewIds.push(interviewId);
               const updated = { interviewIds, updatedAt: new Date() };
               await db.companies.update(companyId, updated);
-              
+
               set((state) => ({
                 companies: state.companies.map((c) =>
                   c.id === companyId ? { ...c, ...updated } : c
@@ -387,10 +389,10 @@ export const useCompaniesStore = create<CompaniesState>()(
             const company = await db.companies.get(companyId);
             if (!company) throw new Error('Company not found');
 
-            const interviewIds = (company.interviewIds || []).filter(id => id !== interviewId);
+            const interviewIds = (company.interviewIds || []).filter((id) => id !== interviewId);
             const updated = { interviewIds, updatedAt: new Date() };
             await db.companies.update(companyId, updated);
-            
+
             set((state) => ({
               companies: state.companies.map((c) =>
                 c.id === companyId ? { ...c, ...updated } : c
@@ -426,12 +428,12 @@ export const useCompaniesStore = create<CompaniesState>()(
         bulkUpdateStatus: async (ids, status) => {
           set({ isLoading: true, error: null });
           try {
-            const updates = ids.map(id => ({
+            const updates = ids.map((id) => ({
               key: id,
               changes: { status, updatedAt: new Date() },
             }));
             await db.companies.bulkUpdate(updates);
-            
+
             set((state) => ({
               companies: state.companies.map((c) =>
                 ids.includes(c.id) ? { ...c, status, updatedAt: new Date() } : c
@@ -450,12 +452,12 @@ export const useCompaniesStore = create<CompaniesState>()(
         bulkUpdatePriority: async (ids, priority) => {
           set({ isLoading: true, error: null });
           try {
-            const updates = ids.map(id => ({
+            const updates = ids.map((id) => ({
               key: id,
               changes: { priority, updatedAt: new Date() },
             }));
             await db.companies.bulkUpdate(updates);
-            
+
             set((state) => ({
               companies: state.companies.map((c) =>
                 ids.includes(c.id) ? { ...c, priority, updatedAt: new Date() } : c
@@ -474,12 +476,12 @@ export const useCompaniesStore = create<CompaniesState>()(
         bulkToggleResearched: async (ids, researched) => {
           set({ isLoading: true, error: null });
           try {
-            const updates = ids.map(id => ({
+            const updates = ids.map((id) => ({
               key: id,
               changes: { researched, updatedAt: new Date() },
             }));
             await db.companies.bulkUpdate(updates);
-            
+
             set((state) => ({
               companies: state.companies.map((c) =>
                 ids.includes(c.id) ? { ...c, researched, updatedAt: new Date() } : c

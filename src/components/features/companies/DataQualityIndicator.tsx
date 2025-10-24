@@ -1,17 +1,13 @@
-import { AlertCircle, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import type { Company } from '@/types';
 import {
   calculateDataQuality,
   getQualityBadgeColor,
   getQualityBadgeLabel,
 } from '@/lib/data-quality';
+import type { Company } from '@/types';
 
 interface DataQualityIndicatorProps {
   company: Company;
@@ -54,9 +50,7 @@ export function DataQualityIndicator({ company, variant = 'inline' }: DataQualit
                 <Badge variant="outline">{getQualityBadgeLabel(quality.category)}</Badge>
               </div>
               <Progress value={quality.completeness} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-1">
-                {quality.completeness}% complete
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{quality.completeness}% complete</p>
             </div>
 
             {quality.missingFields.length > 0 && (

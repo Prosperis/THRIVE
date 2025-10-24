@@ -1,5 +1,6 @@
+import { Check, Copy, LayoutDashboard, Plus, Settings, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { LayoutDashboard, Plus, Settings, Trash2, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,12 +23,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  AVAILABLE_WIDGETS,
   DEFAULT_LAYOUTS,
   useDashboardLayoutStore,
   type WidgetId,
-  AVAILABLE_WIDGETS,
 } from '@/stores/dashboardLayoutStore';
-import { toast } from 'sonner';
 
 export function LayoutManager() {
   const {
@@ -179,7 +179,8 @@ export function LayoutManager() {
               />
             </div>
             <div className="text-sm text-muted-foreground">
-              The new layout will include all widgets from your current view: <strong>{currentLayout.name}</strong>
+              The new layout will include all widgets from your current view:{' '}
+              <strong>{currentLayout.name}</strong>
             </div>
           </div>
           <DialogFooter>

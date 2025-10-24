@@ -8,9 +8,9 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   // Base path for GitHub Pages deployment
   base: '/THRIVE/',
-  
+
   plugins: [devtools(), tanstackRouter(), react()],
-  
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -23,7 +23,7 @@ export default defineConfig({
       '@/utils': path.resolve(__dirname, './src/utils'),
     },
   },
-  
+
   build: {
     // Generate source maps for better error tracking
     sourcemap: true,
@@ -32,7 +32,11 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'tanstack-vendor': ['@tanstack/react-query', '@tanstack/react-router', '@tanstack/react-table'],
+          'tanstack-vendor': [
+            '@tanstack/react-query',
+            '@tanstack/react-router',
+            '@tanstack/react-table',
+          ],
           'ui-vendor': ['lucide-react', 'framer-motion'],
         },
       },

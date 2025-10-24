@@ -1,6 +1,6 @@
-import { createRootRoute, Outlet, useRouterState } from '@tanstack/react-router';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
+import { createRootRoute, Outlet, useRouterState } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GlobalAnnouncer } from '@/components/a11y/LiveRegion';

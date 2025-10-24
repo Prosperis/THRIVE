@@ -5,7 +5,7 @@
  * Run with: bun run scripts/setup-monitoring.ts
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const COLORS = {

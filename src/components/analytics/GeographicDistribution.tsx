@@ -1,31 +1,23 @@
+import { isWithinInterval } from 'date-fns';
+import { Building2, Globe, Home, MapPin } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import {
-  MapPin,
-  Globe,
-  Building2,
-  Home,
-} from 'lucide-react';
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  Legend,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  calculateLocationDistribution,
-  calculateWorkTypeDistribution,
-} from '@/lib/analytics';
+import { calculateLocationDistribution, calculateWorkTypeDistribution } from '@/lib/analytics';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { isWithinInterval } from 'date-fns';
 
 interface GeographicDistributionProps {
   period?: {
@@ -55,7 +47,7 @@ export function GeographicDistribution({ period }: GeographicDistributionProps =
   // Filter applications by period if provided
   const filteredApplications = useMemo(() => {
     if (!period) return applications;
-    
+
     return applications.filter((app) => {
       const appDate = new Date(app.appliedDate || app.createdAt);
       return isWithinInterval(appDate, { start: period.start, end: period.end });
@@ -93,7 +85,9 @@ export function GeographicDistribution({ period }: GeographicDistributionProps =
       <Card>
         <CardHeader>
           <CardTitle>Geographic & Work Type Distribution</CardTitle>
-          <CardDescription>Application distribution by location and work arrangement</CardDescription>
+          <CardDescription>
+            Application distribution by location and work arrangement
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
@@ -231,9 +225,11 @@ export function GeographicDistribution({ period }: GeographicDistributionProps =
                     <button
                       key={item.workType}
                       type="button"
-                      onClick={() => setSelectedWorkType(
-                        selectedWorkType === item.workType ? null : item.workType
-                      )}
+                      onClick={() =>
+                        setSelectedWorkType(
+                          selectedWorkType === item.workType ? null : item.workType
+                        )
+                      }
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
                         selectedWorkType === item.workType
                           ? 'bg-primary text-primary-foreground'

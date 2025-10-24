@@ -35,9 +35,7 @@ export function AnimatedLoader({ size = 'md', className, label }: AnimatedLoader
       transition={{ duration: 0.2 }}
       className="flex flex-col items-center justify-center gap-3"
     >
-      <Loader2
-        className={cn('animate-spin text-muted-foreground', sizeClasses[size], className)}
-      />
+      <Loader2 className={cn('animate-spin text-muted-foreground', sizeClasses[size], className)} />
       {label && (
         <motion.p
           initial={{ opacity: 0, y: 5 }}

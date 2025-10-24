@@ -1,16 +1,19 @@
-import { Calendar, Database, Download, FileJson, FileText, Filter, Upload, X, Check } from 'lucide-react';
+import {
+  Calendar,
+  Check,
+  Database,
+  Download,
+  FileJson,
+  FileText,
+  Filter,
+  Upload,
+  X,
+} from 'lucide-react';
 import { useEffect, useId, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import type { ApplicationStatus } from '@/types';
-import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   DropdownMenu,
@@ -18,6 +21,19 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useConfirm } from '@/hooks/useConfirm';
+import { APPLICATION_STATUSES, EMPLOYMENT_TYPES, WORK_TYPES } from '@/lib/constants';
 import {
   type BackupData,
   type DateRangeFilter,
@@ -40,32 +56,42 @@ import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import { useDocumentsStore } from '@/stores/documentsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
-import { APPLICATION_STATUSES, WORK_TYPES, EMPLOYMENT_TYPES } from '@/lib/constants';
+import type { ApplicationStatus } from '@/types';
 
 export function ExportPage() {
   const fileUploadId = useId();
 
   // Date range state for calendar picker
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  
+
   // Enhanced filter states
   const [selectedStatuses, setSelectedStatuses] = useState<ApplicationStatus[]>([]);
   const [selectedWorkTypes, setSelectedWorkTypes] = useState<string[]>([]);
   const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState<string[]>([]);
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
-  
+
   const [exportType, setExportType] = useState<'csv' | 'json'>('csv');
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string>('');
   const [importSuccess, setImportSuccess] = useState<string>('');
-  
+
   // Export progress tracking
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportingType, setExportingType] = useState<string>('');
 
-  const { applications, addApplication, fetchApplications, isLoading: applicationsLoading } = useApplicationsStore();
-  const { interviews, addInterview, fetchInterviews, isLoading: interviewsLoading } = useInterviewsStore();
+  const {
+    applications,
+    addApplication,
+    fetchApplications,
+    isLoading: applicationsLoading,
+  } = useApplicationsStore();
+  const {
+    interviews,
+    addInterview,
+    fetchInterviews,
+    isLoading: interviewsLoading,
+  } = useInterviewsStore();
   const { documents, fetchDocuments, isLoading: documentsLoading } = useDocumentsStore();
   const { companies, fetchCompanies, isLoading: companiesLoading } = useCompaniesStore();
   const { confirm, alert } = useConfirm();
@@ -78,7 +104,8 @@ export function ExportPage() {
     fetchCompanies();
   }, [fetchApplications, fetchInterviews, fetchDocuments, fetchCompanies]);
 
-  const isLoading = applicationsLoading || interviewsLoading || documentsLoading || companiesLoading;
+  const isLoading =
+    applicationsLoading || interviewsLoading || documentsLoading || companiesLoading;
 
   // Apply filters to applications
   const filteredApplications = useMemo(() => {
@@ -112,11 +139,20 @@ export function ExportPage() {
 
     // Priority filter
     if (selectedPriorities.length > 0) {
-      filtered = filtered.filter((app) => app.priority && selectedPriorities.includes(app.priority));
+      filtered = filtered.filter(
+        (app) => app.priority && selectedPriorities.includes(app.priority)
+      );
     }
 
     return filtered;
-  }, [applications, dateRange, selectedStatuses, selectedWorkTypes, selectedEmploymentTypes, selectedPriorities]);
+  }, [
+    applications,
+    dateRange,
+    selectedStatuses,
+    selectedWorkTypes,
+    selectedEmploymentTypes,
+    selectedPriorities,
+  ]);
 
   // Apply filters to interviews
   const filteredInterviews = useMemo(() => {
@@ -136,7 +172,8 @@ export function ExportPage() {
     interviews: filteredInterviews.length,
     documents: documents.length,
     companies: companies.length,
-    total: filteredApplications.length + filteredInterviews.length + documents.length + companies.length,
+    total:
+      filteredApplications.length + filteredInterviews.length + documents.length + companies.length,
   };
 
   // Check if any filters are active
@@ -172,21 +209,21 @@ export function ExportPage() {
       // Simulate progress for small datasets (< 100 items)
       if (itemCount < 100) {
         setExportProgress(50);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
         await Promise.resolve(exportFn());
         setExportProgress(100);
       } else {
         // For larger datasets, show incremental progress
         for (let i = 0; i < 10; i++) {
           setExportProgress((i + 1) * 10);
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
         await Promise.resolve(exportFn());
         setExportProgress(100);
       }
 
       // Keep progress visible briefly
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     } finally {
       setIsExporting(false);
       setExportProgress(0);
@@ -598,15 +635,16 @@ export function ExportPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Export Data</CardTitle>
-                  <CardDescription>
-                    Download your data in CSV or JSON format
-                  </CardDescription>
+                  <CardDescription>Download your data in CSV or JSON format</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="export-type" className="text-sm text-muted-foreground">
                     Format:
                   </Label>
-                  <Select value={exportType} onValueChange={(value: 'csv' | 'json') => setExportType(value)}>
+                  <Select
+                    value={exportType}
+                    onValueChange={(value: 'csv' | 'json') => setExportType(value)}
+                  >
                     <SelectTrigger id="export-type" className="w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
@@ -648,8 +686,12 @@ export function ExportPage() {
                     {exportType === 'json' && ' with all fields'}
                   </p>
                 </div>
-                <Button 
-                  onClick={exportType === 'csv' ? handleExportApplicationsCSV : handleExportApplicationsJSON}
+                <Button
+                  onClick={
+                    exportType === 'csv'
+                      ? handleExportApplicationsCSV
+                      : handleExportApplicationsJSON
+                  }
                   disabled={isExporting}
                 >
                   <Download className="h-4 w-4 mr-2" />
@@ -664,8 +706,10 @@ export function ExportPage() {
                     {exportType === 'json' && ' with all fields'}
                   </p>
                 </div>
-                <Button 
-                  onClick={exportType === 'csv' ? handleExportCompaniesCSV : handleExportCompaniesJSON}
+                <Button
+                  onClick={
+                    exportType === 'csv' ? handleExportCompaniesCSV : handleExportCompaniesJSON
+                  }
                   disabled={isExporting}
                 >
                   <Download className="h-4 w-4 mr-2" />
@@ -680,8 +724,10 @@ export function ExportPage() {
                     {exportType === 'json' && ' with all fields'}
                   </p>
                 </div>
-                <Button 
-                  onClick={exportType === 'csv' ? handleExportInterviewsCSV : handleExportInterviewsJSON}
+                <Button
+                  onClick={
+                    exportType === 'csv' ? handleExportInterviewsCSV : handleExportInterviewsJSON
+                  }
                   disabled={isExporting}
                 >
                   <Download className="h-4 w-4 mr-2" />
@@ -697,15 +743,17 @@ export function ExportPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={exportType === 'csv' ? handleExportDocumentsCSV : handleExportDocumentsJSON}
+                  <Button
+                    onClick={
+                      exportType === 'csv' ? handleExportDocumentsCSV : handleExportDocumentsJSON
+                    }
                     disabled={isExporting}
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Export {exportType.toUpperCase()}
                   </Button>
-                  <Button 
-                    onClick={handleExportDocumentsZIP} 
+                  <Button
+                    onClick={handleExportDocumentsZIP}
                     variant="outline"
                     disabled={isExporting}
                   >
@@ -715,10 +763,16 @@ export function ExportPage() {
                 </div>
               </div>
               <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
-                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">💡 Documents Export Options:</p>
+                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  💡 Documents Export Options:
+                </p>
                 <ul className="text-blue-700 dark:text-blue-300 space-y-1 ml-4 list-disc">
-                  <li><strong>CSV/JSON:</strong> Exports document metadata (names, types, tags, etc.)</li>
-                  <li><strong>ZIP:</strong> Exports both metadata and actual document files together</li>
+                  <li>
+                    <strong>CSV/JSON:</strong> Exports document metadata (names, types, tags, etc.)
+                  </li>
+                  <li>
+                    <strong>ZIP:</strong> Exports both metadata and actual document files together
+                  </li>
                 </ul>
               </div>
             </CardContent>
@@ -748,9 +802,9 @@ export function ExportPage() {
                   <li>✓ All metadata and relationships</li>
                 </ul>
               </div>
-              <Button 
-                onClick={handleExportBackup} 
-                className="w-full" 
+              <Button
+                onClick={handleExportBackup}
+                className="w-full"
                 size="lg"
                 disabled={isExporting}
               >

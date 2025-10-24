@@ -12,11 +12,11 @@ import type { Application, Interview } from '@/types';
 import type {
   AnalyticsMetrics,
   CompanyStats,
+  InterviewStageStats,
   MonthlyTrend,
   ResponseTimeDistribution,
   StatusDistribution,
   TimeSeriesData,
-  InterviewStageStats,
 } from '@/types/analytics';
 
 /**
@@ -480,10 +480,7 @@ export function calculateInterviewStageStats(
     ? interviews.filter((interview) => {
         if (!interview.scheduledAt) return false;
         const interviewDate = new Date(interview.scheduledAt);
-        return (
-          interviewDate >= period.start &&
-          interviewDate <= period.end
-        );
+        return interviewDate >= period.start && interviewDate <= period.end;
       })
     : interviews;
 
@@ -501,35 +498,37 @@ export function calculateInterviewStageStats(
   );
 
   // Calculate stats for each stage
-  return Object.entries(stageGroups).map(([stage, stageInterviews]) => {
-    const completedInterviews = stageInterviews.filter((i) => i.status === 'completed');
-    const successfulInterviews = stageInterviews.filter(
-      (i) => i.status === 'completed' && i.result === 'passed'
-    );
+  return Object.entries(stageGroups)
+    .map(([stage, stageInterviews]) => {
+      const completedInterviews = stageInterviews.filter((i) => i.status === 'completed');
+      const successfulInterviews = stageInterviews.filter(
+        (i) => i.status === 'completed' && i.result === 'passed'
+      );
 
-    // Calculate average duration (assuming duration field is in minutes)
-    let averageDuration = 0;
-    if (completedInterviews.length > 0) {
-      const totalDuration = completedInterviews.reduce((sum, interview) => {
-        // Convert duration from minutes to days (rough estimate: interview happens same day)
-        return sum + (interview.duration || 60) / (60 * 24);
-      }, 0);
-      averageDuration = totalDuration / completedInterviews.length;
-    }
+      // Calculate average duration (assuming duration field is in minutes)
+      let averageDuration = 0;
+      if (completedInterviews.length > 0) {
+        const totalDuration = completedInterviews.reduce((sum, interview) => {
+          // Convert duration from minutes to days (rough estimate: interview happens same day)
+          return sum + (interview.duration || 60) / (60 * 24);
+        }, 0);
+        averageDuration = totalDuration / completedInterviews.length;
+      }
 
-    // Calculate success rate
-    const successRate =
-      completedInterviews.length > 0
-        ? (successfulInterviews.length / completedInterviews.length) * 100
-        : 0;
+      // Calculate success rate
+      const successRate =
+        completedInterviews.length > 0
+          ? (successfulInterviews.length / completedInterviews.length) * 100
+          : 0;
 
-    return {
-      stage: stage.replace(/-/g, ' '),
-      count: stageInterviews.length,
-      averageDuration,
-      successRate,
-    };
-  }).sort((a, b) => b.count - a.count); // Sort by count descending
+      return {
+        stage: stage.replace(/-/g, ' '),
+        count: stageInterviews.length,
+        averageDuration,
+        successRate,
+      };
+    })
+    .sort((a, b) => b.count - a.count); // Sort by count descending
 }
 
 /**
@@ -571,21 +570,23 @@ export function calculateAvgTimePerStatus(
     {} as Record<string, Application[]>
   );
 
-  return Object.entries(statusGroups).map(([status, apps]) => {
-    // Calculate average time by using createdAt and updatedAt as rough estimate
-    const totalDays = apps.reduce((sum, app) => {
-      if (!app.createdAt) return sum;
-      const endDate = app.updatedAt || new Date();
-      const days = differenceInDays(new Date(endDate), new Date(app.createdAt));
-      return sum + Math.abs(days);
-    }, 0);
+  return Object.entries(statusGroups)
+    .map(([status, apps]) => {
+      // Calculate average time by using createdAt and updatedAt as rough estimate
+      const totalDays = apps.reduce((sum, app) => {
+        if (!app.createdAt) return sum;
+        const endDate = app.updatedAt || new Date();
+        const days = differenceInDays(new Date(endDate), new Date(app.createdAt));
+        return sum + Math.abs(days);
+      }, 0);
 
-    return {
-      status: status.replace(/-/g, ' '),
-      avgDays: apps.length > 0 ? totalDays / apps.length : 0,
-      count: apps.length,
-    };
-  }).sort((a, b) => b.count - a.count);
+      return {
+        status: status.replace(/-/g, ' '),
+        avgDays: apps.length > 0 ? totalDays / apps.length : 0,
+        count: apps.length,
+      };
+    })
+    .sort((a, b) => b.count - a.count);
 }
 
 /**
@@ -649,7 +650,8 @@ export function calculateDayOfWeekPerformance(
       day,
       total: dayGroups[day].total,
       successful: dayGroups[day].successful,
-      successRate: dayGroups[day].total > 0 ? (dayGroups[day].successful / dayGroups[day].total) * 100 : 0,
+      successRate:
+        dayGroups[day].total > 0 ? (dayGroups[day].successful / dayGroups[day].total) * 100 : 0,
     }));
 }
 
@@ -722,16 +724,16 @@ export function calculateSalaryByStatus(applications: Application[]) {
   const statusGroups = applications.reduce(
     (acc, app) => {
       if (!app.salary?.min || !app.salary?.max) return acc;
-      
+
       const avgSalary = (app.salary.min + app.salary.max) / 2;
-      
+
       if (!acc[app.status]) {
         acc[app.status] = { total: 0, count: 0 };
       }
-      
+
       acc[app.status].total += avgSalary;
       acc[app.status].count++;
-      
+
       return acc;
     },
     {} as Record<string, { total: number; count: number }>
@@ -768,13 +770,11 @@ export function calculateSalaryDistribution(applications: Application[]) {
 
   applications.forEach((app) => {
     if (!app.salary?.min || !app.salary?.max) return;
-    
+
     const avgSalary = (app.salary.min + app.salary.max) / 2;
-    
-    const rangeIndex = ranges.findIndex(
-      (range) => avgSalary >= range.min && avgSalary < range.max
-    );
-    
+
+    const rangeIndex = ranges.findIndex((range) => avgSalary >= range.min && avgSalary < range.max);
+
     if (rangeIndex !== -1) {
       distribution[rangeIndex].count++;
       distribution[rangeIndex].totalSalary += avgSalary;
@@ -796,9 +796,7 @@ export function calculateSalaryDistribution(applications: Application[]) {
  * Expected value = average salary × success rate
  */
 export function calculateExpectedValue(applications: Application[]) {
-  const applicationsWithSalary = applications.filter(
-    (app) => app.salary?.min && app.salary?.max
-  );
+  const applicationsWithSalary = applications.filter((app) => app.salary?.min && app.salary?.max);
 
   if (applicationsWithSalary.length === 0) {
     return {
@@ -838,9 +836,7 @@ export function calculateExpectedValue(applications: Application[]) {
 export function calculateOfferedVsExpected(applications: Application[]) {
   const offeredApps = applications.filter(
     (app) =>
-      (app.status === 'offer' || app.status === 'accepted') &&
-      app.salary?.min &&
-      app.salary?.max
+      (app.status === 'offer' || app.status === 'accepted') && app.salary?.min && app.salary?.max
   );
 
   if (offeredApps.length === 0) {
@@ -859,9 +855,7 @@ export function calculateOfferedVsExpected(applications: Application[]) {
   }, 0);
 
   // For comparison, use all applications with salary info as "expected"
-  const expectedApps = applications.filter(
-    (app) => app.salary?.min && app.salary?.max
-  );
+  const expectedApps = applications.filter((app) => app.salary?.min && app.salary?.max);
 
   const expectedTotal = expectedApps.reduce((sum, app) => {
     if (!app.salary?.min || !app.salary?.max) return sum;
@@ -872,8 +866,7 @@ export function calculateOfferedVsExpected(applications: Application[]) {
   const averageExpected =
     expectedApps.length > 0 ? Math.round(expectedTotal / expectedApps.length) : 0;
   const difference = averageOffered - averageExpected;
-  const percentDifference =
-    averageExpected > 0 ? ((difference / averageExpected) * 100) : 0;
+  const percentDifference = averageExpected > 0 ? (difference / averageExpected) * 100 : 0;
 
   return {
     averageOffered,

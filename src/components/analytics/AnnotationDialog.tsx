@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Calendar, Plus, Tag, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,7 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -21,8 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAnnotationsStore, type AnnotationType, ANNOTATION_COLORS } from '@/stores/annotationsStore';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  ANNOTATION_COLORS,
+  type AnnotationType,
+  useAnnotationsStore,
+} from '@/stores/annotationsStore';
 
 interface AnnotationDialogProps {
   defaultDate?: Date;
@@ -31,16 +35,38 @@ interface AnnotationDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-const ANNOTATION_TYPES: { value: AnnotationType; label: string; description: string; icon: string }[] = [
-  { value: 'milestone', label: 'Milestone', description: 'Important achievement or goal', icon: '🎯' },
+const ANNOTATION_TYPES: {
+  value: AnnotationType;
+  label: string;
+  description: string;
+  icon: string;
+}[] = [
+  {
+    value: 'milestone',
+    label: 'Milestone',
+    description: 'Important achievement or goal',
+    icon: '🎯',
+  },
   { value: 'note', label: 'Note', description: 'General observation or comment', icon: '📝' },
-  { value: 'reminder', label: 'Reminder', description: 'Something to remember or follow up', icon: '⏰' },
+  {
+    value: 'reminder',
+    label: 'Reminder',
+    description: 'Something to remember or follow up',
+    icon: '⏰',
+  },
   { value: 'event', label: 'Event', description: 'Significant occurrence or activity', icon: '🎉' },
 ];
 
-export function AnnotationDialog({ defaultDate, trigger, open, onOpenChange }: AnnotationDialogProps) {
+export function AnnotationDialog({
+  defaultDate,
+  trigger,
+  open,
+  onOpenChange,
+}: AnnotationDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [date, setDate] = useState(defaultDate ? format(defaultDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'));
+  const [date, setDate] = useState(
+    defaultDate ? format(defaultDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+  );
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<AnnotationType>('note');
@@ -146,7 +172,9 @@ export function AnnotationDialog({ defaultDate, trigger, open, onOpenChange }: A
                       <span>{annotationType.icon}</span>
                       <div>
                         <div className="font-medium">{annotationType.label}</div>
-                        <div className="text-xs text-muted-foreground">{annotationType.description}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {annotationType.description}
+                        </div>
                       </div>
                     </div>
                   </SelectItem>

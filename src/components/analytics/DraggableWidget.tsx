@@ -10,14 +10,10 @@ interface DraggableWidgetProps {
 }
 
 export function DraggableWidget({ id, children, isEditMode }: DraggableWidgetProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id, disabled: !isEditMode });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: !isEditMode,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),

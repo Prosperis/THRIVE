@@ -2,13 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 // Widget query types
-export type QueryType = 
+export type QueryType =
   | 'count' // Count applications/interviews
   | 'list' // Show list of items
   | 'chart' // Show chart data
   | 'stat'; // Show single statistic
 
-export type FilterField = 
+export type FilterField =
   | 'status'
   | 'companyName'
   | 'position'
@@ -19,7 +19,7 @@ export type FilterField =
   | 'priority'
   | 'tags';
 
-export type FilterOperator = 
+export type FilterOperator =
   | 'equals'
   | 'notEquals'
   | 'contains'
@@ -40,18 +40,18 @@ export interface CustomWidget {
   description: string;
   queryType: QueryType;
   dataSource: 'applications' | 'interviews';
-  
+
   // Filters
   filters: WidgetFilter[];
-  
+
   // Display options
   displayType: 'number' | 'list' | 'bar-chart' | 'pie-chart' | 'line-chart' | 'table';
   colorScheme?: 'primary' | 'success' | 'warning' | 'danger';
   icon?: string;
-  
+
   // Layout
   size: 'small' | 'medium' | 'large'; // small = 1 col, medium = 1 col, large = 2 cols
-  
+
   // Metadata
   createdAt: Date;
   updatedAt: Date;
@@ -88,9 +88,7 @@ export const useCustomWidgetsStore = create<CustomWidgetsState>()(
       updateWidget: (id, updates) =>
         set((state) => ({
           widgets: state.widgets.map((widget) =>
-            widget.id === id
-              ? { ...widget, ...updates, updatedAt: new Date() }
-              : widget
+            widget.id === id ? { ...widget, ...updates, updatedAt: new Date() } : widget
           ),
         })),
 

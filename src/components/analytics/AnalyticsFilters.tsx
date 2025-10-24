@@ -1,4 +1,6 @@
+import { Filter, RotateCcw, X } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -9,8 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { X, Filter, RotateCcw } from 'lucide-react';
 import { APPLICATION_STATUSES, PRIORITY_LEVELS, WORK_TYPES } from '@/lib/constants';
 import type { Application } from '@/types';
 
@@ -39,18 +39,14 @@ export function AnalyticsFiltersPanel({
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Extract unique values from applications (companyNames are used inline in the component)
-  
+
   const uniqueSources = Array.from(
     new Set(
-      applications
-        .map((app) => (app as Application & { source?: string }).source)
-        .filter(Boolean)
+      applications.map((app) => (app as Application & { source?: string }).source).filter(Boolean)
     )
   );
 
-  const uniqueTags = Array.from(
-    new Set(applications.flatMap((app) => app.tags || []))
-  );
+  const uniqueTags = Array.from(new Set(applications.flatMap((app) => app.tags || [])));
 
   const addFilter = (key: keyof AnalyticsFilters, value: string) => {
     const currentValues = filters[key] as string[];
@@ -109,10 +105,14 @@ export function AnalyticsFiltersPanel({
               <Filter className="h-4 w-4" />
               Filters
               {activeFilterCount > 0 && (
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs">{activeFilterCount}</Badge>
+                <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                  {activeFilterCount}
+                </Badge>
               )}
             </CardTitle>
-            <CardDescription className="text-xs mt-0.5">Filter analytics data by various criteria</CardDescription>
+            <CardDescription className="text-xs mt-0.5">
+              Filter analytics data by various criteria
+            </CardDescription>
           </div>
           <div className="flex gap-2">
             {hasActiveFilters && (
@@ -330,7 +330,11 @@ export function applyAnalyticsFilters(
     }
 
     // Priority filter
-    if (filters.priorities.length > 0 && app.priority && !filters.priorities.includes(app.priority)) {
+    if (
+      filters.priorities.length > 0 &&
+      app.priority &&
+      !filters.priorities.includes(app.priority)
+    ) {
       return false;
     }
 

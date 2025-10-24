@@ -161,7 +161,7 @@ export function ZustandDevtoolsPanel() {
         {stores.map((store) => {
           const state = storeStates.find((s) => s.name === store.name)?.state;
           const stateSize = state ? Object.keys(state).length : 0;
-          
+
           return (
             <button
               key={store.name}

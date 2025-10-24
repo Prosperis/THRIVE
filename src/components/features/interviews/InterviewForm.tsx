@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,10 +12,10 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
-import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useAutoSaveBatcher } from '@/hooks/useDatabaseBatching';
+import { INTERVIEW_STATUSES, INTERVIEW_TYPES } from '@/lib/constants';
 import { db } from '@/lib/db';
+import { useApplicationsStore } from '@/stores/applicationsStore';
 import type { Interview } from '@/types';
 
 interface InterviewFormProps {
@@ -337,7 +337,9 @@ export function InterviewForm({
                         rows={4}
                       />
                       <p className="text-xs text-muted-foreground">
-                        {interview ? 'Changes auto-save as you type' : 'Save interview to enable auto-save'}
+                        {interview
+                          ? 'Changes auto-save as you type'
+                          : 'Save interview to enable auto-save'}
                       </p>
                     </div>
                   )}
@@ -358,7 +360,9 @@ export function InterviewForm({
                         rows={4}
                       />
                       <p className="text-xs text-muted-foreground">
-                        {interview ? 'Changes auto-save as you type' : 'Save interview to enable auto-save'}
+                        {interview
+                          ? 'Changes auto-save as you type'
+                          : 'Save interview to enable auto-save'}
                       </p>
                     </div>
                   )}

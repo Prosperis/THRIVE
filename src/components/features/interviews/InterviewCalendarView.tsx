@@ -1,4 +1,14 @@
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek } from 'date-fns';
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  isToday,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 import { MapPin, Phone, Video } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,13 +21,17 @@ interface InterviewCalendarViewProps {
   onInterviewClick?: (interview: Interview) => void;
 }
 
-export function InterviewCalendarView({ interviews, applications, onInterviewClick }: InterviewCalendarViewProps) {
+export function InterviewCalendarView({
+  interviews,
+  applications,
+  onInterviewClick,
+}: InterviewCalendarViewProps) {
   const today = new Date();
   const monthStart = startOfMonth(today);
   const monthEnd = endOfMonth(today);
   const calendarStart = startOfWeek(monthStart);
   const calendarEnd = endOfWeek(monthEnd);
-  
+
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -51,10 +65,7 @@ export function InterviewCalendarView({ interviews, applications, onInterviewCli
         <div className="grid grid-cols-7 gap-2">
           {/* Week day headers */}
           {weekDays.map((day) => (
-            <div
-              key={day}
-              className="text-center text-sm font-medium text-muted-foreground py-2"
-            >
+            <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
               {day}
             </div>
           ))}
@@ -96,14 +107,15 @@ export function InterviewCalendarView({ interviews, applications, onInterviewCli
                       <div className="flex items-center gap-1 mb-0.5">
                         {getTypeIcon(interview.type)}
                         <span className="font-medium truncate">
-                          {interview.scheduledAt && format(new Date(interview.scheduledAt), 'h:mm a')}
+                          {interview.scheduledAt &&
+                            format(new Date(interview.scheduledAt), 'h:mm a')}
                         </span>
                       </div>
                       <div className="truncate text-muted-foreground">
                         {getApplicationName(interview.applicationId)}
                       </div>
-                      <Badge 
-                        variant={interview.status === 'completed' ? 'secondary' : 'outline'} 
+                      <Badge
+                        variant={interview.status === 'completed' ? 'secondary' : 'outline'}
                         className="text-[10px] mt-1 px-1 py-0"
                       >
                         {interview.status}

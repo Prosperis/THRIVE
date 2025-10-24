@@ -1,29 +1,39 @@
-import { LayoutGrid, Plus, Table as TableIcon, X, Upload, Download, FileDown, Settings, ChevronDown } from 'lucide-react';
+import type { Table } from '@tanstack/react-table';
+import {
+  ChevronDown,
+  Download,
+  FileDown,
+  LayoutGrid,
+  Plus,
+  Settings,
+  Table as TableIcon,
+  Upload,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { SearchInput } from '@/components/ui/search-input';
+import { TableHelpDialog } from '@/components/ui/table-help-dialog';
 import { APPLICATION_STATUSES } from '@/lib/constants';
 import { exportAndDownloadApplicationsCSV, exportAndDownloadApplicationsJSON } from '@/lib/export';
 import { useApplicationsStore, useUIStore } from '@/stores';
+import type { Application } from '@/types';
 import { ApplicationDialog } from './ApplicationDialog';
-import { UnifiedFilters } from './UnifiedFilters';
+import { BackupManagementDialog } from './BackupManagementDialog';
 import { CSVImportDialog } from './CSVImportDialog';
 import { JSONImportDialog } from './JSONImportDialog';
-import { BackupManagementDialog } from './BackupManagementDialog';
-import { TableHelpDialog } from '@/components/ui/table-help-dialog';
-import type { Table } from '@tanstack/react-table';
-import type { Application } from '@/types';
+import { UnifiedFilters } from './UnifiedFilters';
 
 interface ApplicationsToolbarProps {
   table?: Table<Application>;
@@ -50,13 +60,14 @@ export function ApplicationsToolbar({ table }: ApplicationsToolbarProps = {}) {
     employmentTypeFilters.length +
     (hasDateFilters ? 1 : 0);
 
-  const clearAllFilters = () => setFilters({
-    status: undefined,
-    priority: undefined,
-    workType: undefined,
-    employmentType: undefined,
-    dateRange: undefined,
-  });
+  const clearAllFilters = () =>
+    setFilters({
+      status: undefined,
+      priority: undefined,
+      workType: undefined,
+      employmentType: undefined,
+      dateRange: undefined,
+    });
 
   const removeStatusFilter = (status: string) => {
     const newStatuses = statusFilters.filter((s) => s !== status);
@@ -158,9 +169,9 @@ export function ApplicationsToolbar({ table }: ApplicationsToolbarProps = {}) {
                   <Upload className="mr-2 h-4 w-4" />
                   Import from JSON
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuLabel>Export</DropdownMenuLabel>
                 <DropdownMenuItem onClick={handleExportCSV}>
                   <Download className="mr-2 h-4 w-4" />
@@ -170,9 +181,9 @@ export function ApplicationsToolbar({ table }: ApplicationsToolbarProps = {}) {
                   <Download className="mr-2 h-4 w-4" />
                   Export as JSON
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuItem onClick={() => setIsBackupDialogOpen(true)}>
                   <Settings className="mr-2 h-4 w-4" />
                   Backup Settings
@@ -258,7 +269,11 @@ export function ApplicationsToolbar({ table }: ApplicationsToolbarProps = {}) {
             </Badge>
           ))}
           {employmentTypeFilters.map((employmentType) => (
-            <Badge key={employmentType} variant="secondary" className="gap-1.5 capitalize pl-2 pr-1">
+            <Badge
+              key={employmentType}
+              variant="secondary"
+              className="gap-1.5 capitalize pl-2 pr-1"
+            >
               {employmentType.replace('-', ' ')}
               <button
                 type="button"
@@ -273,7 +288,9 @@ export function ApplicationsToolbar({ table }: ApplicationsToolbarProps = {}) {
           {hasDateFilters && (
             <Badge variant="secondary" className="gap-1.5 pl-2 pr-1">
               {filters.dateRange?.start && new Date(filters.dateRange.start).toLocaleDateString()} -{' '}
-              {filters.dateRange?.end ? new Date(filters.dateRange.end).toLocaleDateString() : 'Now'}
+              {filters.dateRange?.end
+                ? new Date(filters.dateRange.end).toLocaleDateString()
+                : 'Now'}
               <button
                 type="button"
                 onClick={() => setFilters({ dateRange: undefined })}

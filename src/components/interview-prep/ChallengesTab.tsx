@@ -1,10 +1,9 @@
-import { Calendar, CheckCircle2, Clock, Code, Edit, Plus, Trash2 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Calendar, CheckCircle2, Clock, Code, Edit, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DurationSlider, TIME_LIMIT_PRESETS } from '@/components/ui/duration-slider';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { DurationSlider, TIME_LIMIT_PRESETS } from '@/components/ui/duration-slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -376,11 +376,7 @@ export function ChallengesTab() {
 
       {/* Challenges List */}
       {filteredChallenges.length > 0 ? (
-        <div
-          ref={scrollRef}
-          className="overflow-auto"
-          style={{ maxHeight: '800px' }}
-        >
+        <div ref={scrollRef} className="overflow-auto" style={{ maxHeight: '800px' }}>
           <div
             style={{
               height: `${virtualizer.getTotalSize()}px`,
@@ -403,136 +399,141 @@ export function ChallengesTab() {
                   }}
                 >
                   <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Code className="h-5 w-5" />
-                      <CardTitle className="text-lg">{challenge.title}</CardTitle>
-                      <Badge variant="outline">
-                        {CHALLENGE_TYPES.find((t) => t.value === challenge.type)?.icon}{' '}
-                        {CHALLENGE_TYPES.find((t) => t.value === challenge.type)?.label}
-                      </Badge>
-                    </div>
-                    {challenge.companyName && (
-                      <p className="text-sm text-muted-foreground">
-                        Company: {challenge.companyName}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Select
-                      value={challenge.status}
-                      onValueChange={(value) =>
-                        handleStatusChange(challenge.id, value as ChallengeStatus)
-                      }
-                    >
-                      <SelectTrigger className="w-[140px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CHALLENGE_STATUSES.map((status) => (
-                          <SelectItem key={status.value} value={status.value}>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${status.color}`} />
-                              {status.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(challenge.id)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => deleteChallenge(challenge.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Description */}
-                <p className="text-sm text-muted-foreground">{challenge.description}</p>
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Code className="h-5 w-5" />
+                            <CardTitle className="text-lg">{challenge.title}</CardTitle>
+                            <Badge variant="outline">
+                              {CHALLENGE_TYPES.find((t) => t.value === challenge.type)?.icon}{' '}
+                              {CHALLENGE_TYPES.find((t) => t.value === challenge.type)?.label}
+                            </Badge>
+                          </div>
+                          {challenge.companyName && (
+                            <p className="text-sm text-muted-foreground">
+                              Company: {challenge.companyName}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Select
+                            value={challenge.status}
+                            onValueChange={(value) =>
+                              handleStatusChange(challenge.id, value as ChallengeStatus)
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CHALLENGE_STATUSES.map((status) => (
+                                <SelectItem key={status.value} value={status.value}>
+                                  <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${status.color}`} />
+                                    {status.label}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(challenge.id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deleteChallenge(challenge.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Description */}
+                      <p className="text-sm text-muted-foreground">{challenge.description}</p>
 
-                {/* Metadata */}
-                <div className="flex gap-4 flex-wrap text-sm">
-                  {challenge.difficulty && (
-                    <div className="flex items-center gap-1">
-                      <Badge
-                        variant="outline"
-                        className={
-                          DIFFICULTY_LEVELS.find((d) => d.value === challenge.difficulty)?.color
-                        }
-                      >
-                        {challenge.difficulty}
-                      </Badge>
-                    </div>
-                  )}
-                  {challenge.timeLimit && (
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      {challenge.timeLimit} min
-                    </div>
-                  )}
-                  {challenge.dueDate && (
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      Due: {formatRelativeTime(challenge.dueDate)}
-                    </div>
-                  )}
-                  {challenge.completedAt && (
-                    <div className="flex items-center gap-1 text-green-600">
-                      <CheckCircle2 className="h-4 w-4" />
-                      Completed {formatRelativeTime(challenge.completedAt)}
-                    </div>
-                  )}
-                </div>
+                      {/* Metadata */}
+                      <div className="flex gap-4 flex-wrap text-sm">
+                        {challenge.difficulty && (
+                          <div className="flex items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className={
+                                DIFFICULTY_LEVELS.find((d) => d.value === challenge.difficulty)
+                                  ?.color
+                              }
+                            >
+                              {challenge.difficulty}
+                            </Badge>
+                          </div>
+                        )}
+                        {challenge.timeLimit && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Clock className="h-4 w-4" />
+                            {challenge.timeLimit} min
+                          </div>
+                        )}
+                        {challenge.dueDate && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            Due: {formatRelativeTime(challenge.dueDate)}
+                          </div>
+                        )}
+                        {challenge.completedAt && (
+                          <div className="flex items-center gap-1 text-green-600">
+                            <CheckCircle2 className="h-4 w-4" />
+                            Completed {formatRelativeTime(challenge.completedAt)}
+                          </div>
+                        )}
+                      </div>
 
-                {/* Tags */}
-                {challenge.tags && challenge.tags.length > 0 && (
-                  <div className="flex gap-2 flex-wrap">
-                    {challenge.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                      {/* Tags */}
+                      {challenge.tags && challenge.tags.length > 0 && (
+                        <div className="flex gap-2 flex-wrap">
+                          {challenge.tags.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
 
-                {/* Notes */}
-                {challenge.notes && (
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium">Notes</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {challenge.notes}
-                    </p>
-                  </div>
-                )}
+                      {/* Notes */}
+                      {challenge.notes && (
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium">Notes</h4>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {challenge.notes}
+                          </p>
+                        </div>
+                      )}
 
-                {/* Solution */}
-                {challenge.solution && (
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium">Solution</h4>
-                    <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
-                      <code>{challenge.solution}</code>
-                    </pre>
-                  </div>
-                )}
+                      {/* Solution */}
+                      {challenge.solution && (
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium">Solution</h4>
+                          <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
+                            <code>{challenge.solution}</code>
+                          </pre>
+                        </div>
+                      )}
 
-                {/* Feedback */}
-                {challenge.feedbackReceived && (
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium">Feedback</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {challenge.feedbackReceived}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
+                      {/* Feedback */}
+                      {challenge.feedbackReceived && (
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium">Feedback</h4>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {challenge.feedbackReceived}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
                   </Card>
                 </div>
               );

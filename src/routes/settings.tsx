@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { useConfirm } from '@/hooks/useConfirm';
 import { ChangelogDialog } from '@/components/features/settings/ChangelogDialog';
 import { KeyboardShortcutsDialog } from '@/components/features/settings/KeyboardShortcutsDialog';
 import { PageTransition } from '@/components/layout/PageTransition';
@@ -37,25 +36,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { useConfirm } from '@/hooks/useConfirm';
 import { CREDITS, HELP_RESOURCES } from '@/lib/about';
-import { useSettingsStore } from '@/stores/settingsStore';
-import { useDashboardStore } from '@/stores/dashboardStore';
-import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
-import { useUIStore } from '@/stores/uiStore';
+import {
+  backupUserData,
+  clearAllData,
+  deleteBackup,
+  getBackupInfo,
+  hasUserData,
+  restoreUserData,
+} from '@/lib/demoMode';
+import { seedDatabase } from '@/lib/seed';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import { useContactsStore } from '@/stores/contactsStore';
+import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
+import { useDashboardStore } from '@/stores/dashboardStore';
 import { useDocumentsStore } from '@/stores/documentsStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
-import { 
-  hasUserData, 
-  backupUserData, 
-  clearAllData, 
-  restoreUserData, 
-  deleteBackup,
-  getBackupInfo 
-} from '@/lib/demoMode';
-import { seedDatabase } from '@/lib/seed';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useUIStore } from '@/stores/uiStore';
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
@@ -93,7 +93,8 @@ function SettingsPage() {
   const handleReset = useCallback(async () => {
     const confirmed = await confirm({
       title: 'Reset All Settings',
-      description: 'Are you sure you want to reset all settings to defaults? This cannot be undone.',
+      description:
+        'Are you sure you want to reset all settings to defaults? This cannot be undone.',
       type: 'danger',
       confirmText: 'Reset',
       cancelText: 'Cancel',
@@ -109,17 +110,25 @@ function SettingsPage() {
       // Reset UI preferences
       setSidebarOpen(true);
       setActiveView('table');
-      
+
       toast.success('Settings Reset', {
         description: 'All settings have been reset to defaults',
       });
     }
-  }, [confirm, resetToDefaults, resetDashboard, resetDashboardLayout, setSidebarOpen, setActiveView]);
+  }, [
+    confirm,
+    resetToDefaults,
+    resetDashboard,
+    resetDashboardLayout,
+    setSidebarOpen,
+    setActiveView,
+  ]);
 
   const handleDeleteAllData = useCallback(async () => {
     const confirmed = await confirm({
       title: 'Delete All Data',
-      description: 'Are you sure you want to delete ALL data from the database? This will permanently remove all applications, interviews, documents, companies, and contacts. This action CANNOT be undone!',
+      description:
+        'Are you sure you want to delete ALL data from the database? This will permanently remove all applications, interviews, documents, companies, and contacts. This action CANNOT be undone!',
       type: 'danger',
       confirmText: 'Yes, Delete Everything',
       cancelText: 'Cancel',
@@ -135,7 +144,7 @@ function SettingsPage() {
         updateDemoMode({ enabled: false, hasUserData: false });
         console.log('🔄 Disabled demo mode before clearing data');
         // Give it a moment for Zustand persist to save to localStorage
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       // Clear all data from the database and localStorage
@@ -161,121 +170,125 @@ function SettingsPage() {
     }
   }, [confirm, demoMode.enabled, updateDemoMode]);
 
-  const handleDemoModeToggle = useCallback(async (checked: boolean) => {
-    setIsDemoModeToggling(true);
+  const handleDemoModeToggle = useCallback(
+    async (checked: boolean) => {
+      setIsDemoModeToggling(true);
 
-    try {
-      if (checked) {
-        // Enabling demo mode
-        const confirmed = await confirm({
-          title: 'Enable Demo Mode',
-          description: 'This will replace your current data with sample demo data. Your real data will be safely backed up and can be restored when you turn off demo mode.',
-          type: 'confirm',
-          confirmText: 'Enable Demo Mode',
-          cancelText: 'Cancel',
-        });
+      try {
+        if (checked) {
+          // Enabling demo mode
+          const confirmed = await confirm({
+            title: 'Enable Demo Mode',
+            description:
+              'This will replace your current data with sample demo data. Your real data will be safely backed up and can be restored when you turn off demo mode.',
+            type: 'confirm',
+            confirmText: 'Enable Demo Mode',
+            cancelText: 'Cancel',
+          });
 
-        if (!confirmed) {
-          setIsDemoModeToggling(false);
-          return;
+          if (!confirmed) {
+            setIsDemoModeToggling(false);
+            return;
+          }
+
+          // Check if user has data
+          const hasData = await hasUserData();
+
+          if (hasData) {
+            // Backup existing data
+            await backupUserData();
+            toast.info('Backing up your data...');
+          }
+
+          // Clear database
+          await clearAllData();
+
+          // Seed with demo data
+          await seedDatabase();
+
+          // Update settings
+          updateDemoMode({ enabled: true, hasUserData: hasData });
+
+          // Refresh all stores
+          await Promise.all([
+            fetchApplications(),
+            fetchCompanies(),
+            fetchContacts(),
+            fetchDocuments(),
+            fetchInterviews(),
+          ]);
+
+          toast.success('Demo Mode Enabled', {
+            description: 'Sample data has been loaded. Your real data is safely backed up.',
+          });
+        } else {
+          // Disabling demo mode
+          const backupInfo = getBackupInfo();
+          const hasBackupData = backupInfo !== null;
+
+          const confirmed = await confirm({
+            title: 'Disable Demo Mode',
+            description: hasBackupData
+              ? `This will restore your original data from the backup (${backupInfo.itemCount} items backed up). The demo data will be removed.`
+              : "This will remove the demo data. You don't have any backed up data to restore.",
+            type: 'confirm',
+            confirmText: 'Disable Demo Mode',
+            cancelText: 'Cancel',
+          });
+
+          if (!confirmed) {
+            setIsDemoModeToggling(false);
+            return;
+          }
+
+          // Clear demo data
+          await clearAllData();
+
+          // Restore user data if it exists
+          if (demoMode.hasUserData) {
+            await restoreUserData();
+            deleteBackup();
+            toast.info('Restoring your data...');
+          }
+
+          // Update settings
+          updateDemoMode({ enabled: false, hasUserData: false });
+
+          // Refresh all stores
+          await Promise.all([
+            fetchApplications(),
+            fetchCompanies(),
+            fetchContacts(),
+            fetchDocuments(),
+            fetchInterviews(),
+          ]);
+
+          toast.success('Demo Mode Disabled', {
+            description: demoMode.hasUserData
+              ? 'Your original data has been restored.'
+              : 'Demo data has been removed.',
+          });
         }
-
-        // Check if user has data
-        const hasData = await hasUserData();
-        
-        if (hasData) {
-          // Backup existing data
-          await backupUserData();
-          toast.info('Backing up your data...');
-        }
-
-        // Clear database
-        await clearAllData();
-
-        // Seed with demo data
-        await seedDatabase();
-
-        // Update settings
-        updateDemoMode({ enabled: true, hasUserData: hasData });
-
-        // Refresh all stores
-        await Promise.all([
-          fetchApplications(),
-          fetchCompanies(),
-          fetchContacts(),
-          fetchDocuments(),
-          fetchInterviews(),
-        ]);
-
-        toast.success('Demo Mode Enabled', {
-          description: 'Sample data has been loaded. Your real data is safely backed up.',
+      } catch (error) {
+        console.error('Error toggling demo mode:', error);
+        toast.error('Error', {
+          description: error instanceof Error ? error.message : 'Failed to toggle demo mode',
         });
-      } else {
-        // Disabling demo mode
-        const backupInfo = getBackupInfo();
-        const hasBackupData = backupInfo !== null;
-
-        const confirmed = await confirm({
-          title: 'Disable Demo Mode',
-          description: hasBackupData
-            ? `This will restore your original data from the backup (${backupInfo.itemCount} items backed up). The demo data will be removed.`
-            : 'This will remove the demo data. You don\'t have any backed up data to restore.',
-          type: 'confirm',
-          confirmText: 'Disable Demo Mode',
-          cancelText: 'Cancel',
-        });
-
-        if (!confirmed) {
-          setIsDemoModeToggling(false);
-          return;
-        }
-
-        // Clear demo data
-        await clearAllData();
-
-        // Restore user data if it exists
-        if (demoMode.hasUserData) {
-          await restoreUserData();
-          deleteBackup();
-          toast.info('Restoring your data...');
-        }
-
-        // Update settings
-        updateDemoMode({ enabled: false, hasUserData: false });
-
-        // Refresh all stores
-        await Promise.all([
-          fetchApplications(),
-          fetchCompanies(),
-          fetchContacts(),
-          fetchDocuments(),
-          fetchInterviews(),
-        ]);
-
-        toast.success('Demo Mode Disabled', {
-          description: demoMode.hasUserData
-            ? 'Your original data has been restored.'
-            : 'Demo data has been removed.',
-        });
+      } finally {
+        setIsDemoModeToggling(false);
       }
-    } catch (error) {
-      console.error('Error toggling demo mode:', error);
-      toast.error('Error', {
-        description: error instanceof Error ? error.message : 'Failed to toggle demo mode',
-      });
-    } finally {
-      setIsDemoModeToggling(false);
-    }
-  }, [
-    confirm,
-    demoMode.hasUserData,
-    updateDemoMode,
-    fetchApplications,
-    fetchCompanies,
-    fetchContacts,
-    fetchDocuments,
-    fetchInterviews,
-  ]);
+    },
+    [
+      confirm,
+      demoMode.hasUserData,
+      updateDemoMode,
+      fetchApplications,
+      fetchCompanies,
+      fetchContacts,
+      fetchDocuments,
+      fetchInterviews,
+    ]
+  );
 
   return (
     <PageTransition>
@@ -681,8 +694,9 @@ function SettingsPage() {
                   <div className="rounded-lg bg-destructive/10 p-3 text-sm text-muted-foreground">
                     <p className="font-medium text-destructive mb-1">Warning</p>
                     <p className="text-xs">
-                      This action will permanently delete all applications, interviews, documents, companies, and contacts. 
-                      This cannot be undone. Make sure to export your data first if you want to keep a backup.
+                      This action will permanently delete all applications, interviews, documents,
+                      companies, and contacts. This cannot be undone. Make sure to export your data
+                      first if you want to keep a backup.
                     </p>
                   </div>
                 </div>
@@ -698,9 +712,7 @@ function SettingsPage() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold">Demo Mode</h2>
-                <p className="text-sm text-muted-foreground">
-                  Try out the app with sample data
-                </p>
+                <p className="text-sm text-muted-foreground">Try out the app with sample data</p>
               </div>
             </div>
 
@@ -727,8 +739,9 @@ function SettingsPage() {
                       <strong className="text-foreground">What is Demo Mode?</strong>
                     </p>
                     <p>
-                      Demo mode is perfect for new users who want to explore the app's features with realistic sample data. 
-                      When enabled, your current data is safely backed up and replaced with demo content including:
+                      Demo mode is perfect for new users who want to explore the app's features with
+                      realistic sample data. When enabled, your current data is safely backed up and
+                      replaced with demo content including:
                     </p>
                     <ul className="list-disc list-inside space-y-0.5 ml-2">
                       <li>Sample job applications in various stages</li>
@@ -737,12 +750,12 @@ function SettingsPage() {
                       <li>Documents and templates</li>
                     </ul>
                     <p className="pt-1">
-                      <strong className="text-foreground">Your data is safe:</strong> When you disable demo mode, 
-                      your original data will be automatically restored.
+                      <strong className="text-foreground">Your data is safe:</strong> When you
+                      disable demo mode, your original data will be automatically restored.
                     </p>
                   </div>
                 </div>
-                
+
                 {demoMode.enabled && (
                   <div className="pt-2 border-t">
                     <p className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -839,9 +852,10 @@ function SettingsPage() {
 
               <div className="rounded-lg bg-muted p-4">
                 <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">Note:</strong> Documents are soft-deleted when you click the trash icon. 
-                  They remain recoverable in the "Recently Deleted" tab until the auto-delete period expires. 
-                  After that, they are permanently removed from the database.
+                  <strong className="text-foreground">Note:</strong> Documents are soft-deleted when
+                  you click the trash icon. They remain recoverable in the "Recently Deleted" tab
+                  until the auto-delete period expires. After that, they are permanently removed
+                  from the database.
                 </p>
               </div>
             </div>
@@ -1032,5 +1046,3 @@ function SettingsPage() {
     </PageTransition>
   );
 }
-
-  

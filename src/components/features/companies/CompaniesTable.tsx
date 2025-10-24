@@ -1,26 +1,19 @@
 import type { ColumnDef, Table } from '@tanstack/react-table';
-import {
-  Building2,
-  ExternalLink,
-  Pencil,
-  Trash2,
-  CheckCircle2,
-  Star,
-} from 'lucide-react';
+import { Building2, CheckCircle2, ExternalLink, Pencil, Star, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable } from '@/components/ui/data-table';
 import { SortableHeader } from '@/components/ui/sortable-header';
+import { useConfirm } from '@/hooks/useConfirm';
+import { COMPANY_STATUSES, REMOTE_POLICIES } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
 import { useCompaniesStore } from '@/stores/companiesStore';
 import type { Company } from '@/types';
-import { COMPANY_STATUSES, REMOTE_POLICIES } from '@/lib/constants';
-import { CompanyDetailDrawer } from './CompanyDetailDrawer';
 import { BulkActionsToolbar } from './BulkActionsToolbar';
+import { CompanyDetailDrawer } from './CompanyDetailDrawer';
 import { DataQualityIndicator } from './DataQualityIndicator';
 
 const statusColors: Record<string, string> = {
@@ -44,20 +37,23 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleDelete = useCallback(async (company: Company) => {
-    const confirmed = await confirm({
-      title: 'Delete Company',
-      description: `Are you sure you want to delete ${company.name}?`,
-      type: 'danger',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-    });
+  const handleDelete = useCallback(
+    async (company: Company) => {
+      const confirmed = await confirm({
+        title: 'Delete Company',
+        description: `Are you sure you want to delete ${company.name}?`,
+        type: 'danger',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      });
 
-    if (confirmed) {
-      deleteCompany(company.id);
-      toast.success(`${company.name} deleted`);
-    }
-  }, [confirm, deleteCompany]);
+      if (confirmed) {
+        deleteCompany(company.id);
+        toast.success(`${company.name} deleted`);
+      }
+    },
+    [confirm, deleteCompany]
+  );
 
   const handleRowClick = useCallback((company: Company) => {
     setSelectedCompany(company);
@@ -66,7 +62,7 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
 
   const getStatusLabel = useCallback((status?: string) => {
     if (!status) return null;
-    const statusConfig = COMPANY_STATUSES.find(s => s.value === status);
+    const statusConfig = COMPANY_STATUSES.find((s) => s.value === status);
     return statusConfig?.label || status;
   }, []);
 
@@ -77,7 +73,7 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
 
   const getRemotePolicyLabel = useCallback((policy?: string) => {
     if (!policy) return null;
-    const policyConfig = REMOTE_POLICIES.find(p => p.value === policy);
+    const policyConfig = REMOTE_POLICIES.find((p) => p.value === policy);
     return policyConfig ? `${policyConfig.icon} ${policyConfig.label}` : policy;
   }, []);
 
@@ -121,7 +117,8 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
                   <span className="font-medium">{row.getValue('name')}</span>
                   {row.original.applicationIds.length > 0 && (
                     <Badge variant="secondary" className="text-xs">
-                      {row.original.applicationIds.length} {row.original.applicationIds.length === 1 ? 'app' : 'apps'}
+                      {row.original.applicationIds.length}{' '}
+                      {row.original.applicationIds.length === 1 ? 'app' : 'apps'}
                     </Badge>
                   )}
                   <DataQualityIndicator company={row.original} variant="inline" />
@@ -212,11 +209,7 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
         cell: ({ row }) => {
           const policy = row.getValue('remotePolicy') as string | undefined;
           if (!policy) return <span className="text-muted-foreground text-sm">—</span>;
-          return (
-            <div className="text-sm">
-              {getRemotePolicyLabel(policy)}
-            </div>
-          );
+          return <div className="text-sm">{getRemotePolicyLabel(policy)}</div>;
         },
       },
       {
@@ -305,7 +298,14 @@ export function CompaniesTable({ companies, onTableReady, onEditCompany }: Compa
         enableHiding: false,
       },
     ],
-    [onEditCompany, handleDelete, handleRowClick, getStatusLabel, getStatusColor, getRemotePolicyLabel]
+    [
+      onEditCompany,
+      handleDelete,
+      handleRowClick,
+      getStatusLabel,
+      getStatusColor,
+      getRemotePolicyLabel,
+    ]
   );
 
   return (

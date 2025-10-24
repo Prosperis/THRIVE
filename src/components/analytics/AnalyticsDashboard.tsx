@@ -1,4 +1,4 @@
-import { subDays } from 'date-fns';
+import { formatDistanceToNow, subDays } from 'date-fns';
 import {
   BarChart3,
   Building2,
@@ -27,6 +27,11 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TimePeriodSlider } from '@/components/ui/time-period-slider';
+import { useDataFreshness } from '@/hooks/useAnimations';
+import {
+  useMetricChangeNotifications,
+  useMilestoneNotifications,
+} from '@/hooks/useMilestoneNotifications';
 import {
   calculateAnalytics,
   calculateCompanyStats,
@@ -37,27 +42,24 @@ import {
   generateTimeSeriesData,
 } from '@/lib/analytics';
 import { useApplicationsStore } from '@/stores/applicationsStore';
+import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 import { ANALYTICS_PERIODS, type AnalyticsPeriod } from '@/types/analytics';
-import { MetricGrid, StatCard } from './StatCard';
-import { ApplicationFunnelChart } from './ApplicationFunnelChart';
-import { ResponseTimeChart } from './ResponseTimeChart';
-import { InterviewStageChart } from './InterviewStageChart';
 import { AdditionalInsights } from './AdditionalInsights';
-import { GoalsTracking } from './GoalsTracking';
-import { ExportOptions } from './ExportOptions';
-import { ReportGenerator } from './ReportGenerator';
-import { AnnotationsList } from './AnnotationsList';
 import {
+  type AnalyticsFilters,
   AnalyticsFiltersPanel,
   applyAnalyticsFilters,
-  type AnalyticsFilters,
 } from './AnalyticsFilters';
-import { useMilestoneNotifications, useMetricChangeNotifications } from '@/hooks/useMilestoneNotifications';
-import { useDataFreshness } from '@/hooks/useAnimations';
-import { formatDistanceToNow } from 'date-fns';
+import { AnnotationsList } from './AnnotationsList';
+import { ApplicationFunnelChart } from './ApplicationFunnelChart';
+import { ExportOptions } from './ExportOptions';
+import { GoalsTracking } from './GoalsTracking';
+import { InterviewStageChart } from './InterviewStageChart';
 import { LayoutManager } from './LayoutManager';
-import { useDashboardLayoutStore } from '@/stores/dashboardLayoutStore';
+import { ReportGenerator } from './ReportGenerator';
+import { ResponseTimeChart } from './ResponseTimeChart';
+import { MetricGrid, StatCard } from './StatCard';
 
 export function AnalyticsDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod['value']>('30d');
@@ -121,7 +123,8 @@ export function AnalyticsDashboard() {
 
   // Calculate previous period metrics for comparison
   const previousMetrics = useMemo(
-    () => previousPeriod ? calculateAnalytics(filteredApplications, interviews, previousPeriod) : null,
+    () =>
+      previousPeriod ? calculateAnalytics(filteredApplications, interviews, previousPeriod) : null,
     [filteredApplications, interviews, previousPeriod]
   );
 
@@ -132,11 +135,13 @@ export function AnalyticsDashboard() {
       interviewConversionRate: metrics.interviewConversionRate,
       offerRate: metrics.offerRate,
     },
-    previousMetrics ? {
-      responseRate: previousMetrics.responseRate,
-      interviewConversionRate: previousMetrics.interviewConversionRate,
-      offerRate: previousMetrics.offerRate,
-    } : undefined
+    previousMetrics
+      ? {
+          responseRate: previousMetrics.responseRate,
+          interviewConversionRate: previousMetrics.interviewConversionRate,
+          offerRate: previousMetrics.offerRate,
+        }
+      : undefined
   );
 
   // Calculate trends
@@ -192,7 +197,9 @@ export function AnalyticsDashboard() {
           <div className="flex items-center gap-3 text-muted-foreground">
             <p>Track your job search progress and insights</p>
             <span className="text-xs">·</span>
-            <p className="text-xs">Updated {formatDistanceToNow(lastUpdated, { addSuffix: true })}</p>
+            <p className="text-xs">
+              Updated {formatDistanceToNow(lastUpdated, { addSuffix: true })}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -263,21 +270,30 @@ export function AnalyticsDashboard() {
             value={`${Math.round(metrics.averageResponseTime)}d`}
             icon={Clock}
             description="Days to hear back"
-            trend={calculateTrend(metrics.averageResponseTime, previousMetrics?.averageResponseTime)}
+            trend={calculateTrend(
+              metrics.averageResponseTime,
+              previousMetrics?.averageResponseTime
+            )}
           />
           <StatCard
             title="Interview Conversion"
             value={formatPercentage(metrics.interviewConversionRate)}
             icon={TrendingUp}
             description="Apps → Interviews"
-            trend={calculateTrend(metrics.interviewConversionRate, previousMetrics?.interviewConversionRate)}
+            trend={calculateTrend(
+              metrics.interviewConversionRate,
+              previousMetrics?.interviewConversionRate
+            )}
           />
           <StatCard
             title="Offer Conversion"
             value={formatPercentage(metrics.interviewToOfferRate)}
             icon={BarChart3}
             description="Interviews → Offers"
-            trend={calculateTrend(metrics.interviewToOfferRate, previousMetrics?.interviewToOfferRate)}
+            trend={calculateTrend(
+              metrics.interviewToOfferRate,
+              previousMetrics?.interviewToOfferRate
+            )}
           />
           <StatCard
             title="Active Applications"
@@ -310,7 +326,10 @@ export function AnalyticsDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {timeSeriesData.length > 0 && timeSeriesData.some((d) => d.applications > 0 || d.interviews > 0 || d.offers > 0 || d.rejections > 0) ? (
+              {timeSeriesData.length > 0 &&
+              timeSeriesData.some(
+                (d) => d.applications > 0 || d.interviews > 0 || d.offers > 0 || d.rejections > 0
+              ) ? (
                 <ResponsiveContainer width="100%" height={350}>
                   <LineChart data={timeSeriesData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -360,9 +379,7 @@ export function AnalyticsDashboard() {
         )}
 
         {/* Application Funnel */}
-        {visibleWidgets.includes('funnel-chart') && (
-          <ApplicationFunnelChart period={period} />
-        )}
+        {visibleWidgets.includes('funnel-chart') && <ApplicationFunnelChart period={period} />}
 
         {/* Status Distribution */}
         {visibleWidgets.includes('status-distribution') && (
@@ -397,7 +414,9 @@ export function AnalyticsDashboard() {
                   <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
                     <Target className="w-12 h-12 mb-4 opacity-20" />
                     <p className="text-sm">No application data available</p>
-                    <p className="text-xs mt-1">Start adding applications to see the distribution</p>
+                    <p className="text-xs mt-1">
+                      Start adding applications to see the distribution
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -491,10 +510,7 @@ export function AnalyticsDashboard() {
 
         {/* Automated Reports */}
         {visibleWidgets.includes('report-generator') && (
-          <ReportGenerator
-            applications={filteredApplications}
-            interviews={interviews}
-          />
+          <ReportGenerator applications={filteredApplications} interviews={interviews} />
         )}
 
         {/* Goals & Tracking */}
@@ -506,66 +522,69 @@ export function AnalyticsDashboard() {
         {visibleWidgets.includes('monthly-trends') && (
           <>
             <Card>
-            <CardHeader>
-              <CardTitle>Monthly Trends</CardTitle>
-              <CardDescription>Track your progress over the last 6 months</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {monthlyTrends.length > 0 && monthlyTrends.some((m) => m.applications > 0 || m.interviews > 0) ? (
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={monthlyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="applications" fill="#3b82f6" name="Applications" />
-                    <Bar dataKey="interviews" fill="#8b5cf6" name="Interviews" />
-                    <Bar dataKey="offers" fill="#10b981" name="Offers" />
-                    <Bar dataKey="rejections" fill="#ef4444" name="Rejections" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground">
-                  <TrendingUp className="w-12 h-12 mb-4 opacity-20" />
-                  <p className="text-sm">No monthly trend data available</p>
-                  <p className="text-xs mt-1">Add applications to see trends over time</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              <CardHeader>
+                <CardTitle>Monthly Trends</CardTitle>
+                <CardDescription>Track your progress over the last 6 months</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {monthlyTrends.length > 0 &&
+                monthlyTrends.some((m) => m.applications > 0 || m.interviews > 0) ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={monthlyTrends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="applications" fill="#3b82f6" name="Applications" />
+                      <Bar dataKey="interviews" fill="#8b5cf6" name="Interviews" />
+                      <Bar dataKey="offers" fill="#10b981" name="Offers" />
+                      <Bar dataKey="rejections" fill="#ef4444" name="Rejections" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground">
+                    <TrendingUp className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm">No monthly trend data available</p>
+                    <p className="text-xs mt-1">Add applications to see trends over time</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Response Rate Trend</CardTitle>
-              <CardDescription>Monthly response rate over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {monthlyTrends.length > 0 && monthlyTrends.some((m) => m.responseRate > 0) ? (
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={monthlyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
-                    <Line
-                      type="monotone"
-                      dataKey="responseRate"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      name="Response Rate"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[250px] text-muted-foreground">
-                  <Percent className="w-12 h-12 mb-4 opacity-20" />
-                  <p className="text-sm">No response rate data available</p>
-                  <p className="text-xs mt-1">Response rates will appear as applications progress</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Response Rate Trend</CardTitle>
+                <CardDescription>Monthly response rate over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {monthlyTrends.length > 0 && monthlyTrends.some((m) => m.responseRate > 0) ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={monthlyTrends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
+                      <Line
+                        type="monotone"
+                        dataKey="responseRate"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        name="Response Rate"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[250px] text-muted-foreground">
+                    <Percent className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm">No response rate data available</p>
+                    <p className="text-xs mt-1">
+                      Response rates will appear as applications progress
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </>
         )}
 

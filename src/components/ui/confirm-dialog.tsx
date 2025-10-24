@@ -1,5 +1,6 @@
 import { AlertTriangle, Info } from 'lucide-react';
 import * as React from 'react';
+import { Button } from './button';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './dialog';
-import { Button } from './button';
 
 export type ConfirmDialogType = 'confirm' | 'alert' | 'danger';
 
@@ -96,12 +96,7 @@ export function ConfirmDialog({ open, onOpenChange, options }: ConfirmDialogProp
         </DialogHeader>
         <DialogFooter>
           {type !== 'alert' && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={loading}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={loading}>
               {cancelText}
             </Button>
           )}

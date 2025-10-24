@@ -156,146 +156,146 @@ export const CREDITS = [
   {
     category: 'Libraries & Frameworks',
     items: [
-      { 
-        name: 'React', 
-        description: 'UI Framework', 
+      {
+        name: 'React',
+        description: 'UI Framework',
         url: 'https://github.com/facebook/react',
-        licenseUrl: 'https://github.com/facebook/react/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/facebook/react/blob/main/LICENSE',
       },
       {
         name: 'TypeScript',
         description: 'Type-safe JavaScript',
         url: 'https://github.com/microsoft/TypeScript',
-        licenseUrl: 'https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt'
+        licenseUrl: 'https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt',
       },
-      { 
-        name: 'Vite', 
-        description: 'Build tool', 
+      {
+        name: 'Vite',
+        description: 'Build tool',
         url: 'https://github.com/vitejs/vite',
-        licenseUrl: 'https://github.com/vitejs/vite/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/vitejs/vite/blob/main/LICENSE',
       },
       {
         name: 'TanStack',
         description: 'High-quality open-source tools (Router, Table, Query)',
         url: 'https://tanstack.com',
-        licenseUrl: 'https://github.com/TanStack/router/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/TanStack/router/blob/main/LICENSE',
       },
-      { 
-        name: 'Zustand', 
-        description: 'State management', 
+      {
+        name: 'Zustand',
+        description: 'State management',
         url: 'https://github.com/pmndrs/zustand',
-        licenseUrl: 'https://github.com/pmndrs/zustand/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/pmndrs/zustand/blob/main/LICENSE',
       },
-      { 
-        name: 'Dexie.js', 
-        description: 'IndexedDB wrapper', 
+      {
+        name: 'Dexie.js',
+        description: 'IndexedDB wrapper',
         url: 'https://github.com/dexie/Dexie.js',
-        licenseUrl: 'https://github.com/dexie/Dexie.js/blob/master/LICENSE'
+        licenseUrl: 'https://github.com/dexie/Dexie.js/blob/master/LICENSE',
       },
-      { 
-        name: 'Framer Motion', 
-        description: 'Animation library', 
+      {
+        name: 'Framer Motion',
+        description: 'Animation library',
         url: 'https://github.com/framer/motion',
-        licenseUrl: 'https://github.com/framer/motion/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/framer/motion/blob/main/LICENSE',
       },
-      { 
-        name: 'Tailwind CSS', 
-        description: 'Utility-first CSS framework', 
+      {
+        name: 'Tailwind CSS',
+        description: 'Utility-first CSS framework',
         url: 'https://github.com/tailwindlabs/tailwindcss',
-        licenseUrl: 'https://github.com/tailwindlabs/tailwindcss/blob/master/LICENSE'
+        licenseUrl: 'https://github.com/tailwindlabs/tailwindcss/blob/master/LICENSE',
       },
-      { 
-        name: 'Zod', 
-        description: 'TypeScript-first schema validation', 
+      {
+        name: 'Zod',
+        description: 'TypeScript-first schema validation',
         url: 'https://github.com/colinhacks/zod',
-        licenseUrl: 'https://github.com/colinhacks/zod/blob/master/LICENSE'
+        licenseUrl: 'https://github.com/colinhacks/zod/blob/master/LICENSE',
       },
-      { 
-        name: 'React Hook Form', 
-        description: 'Performant form handling', 
+      {
+        name: 'React Hook Form',
+        description: 'Performant form handling',
         url: 'https://github.com/react-hook-form/react-hook-form',
-        licenseUrl: 'https://github.com/react-hook-form/react-hook-form/blob/master/LICENSE'
+        licenseUrl: 'https://github.com/react-hook-form/react-hook-form/blob/master/LICENSE',
       },
     ],
   },
   {
     category: 'UI Components',
     items: [
-      { 
-        name: 'Radix UI', 
-        description: 'Accessible components', 
+      {
+        name: 'Radix UI',
+        description: 'Accessible components',
         url: 'https://github.com/radix-ui/primitives',
-        licenseUrl: 'https://github.com/radix-ui/primitives/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/radix-ui/primitives/blob/main/LICENSE',
       },
-      { 
-        name: 'Shadcn/ui', 
-        description: 'Component collection', 
+      {
+        name: 'Shadcn/ui',
+        description: 'Component collection',
         url: 'https://github.com/shadcn-ui/ui',
-        licenseUrl: 'https://github.com/shadcn-ui/ui/blob/main/LICENSE.md'
+        licenseUrl: 'https://github.com/shadcn-ui/ui/blob/main/LICENSE.md',
       },
-      { 
-        name: 'Lucide Icons', 
-        description: 'Icon library', 
+      {
+        name: 'Lucide Icons',
+        description: 'Icon library',
         url: 'https://github.com/lucide-icons/lucide',
-        licenseUrl: 'https://github.com/lucide-icons/lucide/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/lucide-icons/lucide/blob/main/LICENSE',
       },
-      { 
-        name: 'Sonner', 
-        description: 'Toast notifications', 
+      {
+        name: 'Sonner',
+        description: 'Toast notifications',
         url: 'https://github.com/emilkowalski/sonner',
-        licenseUrl: 'https://github.com/emilkowalski/sonner/blob/main/LICENSE'
+        licenseUrl: 'https://github.com/emilkowalski/sonner/blob/main/LICENSE',
       },
-      { 
-        name: 'Recharts', 
-        description: 'Charting library', 
+      {
+        name: 'Recharts',
+        description: 'Charting library',
         url: 'https://github.com/recharts/recharts',
-        licenseUrl: 'https://github.com/recharts/recharts/blob/master/LICENSE'
+        licenseUrl: 'https://github.com/recharts/recharts/blob/master/LICENSE',
       },
     ],
   },
   {
     category: 'Development Tools',
     items: [
-      { 
-        name: 'Bun', 
-        description: 'JavaScript runtime', 
+      {
+        name: 'Bun',
+        description: 'JavaScript runtime',
         url: 'https://github.com/oven-sh/bun',
-        licenseUrl: 'https://github.com/oven-sh/bun/blob/main/LICENSE.md'
+        licenseUrl: 'https://github.com/oven-sh/bun/blob/main/LICENSE.md',
       },
-      { 
-        name: 'Biome', 
-        description: 'Linter and formatter', 
+      {
+        name: 'Biome',
+        description: 'Linter and formatter',
         url: 'https://github.com/biomejs/biome',
-        licenseUrl: 'https://github.com/biomejs/biome/blob/main/LICENSE-MIT'
+        licenseUrl: 'https://github.com/biomejs/biome/blob/main/LICENSE-MIT',
       },
-      { 
-        name: '@dnd-kit', 
-        description: 'Drag and drop', 
+      {
+        name: '@dnd-kit',
+        description: 'Drag and drop',
         url: 'https://github.com/clauderic/dnd-kit',
-        licenseUrl: 'https://github.com/clauderic/dnd-kit/blob/master/LICENSE'
+        licenseUrl: 'https://github.com/clauderic/dnd-kit/blob/master/LICENSE',
       },
     ],
   },
   {
     category: 'Utilities',
     items: [
-      { 
-        name: 'jsPDF', 
-        description: 'PDF document generation', 
+      {
+        name: 'jsPDF',
+        description: 'PDF document generation',
         url: 'https://github.com/parallax/jsPDF',
-        licenseUrl: 'https://github.com/parallax/jsPDF/blob/master/LICENSE'
+        licenseUrl: 'https://github.com/parallax/jsPDF/blob/master/LICENSE',
       },
-      { 
-        name: 'date-fns', 
-        description: 'Modern date utility library', 
+      {
+        name: 'date-fns',
+        description: 'Modern date utility library',
         url: 'https://github.com/date-fns/date-fns',
-        licenseUrl: 'https://github.com/date-fns/date-fns/blob/main/LICENSE.md'
+        licenseUrl: 'https://github.com/date-fns/date-fns/blob/main/LICENSE.md',
       },
-      { 
-        name: 'React Markdown', 
-        description: 'Markdown component for React', 
+      {
+        name: 'React Markdown',
+        description: 'Markdown component for React',
         url: 'https://github.com/remarkjs/react-markdown',
-        licenseUrl: 'https://github.com/remarkjs/react-markdown/blob/main/license'
+        licenseUrl: 'https://github.com/remarkjs/react-markdown/blob/main/license',
       },
     ],
   },

@@ -1,9 +1,8 @@
+import { Plus, Save, Sparkles } from 'lucide-react';
 import { useState } from 'react';
-import { Plus, Sparkles, Save } from 'lucide-react';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { WidgetFilterRow } from './WidgetFilterRow';
 import {
   Dialog,
   DialogContent,
@@ -23,19 +22,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useCustomWidgetsStore, type QueryType, type WidgetFilter } from '@/stores/customWidgetsStore';
+import {
+  type QueryType,
+  useCustomWidgetsStore,
+  type WidgetFilter,
+} from '@/stores/customWidgetsStore';
+import { WidgetFilterRow } from './WidgetFilterRow';
 
 export function CustomWidgetBuilder() {
   const { addWidget } = useCustomWidgetsStore();
   const [open, setOpen] = useState(false);
-  
+
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [queryType, setQueryType] = useState<QueryType>('count');
   const [dataSource, setDataSource] = useState<'applications' | 'interviews'>('applications');
   const [displayType, setDisplayType] = useState<'number' | 'list' | 'bar-chart'>('number');
-  const [colorScheme, setColorScheme] = useState<'primary' | 'success' | 'warning' | 'danger'>('primary');
+  const [colorScheme, setColorScheme] = useState<'primary' | 'success' | 'warning' | 'danger'>(
+    'primary'
+  );
   const [size, setSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [filters, setFilters] = useState<WidgetFilter[]>([]);
 
@@ -83,9 +89,7 @@ export function CustomWidgetBuilder() {
   };
 
   const updateFilter = (index: number, updates: Partial<WidgetFilter>) => {
-    setFilters(
-      filters.map((filter, i) => (i === index ? { ...filter, ...updates } : filter))
-    );
+    setFilters(filters.map((filter, i) => (i === index ? { ...filter, ...updates } : filter)));
   };
 
   return (
@@ -136,7 +140,10 @@ export function CustomWidgetBuilder() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Data Source</Label>
-              <Select value={dataSource} onValueChange={(value: 'applications' | 'interviews') => setDataSource(value)}>
+              <Select
+                value={dataSource}
+                onValueChange={(value: 'applications' | 'interviews') => setDataSource(value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -166,7 +173,10 @@ export function CustomWidgetBuilder() {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Display Type</Label>
-              <Select value={displayType} onValueChange={(value) => setDisplayType(value as typeof displayType)}>
+              <Select
+                value={displayType}
+                onValueChange={(value) => setDisplayType(value as typeof displayType)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -181,7 +191,10 @@ export function CustomWidgetBuilder() {
 
             <div className="space-y-2">
               <Label>Color</Label>
-              <Select value={colorScheme} onValueChange={(value) => setColorScheme(value as typeof colorScheme)}>
+              <Select
+                value={colorScheme}
+                onValueChange={(value) => setColorScheme(value as typeof colorScheme)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

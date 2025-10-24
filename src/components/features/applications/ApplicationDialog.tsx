@@ -7,8 +7,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useDocumentsStore } from '@/stores';
+import { useApplicationsStore } from '@/stores/applicationsStore';
 import type { Application } from '@/types';
 import { ApplicationForm } from './ApplicationForm';
 
@@ -29,7 +29,8 @@ export function ApplicationDialog({
   const [isLoading, setIsLoading] = useState(false);
 
   const { addApplication, updateApplication } = useApplicationsStore();
-  const { linkDocumentToApplications, unlinkDocumentFromApplication, documents } = useDocumentsStore();
+  const { linkDocumentToApplications, unlinkDocumentFromApplication, documents } =
+    useDocumentsStore();
 
   // Use controlled or uncontrolled state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -40,19 +41,21 @@ export function ApplicationDialog({
 
     try {
       const linkedDocumentIds = data.linkedDocumentIds || [];
-      
+
       // Remove linkedDocumentIds from application data as it's not part of the Application type
       const { linkedDocumentIds: _, ...applicationData } = data;
-      
+
       let applicationId: string;
-      
+
       if (application) {
         // Update existing application
         await updateApplication(application.id, applicationData);
         applicationId = application.id;
       } else {
         // Create new application
-        const newApp = await addApplication(applicationData as Omit<Application, 'id' | 'createdAt' | 'updatedAt'>);
+        const newApp = await addApplication(
+          applicationData as Omit<Application, 'id' | 'createdAt' | 'updatedAt'>
+        );
         applicationId = newApp.id;
       }
 
@@ -62,7 +65,7 @@ export function ApplicationDialog({
         const previouslyLinkedDocs = documents.filter((doc) =>
           doc.usedInApplicationIds?.includes(application.id)
         );
-        
+
         for (const doc of previouslyLinkedDocs) {
           if (!linkedDocumentIds.includes(doc.id)) {
             // Use the proper unlink function

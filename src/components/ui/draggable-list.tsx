@@ -41,10 +41,7 @@ export function DraggableListItem<T>({
       value={item}
       dragListener={false}
       dragControls={dragControls}
-      className={cn(
-        'relative list-none',
-        className
-      )}
+      className={cn('relative list-none', className)}
       whileDrag={{
         scale: 1.02,
         boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',

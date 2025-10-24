@@ -1,11 +1,19 @@
-import { useState, useMemo } from 'react';
 import { format, subDays } from 'date-fns';
+import {
+  Calendar,
+  CheckCircle2,
+  Download,
+  FileJson,
+  FileSpreadsheet,
+  FileText,
+  Printer,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import type { Application, Interview } from '@/types';
-import type { AnalyticsMetrics } from '@/types/analytics';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   Select,
   SelectContent,
@@ -13,16 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Download,
-  FileJson,
-  FileSpreadsheet,
-  FileText,
-  Printer,
-  CheckCircle2,
-  Calendar,
-} from 'lucide-react';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
+import type { Application, Interview } from '@/types';
+import type { AnalyticsMetrics } from '@/types/analytics';
 
 interface ExportOptionsProps {
   applications: Application[];
@@ -34,7 +34,9 @@ type PeriodType = 'all' | '7' | '30' | '90' | '180' | '365' | 'custom';
 
 export function ExportOptions({ applications, interviews, metrics }: ExportOptionsProps) {
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
-  const [exportType, setExportType] = useState<'applications' | 'interviews' | 'summary'>('applications');
+  const [exportType, setExportType] = useState<'applications' | 'interviews' | 'summary'>(
+    'applications'
+  );
   const [period, setPeriod] = useState<PeriodType>('all');
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   const [lastExport, setLastExport] = useState<string | null>(null);
@@ -252,9 +254,7 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
             <Download className="h-5 w-5" />
             Export Data
           </CardTitle>
-          <CardDescription>
-            Download your job search data in various formats
-          </CardDescription>
+          <CardDescription>Download your job search data in various formats</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-3">
@@ -278,7 +278,10 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
 
             <div className="space-y-2">
               <div className="text-sm font-medium">Export Type</div>
-              <Select value={exportType} onValueChange={(v) => setExportType(v as typeof exportType)}>
+              <Select
+                value={exportType}
+                onValueChange={(v) => setExportType(v as typeof exportType)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -307,7 +310,10 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
 
             <div className="space-y-2">
               <div className="text-sm font-medium">File Format</div>
-              <Select value={exportFormat} onValueChange={(v) => setExportFormat(v as typeof exportFormat)}>
+              <Select
+                value={exportFormat}
+                onValueChange={(v) => setExportFormat(v as typeof exportFormat)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -332,20 +338,19 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
           {period === 'custom' && (
             <div className="space-y-2">
               <div className="text-sm font-medium">Select Date Range</div>
-              <DateRangePicker
-                value={customDateRange}
-                onChange={setCustomDateRange}
-              />
+              <DateRangePicker value={customDateRange} onChange={setCustomDateRange} />
             </div>
           )}
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
             <span>
-              Showing {filteredData.applications.length} application(s) and {filteredData.interviews.length} interview(s)
+              Showing {filteredData.applications.length} application(s) and{' '}
+              {filteredData.interviews.length} interview(s)
               {period === 'custom' && customDateRange?.from && (
                 <>
-                  {' '}from {format(customDateRange.from, 'MMM dd, yyyy')}
+                  {' '}
+                  from {format(customDateRange.from, 'MMM dd, yyyy')}
                   {customDateRange.to && ` to ${format(customDateRange.to, 'MMM dd, yyyy')}`}
                 </>
               )}
@@ -512,15 +517,21 @@ export function ExportOptions({ applications, interviews, metrics }: ExportOptio
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">CSV</Badge>
+            <Badge variant="outline" className="mt-0.5">
+              CSV
+            </Badge>
             <p>Best for importing into Excel, Google Sheets, or other spreadsheet applications</p>
           </div>
           <div className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">JSON</Badge>
+            <Badge variant="outline" className="mt-0.5">
+              JSON
+            </Badge>
             <p>Best for developers, backups, or importing into other applications</p>
           </div>
           <div className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">Print</Badge>
+            <Badge variant="outline" className="mt-0.5">
+              Print
+            </Badge>
             <p>Use Ctrl+P or Cmd+P for print preview. The page is optimized for printing.</p>
           </div>
         </CardContent>

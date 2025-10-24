@@ -1,13 +1,24 @@
+import { format, subYears } from 'date-fns';
+import { Calendar, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { subYears, format } from 'date-fns';
-import type { Application, Interview } from '@/types';
-import { calculateAnalytics } from '@/lib/analytics';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartRangeSelector } from '@/components/ui/chart-range-selector';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { calculateAnalytics } from '@/lib/analytics';
+import type { Application, Interview } from '@/types';
 
 interface PeriodComparisonProps {
   applications: Application[];
@@ -51,7 +62,7 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
     for (let i = 0; i < 4; i++) {
       const quarterStart = new Date(now.getFullYear(), (currentQuarter - i) * 3, 1);
       const quarterEnd = new Date(now.getFullYear(), (currentQuarter - i + 1) * 3, 0);
-      
+
       const metrics = calculateAnalytics(applications, interviews, {
         start: quarterStart,
         end: quarterEnd > now ? now : quarterEnd,
@@ -74,7 +85,7 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
     for (let i = 11; i >= 0; i--) {
       const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      
+
       const metrics = calculateAnalytics(applications, interviews, {
         start: monthStart,
         end: monthEnd > now ? now : monthEnd,
@@ -129,7 +140,10 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={comparisonType} onValueChange={(v) => setComparisonType(v as typeof comparisonType)}>
+          <Tabs
+            value={comparisonType}
+            onValueChange={(v) => setComparisonType(v as typeof comparisonType)}
+          >
             <TabsList>
               <TabsTrigger value="yoy">Year-over-Year</TabsTrigger>
               <TabsTrigger value="quarter">Quarterly</TabsTrigger>
@@ -160,20 +174,26 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
                             yoyComparison.lastYear.totalApplications
                           )
                         )}
-                        <span className={getTrendColor(
-                          calculateChange(
-                            yoyComparison.thisYear.totalApplications,
-                            yoyComparison.lastYear.totalApplications
-                          )
-                        )}>
+                        <span
+                          className={getTrendColor(
+                            calculateChange(
+                              yoyComparison.thisYear.totalApplications,
+                              yoyComparison.lastYear.totalApplications
+                            )
+                          )}
+                        >
                           {Math.abs(
                             calculateChange(
                               yoyComparison.thisYear.totalApplications,
                               yoyComparison.lastYear.totalApplications
                             )
-                          ).toFixed(1)}%
+                          ).toFixed(1)}
+                          %
                         </span>
-                        <span>vs {yoyComparison.lastYear.totalApplications} in {yoyComparison.lastYear.year}</span>
+                        <span>
+                          vs {yoyComparison.lastYear.totalApplications} in{' '}
+                          {yoyComparison.lastYear.year}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -200,20 +220,26 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
                             yoyComparison.lastYear.interviewConversionRate
                           )
                         )}
-                        <span className={getTrendColor(
-                          calculateChange(
-                            yoyComparison.thisYear.interviewConversionRate,
-                            yoyComparison.lastYear.interviewConversionRate
-                          )
-                        )}>
+                        <span
+                          className={getTrendColor(
+                            calculateChange(
+                              yoyComparison.thisYear.interviewConversionRate,
+                              yoyComparison.lastYear.interviewConversionRate
+                            )
+                          )}
+                        >
                           {Math.abs(
                             calculateChange(
                               yoyComparison.thisYear.interviewConversionRate,
                               yoyComparison.lastYear.interviewConversionRate
                             )
-                          ).toFixed(1)}%
+                          ).toFixed(1)}
+                          %
                         </span>
-                        <span>vs {yoyComparison.lastYear.interviewConversionRate.toFixed(1)}% in {yoyComparison.lastYear.year}</span>
+                        <span>
+                          vs {yoyComparison.lastYear.interviewConversionRate.toFixed(1)}% in{' '}
+                          {yoyComparison.lastYear.year}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -240,20 +266,26 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
                             yoyComparison.lastYear.successfulApplications
                           )
                         )}
-                        <span className={getTrendColor(
-                          calculateChange(
-                            yoyComparison.thisYear.successfulApplications,
-                            yoyComparison.lastYear.successfulApplications
-                          )
-                        )}>
+                        <span
+                          className={getTrendColor(
+                            calculateChange(
+                              yoyComparison.thisYear.successfulApplications,
+                              yoyComparison.lastYear.successfulApplications
+                            )
+                          )}
+                        >
                           {Math.abs(
                             calculateChange(
                               yoyComparison.thisYear.successfulApplications,
                               yoyComparison.lastYear.successfulApplications
                             )
-                          ).toFixed(1)}%
+                          ).toFixed(1)}
+                          %
                         </span>
-                        <span>vs {yoyComparison.lastYear.successfulApplications} in {yoyComparison.lastYear.year}</span>
+                        <span>
+                          vs {yoyComparison.lastYear.successfulApplications} in{' '}
+                          {yoyComparison.lastYear.year}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -280,20 +312,26 @@ export function PeriodComparison({ applications, interviews }: PeriodComparisonP
                             yoyComparison.lastYear.averageResponseTime
                           )
                         )}
-                        <span className={getTrendColor(
-                          -calculateChange(
-                            yoyComparison.thisYear.averageResponseTime,
-                            yoyComparison.lastYear.averageResponseTime
-                          )
-                        )}>
+                        <span
+                          className={getTrendColor(
+                            -calculateChange(
+                              yoyComparison.thisYear.averageResponseTime,
+                              yoyComparison.lastYear.averageResponseTime
+                            )
+                          )}
+                        >
                           {Math.abs(
                             calculateChange(
                               yoyComparison.thisYear.averageResponseTime,
                               yoyComparison.lastYear.averageResponseTime
                             )
-                          ).toFixed(1)}%
+                          ).toFixed(1)}
+                          %
                         </span>
-                        <span>vs {yoyComparison.lastYear.averageResponseTime.toFixed(0)} days in {yoyComparison.lastYear.year}</span>
+                        <span>
+                          vs {yoyComparison.lastYear.averageResponseTime.toFixed(0)} days in{' '}
+                          {yoyComparison.lastYear.year}
+                        </span>
                       </div>
                     </div>
                   </CardContent>

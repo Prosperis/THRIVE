@@ -1,17 +1,17 @@
 import { motion } from 'framer-motion';
 import { GripVertical } from 'lucide-react';
 import { useState } from 'react';
-import { StatusTransitionBadge } from '@/components/ui/status-transition-badge';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { StatusTransitionBadge } from '@/components/ui/status-transition-badge';
+import { cn } from '@/lib/utils';
 import { useApplicationsStore } from '@/stores';
 import type { Application } from '@/types';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface DraggableStatusBadgeProps {
   application: Application;
@@ -40,12 +40,9 @@ export function DraggableStatusBadge({ application }: DraggableStatusBadgeProps)
 
     updateApplication(application.id, { status: newStatus });
 
-    toast.success(
-      `${statusOption?.emoji} Status updated to "${statusOption?.label}"`,
-      {
-        description: `${application.position} at ${application.companyName}`,
-      }
-    );
+    toast.success(`${statusOption?.emoji} Status updated to "${statusOption?.label}"`, {
+      description: `${application.position} at ${application.companyName}`,
+    });
   };
 
   return (
@@ -72,11 +69,7 @@ export function DraggableStatusBadge({ application }: DraggableStatusBadgeProps)
           )}
         >
           <GripVertical className="h-3 w-3 text-muted-foreground opacity-50" />
-          <StatusTransitionBadge
-            status={application.status}
-            showIcon
-            showPulse={isDragging}
-          />
+          <StatusTransitionBadge status={application.status} showIcon showPulse={isDragging} />
         </motion.div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">

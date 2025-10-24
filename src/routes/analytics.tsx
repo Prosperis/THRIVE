@@ -2,8 +2,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { useInterviewsStore } from '@/stores/interviewsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
+import { useInterviewsStore } from '@/stores/interviewsStore';
 
 export const Route = createFileRoute('/analytics')({
   component: AnalyticsPage,
@@ -19,18 +19,14 @@ function AnalyticsPage() {
     // Initialize data by fetching from database
     const initializeData = async () => {
       try {
-        await Promise.all([
-          fetchApplications(),
-          fetchInterviews(),
-          fetchCompanies(),
-        ]);
+        await Promise.all([fetchApplications(), fetchInterviews(), fetchCompanies()]);
       } catch (error) {
         console.error('Failed to initialize analytics data:', error);
       } finally {
         setIsInitialized(true);
       }
     };
-    
+
     initializeData();
   }, [fetchApplications, fetchInterviews, fetchCompanies]);
 

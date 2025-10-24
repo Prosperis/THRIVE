@@ -1,18 +1,10 @@
-import { useMemo } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { isWithinInterval } from 'date-fns';
 import { Clock } from 'lucide-react';
+import { useMemo } from 'react';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { calculateResponseTimeDistribution } from '@/lib/analytics';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { isWithinInterval } from 'date-fns';
 
 interface ResponseTimeChartProps {
   period?: {
@@ -27,7 +19,7 @@ export function ResponseTimeChart({ period }: ResponseTimeChartProps = {}) {
   // Filter applications by period if provided
   const filteredApplications = useMemo(() => {
     if (!period) return applications;
-    
+
     return applications.filter((app) => {
       const appDate = new Date(app.appliedDate || app.createdAt);
       return isWithinInterval(appDate, { start: period.start, end: period.end });

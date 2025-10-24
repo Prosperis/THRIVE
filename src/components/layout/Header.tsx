@@ -17,10 +17,18 @@ export default function Header() {
             <Menu className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Toggle menu</span>
           </Button>
-          <Link to="/" className="mr-4 flex items-center space-x-2 sm:mr-6 cursor-pointer" aria-label="Thrive home">
+          <Link
+            to="/"
+            className="mr-4 flex items-center space-x-2 sm:mr-6 cursor-pointer"
+            aria-label="Thrive home"
+          >
             <span className="text-lg font-bold sm:text-xl">THRIVE</span>
           </Link>
-          <nav id="main-nav" className="hidden md:flex md:gap-4 lg:gap-6" aria-label="Main navigation">
+          <nav
+            id="main-nav"
+            className="hidden md:flex md:gap-4 lg:gap-6"
+            aria-label="Main navigation"
+          >
             <Link
               to="/applications"
               className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"

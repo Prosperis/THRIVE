@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { Trophy, Target, TrendingUp, Zap, Star, Award } from 'lucide-react';
+import { Award, Star, Target, TrendingUp, Trophy, Zap } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { Application, Interview } from '@/types';
 
@@ -15,14 +15,11 @@ interface Milestone {
 
 /**
  * Hook to detect and notify about analytics milestones
- * 
+ *
  * Note: Milestone checks are throttled to prevent notification spam.
  * Milestones are only checked once per 5 seconds max.
  */
-export function useMilestoneNotifications(
-  applications: Application[],
-  interviews: Interview[]
-) {
+export function useMilestoneNotifications(applications: Application[], interviews: Interview[]) {
   const [achievedMilestones, setAchievedMilestones] = useState<Set<string>>(new Set());
   const lastCheckTimeRef = useRef<number>(0);
   const THROTTLE_MS = 5000; // Check at most once per 5 seconds
@@ -31,7 +28,7 @@ export function useMilestoneNotifications(
     // Throttle milestone checks to prevent spam
     const now = Date.now();
     const timeSinceLastCheck = now - lastCheckTimeRef.current;
-    
+
     if (timeSinceLastCheck < THROTTLE_MS) {
       // Skip this check if we checked recently
       return;
@@ -201,18 +198,22 @@ export function useEncouragementMessages(applicationCount: number, _interviewCou
 
   useEffect(() => {
     // Show encouragement every 5 applications (after the first 10)
-    if (applicationCount >= 10 && applicationCount % 5 === 0 && applicationCount > lastEncouragementCount) {
+    if (
+      applicationCount >= 10 &&
+      applicationCount % 5 === 0 &&
+      applicationCount > lastEncouragementCount
+    ) {
       const messages = [
-        "Keep going! Every application brings you closer to your goal! 💪",
+        'Keep going! Every application brings you closer to your goal! 💪',
         "You're doing great! Consistency is key! 🌟",
-        "Impressive dedication! Your hard work will pay off! 🚀",
+        'Impressive dedication! Your hard work will pay off! 🚀',
         "Stay motivated! You're building momentum! ⚡",
-        "Great progress! Keep pushing forward! 🎯",
+        'Great progress! Keep pushing forward! 🎯',
       ];
 
       const randomMessage = messages[Math.floor(Math.random() * messages.length)];
 
-      toast.info("Keep Up The Great Work!", {
+      toast.info('Keep Up The Great Work!', {
         description: randomMessage,
         duration: 3000,
       });

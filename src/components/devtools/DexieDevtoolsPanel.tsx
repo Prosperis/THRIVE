@@ -164,9 +164,7 @@ export function DexieDevtoolsPanel() {
 
         <div style={{ padding: '1rem' }}>
           {loading ? (
-            <div style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
-              Loading...
-            </div>
+            <div style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>Loading...</div>
           ) : tableData.length === 0 ? (
             <div style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
               No records found

@@ -1,20 +1,29 @@
-import { LayoutGrid, Plus, Table as TableIcon, X, Download, FileDown, ChevronDown, List } from 'lucide-react';
+import type { Table } from '@tanstack/react-table';
+import {
+  ChevronDown,
+  Download,
+  FileDown,
+  LayoutGrid,
+  List,
+  Plus,
+  Table as TableIcon,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { SearchInput } from '@/components/ui/search-input';
 import { useCompaniesStore } from '@/stores/companiesStore';
-import { UnifiedFilters } from './UnifiedFilters';
-import { SavedFiltersDialog } from './SavedFiltersDialog';
-import type { Table } from '@tanstack/react-table';
 import type { Company } from '@/types';
+import { SavedFiltersDialog } from './SavedFiltersDialog';
+import { UnifiedFilters } from './UnifiedFilters';
 
 interface CompaniesToolbarProps {
   table?: Table<Company>;

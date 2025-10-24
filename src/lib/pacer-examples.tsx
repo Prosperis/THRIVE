@@ -1,17 +1,21 @@
 /**
  * Examples of TanStack Pacer usage throughout the Thrive application
- * 
+ *
  * This file demonstrates common patterns for using Pacer utilities.
  * These are reference examples - the actual implementations are in the respective files.
  */
 
-import { useDebouncedCallback, useDebouncedValue, useThrottledCallback } from '@tanstack/react-pacer';
+import {
+  useDebouncedCallback,
+  useDebouncedValue,
+  useThrottledCallback,
+} from '@tanstack/react-pacer';
 import { useState } from 'react';
 
 /**
  * Example 1: Debounced Search Input
  * Used in: src/components/ui/search-input.tsx
- * 
+ *
  * Delays the onChange callback until user stops typing for 300ms
  */
 export function DebouncedSearchExample() {
@@ -50,10 +54,9 @@ export function DebouncedSearchExample() {
  */
 export function AutoSaveExample() {
   const [content, setContent] = useState('');
-  
+
   // Debounce the entire value
   // @ts-expect-error - Example code showing debounced value usage
-  // biome-ignore lint/correctness/noUnusedVariables: Example code
   const _debouncedContent = useDebouncedValue(content, { wait: 1000 });
 
   // This effect will only run 1 second after the last edit
@@ -107,7 +110,7 @@ export function BulkOperationsExample() {
 
 // Helper function (simulated)
 async function performSearch(query: string): Promise<string[]> {
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
   return [`Result for: ${query}`];
 }
 
@@ -117,7 +120,7 @@ async function performSearch(query: string): Promise<string[]> {
  */
 export function DatabaseBatchingExample() {
   const [_tags, setTags] = useState<string[]>([]);
-  
+
   // This would be used in a real component
   // const batcher = useDatabaseBatcher({
   //   table: db.applications,
@@ -139,17 +142,17 @@ export function DatabaseBatchingExample() {
 /**
  * Migration Notes:
  * ================
- * 
+ *
  * ✅ COMPLETED:
  * - Search inputs now use useDebouncedCallback
  * - Created pacer utilities wrapper in src/lib/pacer.ts
  * - Bulk operations with rate limiting and progress tracking
  * - Database batching utilities for rapid updates
- * 
+ *
  * 🔄 IN PROGRESS:
  * - Auto-save debouncing for forms
  * - Notification throttling
- * 
+ *
  * 📋 TODO:
  * - Export progress tracking with queues
  * - Animation throttling

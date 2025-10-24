@@ -1,14 +1,7 @@
 import type { ColumnDef, Table } from '@tanstack/react-table';
-import {
-  Copy,
-  ExternalLink,
-  Pencil,
-  Trash2,
-  FileText,
-} from 'lucide-react';
+import { Copy, ExternalLink, FileText, Pencil, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useConfirm } from '@/hooks/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -20,14 +13,14 @@ import {
 } from '@/components/ui/context-menu';
 import { DataTable } from '@/components/ui/data-table';
 import { SortableHeader } from '@/components/ui/sortable-header';
+import { useConfirm } from '@/hooks/useConfirm';
 import { formatDate } from '@/lib/utils';
-import { useApplicationsStore, useSettingsStore } from '@/stores';
-import { useDocumentsStore } from '@/stores';
+import { useApplicationsStore, useDocumentsStore, useSettingsStore } from '@/stores';
 import type { Application } from '@/types';
 import { ApplicationDialog } from './ApplicationDialog';
 import { BulkActions } from './BulkActions';
-import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
 import { DraggableStatusBadge } from './DraggableStatusBadge';
+import { LinkedDocumentsPopover } from './LinkedDocumentsPopover';
 
 const priorityColors: Record<NonNullable<Application['priority']>, string> = {
   low: 'bg-gray-400',
@@ -84,7 +77,10 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
 
   const handleRowDragOver = useCallback((e: React.DragEvent, applicationId: string) => {
     // Check if this is a document being dragged OR files from file system
-    if (e.dataTransfer.types.includes('application/x-document-id') || e.dataTransfer.types.includes('Files')) {
+    if (
+      e.dataTransfer.types.includes('application/x-document-id') ||
+      e.dataTransfer.types.includes('Files')
+    ) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'link';
       setDragOverRowId(applicationId);
@@ -95,97 +91,106 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
     setDragOverRowId(null);
   }, []);
 
-  const handleRowDrop = useCallback(async (e: React.DragEvent, application: Application) => {
-    e.preventDefault();
-    setDragOverRowId(null);
+  const handleRowDrop = useCallback(
+    async (e: React.DragEvent, application: Application) => {
+      e.preventDefault();
+      setDragOverRowId(null);
 
-    // Check if it's a document from within the app
-    const documentId = e.dataTransfer.getData('application/x-document-id');
-    if (documentId) {
-      // Handle existing document linking
-      const isAlreadyLinked = documents.some(
-        doc => doc.id === documentId && doc.usedInApplicationIds?.includes(application.id)
-      );
-      
-      if (isAlreadyLinked) {
-        toast.info('Document already linked to this application');
+      // Check if it's a document from within the app
+      const documentId = e.dataTransfer.getData('application/x-document-id');
+      if (documentId) {
+        // Handle existing document linking
+        const isAlreadyLinked = documents.some(
+          (doc) => doc.id === documentId && doc.usedInApplicationIds?.includes(application.id)
+        );
+
+        if (isAlreadyLinked) {
+          toast.info('Document already linked to this application');
+          return;
+        }
+
+        try {
+          await linkDocumentToApplications(documentId, [application.id]);
+          const docData = JSON.parse(e.dataTransfer.getData('text/plain'));
+          toast.success(`${docData.name} linked to ${application.position}`);
+        } catch (error) {
+          toast.error('Failed to link document');
+          console.error('Error linking document:', error);
+        }
         return;
       }
 
-      try {
-        await linkDocumentToApplications(documentId, [application.id]);
-        const docData = JSON.parse(e.dataTransfer.getData('text/plain'));
-        toast.success(`${docData.name} linked to ${application.position}`);
-      } catch (error) {
-        toast.error('Failed to link document');
-        console.error('Error linking document:', error);
+      // Handle file system drops
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length === 0) return;
+
+      // Filter for supported file types
+      const supportedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'text/html',
+      ];
+
+      const validFiles = files.filter((file) => supportedTypes.includes(file.type));
+
+      if (validFiles.length === 0) {
+        toast.error('Unsupported file type. Please drop PDF, Word, or text files.');
+        return;
       }
-      return;
-    }
 
-    // Handle file system drops
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length === 0) return;
+      toast.info(`Processing ${validFiles.length} file(s)...`);
 
-    // Filter for supported file types
-    const supportedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain',
-      'text/html',
-    ];
+      // Process each file
+      for (const file of validFiles) {
+        try {
+          const content = await file.text();
 
-    const validFiles = files.filter(file => supportedTypes.includes(file.type));
-    
-    if (validFiles.length === 0) {
-      toast.error('Unsupported file type. Please drop PDF, Word, or text files.');
-      return;
-    }
+          // Detect document type based on filename
+          const fileName = file.name.toLowerCase();
+          let type:
+            | 'resume'
+            | 'cover-letter'
+            | 'portfolio'
+            | 'transcript'
+            | 'certification'
+            | 'other' = 'other';
 
-    toast.info(`Processing ${validFiles.length} file(s)...`);
+          if (fileName.includes('resume') || fileName.includes('cv')) {
+            type = 'resume';
+          } else if (fileName.includes('cover') || fileName.includes('letter')) {
+            type = 'cover-letter';
+          } else if (fileName.includes('portfolio')) {
+            type = 'portfolio';
+          } else if (fileName.includes('transcript')) {
+            type = 'transcript';
+          } else if (fileName.includes('cert')) {
+            type = 'certification';
+          }
 
-    // Process each file
-    for (const file of validFiles) {
-      try {
-        const content = await file.text();
-        
-        // Detect document type based on filename
-        const fileName = file.name.toLowerCase();
-        let type: 'resume' | 'cover-letter' | 'portfolio' | 'transcript' | 'certification' | 'other' = 'other';
-        
-        if (fileName.includes('resume') || fileName.includes('cv')) {
-          type = 'resume';
-        } else if (fileName.includes('cover') || fileName.includes('letter')) {
-          type = 'cover-letter';
-        } else if (fileName.includes('portfolio')) {
-          type = 'portfolio';
-        } else if (fileName.includes('transcript')) {
-          type = 'transcript';
-        } else if (fileName.includes('cert')) {
-          type = 'certification';
+          // Create the document
+          const { addDocument } = useDocumentsStore.getState();
+          const newDocument = await addDocument({
+            name: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
+            type,
+            content,
+            tags: [application.companyName, application.position],
+            version: 1,
+          });
+
+          // Link to this application
+          await linkDocumentToApplications(newDocument.id, [application.id]);
+
+          toast.success(`${file.name} uploaded and linked`);
+        } catch (error) {
+          toast.error(`Failed to process ${file.name}`);
+          console.error('Error processing file:', error);
         }
-
-        // Create the document
-        const { addDocument } = useDocumentsStore.getState();
-        const newDocument = await addDocument({
-          name: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
-          type,
-          content,
-          tags: [application.companyName, application.position],
-          version: 1,
-        });
-
-        // Link to this application
-        await linkDocumentToApplications(newDocument.id, [application.id]);
-        
-        toast.success(`${file.name} uploaded and linked`);
-      } catch (error) {
-        toast.error(`Failed to process ${file.name}`);
-        console.error('Error processing file:', error);
       }
-    }
-  }, [documents, linkDocumentToApplications]);
+    },
+    [documents, linkDocumentToApplications]
+  );
 
   const columns = useMemo<ColumnDef<Application>[]>(
     () => [
@@ -234,11 +239,7 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
         accessorKey: 'status',
         header: ({ column }) => <SortableHeader column={column}>Status</SortableHeader>,
         cell: ({ row }) => {
-          return (
-            <DraggableStatusBadge
-              application={row.original}
-            />
-          );
+          return <DraggableStatusBadge application={row.original} />;
         },
         filterFn: (row, id, value) => {
           return value.includes(row.getValue(id));
@@ -328,16 +329,13 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
           const linkedDocs = documents.filter((doc) =>
             doc.usedInApplicationIds?.includes(row.original.id)
           );
-          
+
           if (linkedDocs.length === 0) {
             return <span className="text-xs text-muted-foreground">—</span>;
           }
-          
+
           return (
-            <LinkedDocumentsPopover 
-              documents={linkedDocs}
-              applicationId={row.original.id}
-            >
+            <LinkedDocumentsPopover documents={linkedDocs} applicationId={row.original.id}>
               <button
                 type="button"
                 className="flex items-center gap-1 hover:text-foreground transition-colors"
@@ -379,56 +377,58 @@ export function ApplicationsTable({ onTableReady }: ApplicationsTableProps = {})
                   className={dragOverRowId === application.id ? 'bg-primary/10' : ''}
                 >
                   {/* Extract cells from the original row */}
-                  {React.isValidElement(rowContent) && (rowContent as React.ReactElement<{children: React.ReactNode}>).props.children}
+                  {React.isValidElement(rowContent) &&
+                    (rowContent as React.ReactElement<{ children: React.ReactNode }>).props
+                      .children}
                 </tr>
               </ContextMenuTrigger>
-            <ContextMenuContent className="w-56">
-              <ContextMenuItem onClick={() => handleEdit(application)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                View/Edit Application
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleDuplicate(application)}>
-                <Copy className="mr-2 h-4 w-4" />
-                Duplicate Application
-              </ContextMenuItem>
-              <ContextMenuSeparator />
-              {application.jobUrl && (
-                <ContextMenuItem 
-                  onClick={() => {
-                    window.open(application.jobUrl, '_blank', 'noopener,noreferrer');
+              <ContextMenuContent className="w-56">
+                <ContextMenuItem onClick={() => handleEdit(application)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  View/Edit Application
+                </ContextMenuItem>
+                <ContextMenuItem onClick={() => handleDuplicate(application)}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate Application
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                {application.jobUrl && (
+                  <ContextMenuItem
+                    onClick={() => {
+                      window.open(application.jobUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Open Job Posting
+                  </ContextMenuItem>
+                )}
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={async () => {
+                    if (dataSettings.confirmDelete) {
+                      const confirmed = await confirm({
+                        title: 'Delete Application',
+                        description: `Are you sure you want to delete "${application.position}"?`,
+                        type: 'danger',
+                        confirmText: 'Delete',
+                        cancelText: 'Cancel',
+                      });
+
+                      if (!confirmed) return;
+                    }
+
+                    deleteApplication(application.id);
+                    toast.success('Application Deleted', {
+                      description: `${application.position} has been deleted`,
+                    });
                   }}
                 >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Open Job Posting
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Application
                 </ContextMenuItem>
-              )}
-              <ContextMenuSeparator />
-              <ContextMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={async () => {
-                  if (dataSettings.confirmDelete) {
-                    const confirmed = await confirm({
-                      title: 'Delete Application',
-                      description: `Are you sure you want to delete "${application.position}"?`,
-                      type: 'danger',
-                      confirmText: 'Delete',
-                      cancelText: 'Cancel',
-                    });
-
-                    if (!confirmed) return;
-                  }
-
-                  deleteApplication(application.id);
-                  toast.success('Application Deleted', {
-                    description: `${application.position} has been deleted`,
-                  });
-                }}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Application
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu>
+              </ContextMenuContent>
+            </ContextMenu>
           );
         }}
       />

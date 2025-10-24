@@ -1,15 +1,15 @@
 /**
  * Migration Script: CompanyNotes to Companies Store
- * 
+ *
  * This script migrates company research data from the interviewPrepStore (companyNotes)
  * to the unified companiesStore with the enhanced Company type.
- * 
+ *
  * Run this once to migrate existing data.
  */
 
-import { db } from './db';
 import type { Company } from '@/types';
 import type { CompanyPrepNote } from '@/types/interviewPrep';
+import { db } from './db';
 
 const MIGRATION_FLAG_KEY = 'thrive_companies_migration_completed';
 
@@ -101,13 +101,15 @@ function getCompanyNotesFromLocalStorage(): CompanyPrepNote[] {
 
     const parsed = JSON.parse(interviewPrepData);
     const companyNotes = parsed.state?.companyNotes || [];
-    
+
     // Convert date strings back to Date objects
-    return companyNotes.map((note: CompanyPrepNote & { createdAt: string | Date; updatedAt: string | Date }) => ({
-      ...note,
-      createdAt: new Date(note.createdAt),
-      updatedAt: new Date(note.updatedAt),
-    }));
+    return companyNotes.map(
+      (note: CompanyPrepNote & { createdAt: string | Date; updatedAt: string | Date }) => ({
+        ...note,
+        createdAt: new Date(note.createdAt),
+        updatedAt: new Date(note.updatedAt),
+      })
+    );
   } catch (error) {
     console.error('Error reading company notes from localStorage:', error);
     return [];
@@ -160,7 +162,7 @@ export async function migrateCompanyNotes(): Promise<{
       // Convert and add to new store
       const company = convertCompanyNoteToCompany(note);
       await db.companies.add(company);
-      
+
       console.log(`✅ Migrated: ${company.name}`);
       migrated++;
     } catch (error) {
@@ -206,18 +208,18 @@ export async function autoMigrateOnLoad(): Promise<void> {
   }
 
   console.log('🚀 Auto-running company notes migration...');
-  
+
   try {
     const result = await migrateCompanyNotes();
-    
+
     if (result.success) {
       console.log('✅ Auto-migration completed successfully');
-      
+
       // Show success notification to user
       if (result.migrated > 0) {
         console.info(
           `✨ Migrated ${result.migrated} companies to the new system. ` +
-          'You can now manage them from the Companies page!'
+            'You can now manage them from the Companies page!'
         );
       }
     } else {
@@ -236,7 +238,7 @@ export function getMigrationStatus(): {
 } {
   const completed = isMigrationCompleted();
   const legacyNotes = getCompanyNotesFromLocalStorage();
-  
+
   return {
     completed,
     hasLegacyData: legacyNotes.length > 0,

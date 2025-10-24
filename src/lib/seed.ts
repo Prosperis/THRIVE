@@ -921,7 +921,8 @@ export async function seedDatabase() {
       location: 'San Francisco, CA',
       founded: '2010',
       remotePolicy: 'hybrid',
-      description: 'Leading cloud infrastructure provider specializing in scalable web applications',
+      description:
+        'Leading cloud infrastructure provider specializing in scalable web applications',
       techStack: ['React', 'TypeScript', 'AWS', 'Kubernetes'],
       researched: true,
       applicationIds: [applicationIds['TechCorp Inc']],
@@ -1015,7 +1016,8 @@ export async function seedDatabase() {
       location: 'Portland, OR',
       founded: '2019',
       remotePolicy: 'full-remote',
-      description: 'Building technology solutions for environmental sustainability and climate action',
+      description:
+        'Building technology solutions for environmental sustainability and climate action',
       techStack: ['TypeScript', 'Node.js', 'React', 'PostgreSQL'],
       researched: true,
       applicationIds: [applicationIds['GreenTech Solutions']],
@@ -1381,7 +1383,8 @@ export async function seedDatabase() {
           linkedIn: 'https://linkedin.com/in/alexthompson',
         },
       ],
-      preparationNotes: 'Review React hooks, system design, and data structures. Focus on state management patterns and performance optimization.',
+      preparationNotes:
+        'Review React hooks, system design, and data structures. Focus on state management patterns and performance optimization.',
       questionsToAsk: [
         'What does the team structure look like?',
         'What are the biggest technical challenges?',
@@ -1407,7 +1410,8 @@ export async function seedDatabase() {
           title: 'VP of Engineering',
         },
       ],
-      preparationNotes: 'Prepare STAR format stories. Focus on leadership, conflict resolution, and cross-team collaboration examples.',
+      preparationNotes:
+        'Prepare STAR format stories. Focus on leadership, conflict resolution, and cross-team collaboration examples.',
       questionsToAsk: [
         'How does the team handle remote collaboration?',
         'What are the opportunities for growth and mentorship?',
@@ -1428,7 +1432,8 @@ export async function seedDatabase() {
           email: 'rachel@startupxyz.com',
         },
       ],
-      preparationNotes: 'Initial screening call. Be ready to discuss background, salary expectations, and interest in fintech.',
+      preparationNotes:
+        'Initial screening call. Be ready to discuss background, salary expectations, and interest in fintech.',
       questionsToAsk: [
         'What are the next steps in the interview process?',
         'What does the tech stack look like?',
@@ -1458,7 +1463,8 @@ export async function seedDatabase() {
           linkedIn: 'https://linkedin.com/in/jameslee',
         },
       ],
-      preparationNotes: 'Panel interview with cross-functional team. Prepare to discuss architecture decisions, product thinking, and team collaboration.',
+      preparationNotes:
+        'Panel interview with cross-functional team. Prepare to discuss architecture decisions, product thinking, and team collaboration.',
       questionsToAsk: [
         'How do engineering and product teams collaborate?',
         'What is the release cadence?',
@@ -1480,7 +1486,8 @@ export async function seedDatabase() {
           linkedIn: 'https://linkedin.com/in/oliviataylor',
         },
       ],
-      preparationNotes: 'Portfolio review and technical discussion about design systems. Bring examples of component libraries built.',
+      preparationNotes:
+        'Portfolio review and technical discussion about design systems. Bring examples of component libraries built.',
       questionsToAsk: [
         'How is the design system currently structured?',
         'What are the main pain points with the current system?',
@@ -1502,7 +1509,8 @@ export async function seedDatabase() {
           title: 'Staff Engineer',
         },
       ],
-      preparationNotes: 'Live coding session focused on algorithms and system design. Expect AWS and microservices questions.',
+      preparationNotes:
+        'Live coding session focused on algorithms and system design. Expect AWS and microservices questions.',
       questionsToAsk: [
         'What does the infrastructure look like?',
         'How do you handle service discovery and communication?',
@@ -1523,7 +1531,8 @@ export async function seedDatabase() {
           title: 'Director of Engineering',
         },
       ],
-      preparationNotes: 'Final conversation with director. Discuss vision, fit, and expectations. Be ready to ask thoughtful questions about the role.',
+      preparationNotes:
+        'Final conversation with director. Discuss vision, fit, and expectations. Be ready to ask thoughtful questions about the role.',
       questionsToAsk: [
         'What does success look like in the first 90 days?',
         'What are the biggest priorities for the team?',
@@ -1564,10 +1573,7 @@ export async function seedDatabase() {
       result: 'passed',
       feedback: 'Strong coding skills, good problem-solving approach',
       followUpSent: true,
-      questionsAsked: [
-        'Implement a binary search tree',
-        'Optimize API response times',
-      ],
+      questionsAsked: ['Implement a binary search tree', 'Optimize API response times'],
     },
     {
       applicationId: applicationIds['GreenTech Solutions'],
@@ -1624,7 +1630,8 @@ export async function seedDatabase() {
           title: 'Tech Lead - Video',
         },
       ],
-      preparationNotes: 'Deep dive into video streaming, CDN optimization, and React performance patterns',
+      preparationNotes:
+        'Deep dive into video streaming, CDN optimization, and React performance patterns',
       questionsToAsk: [
         'What video codecs and streaming protocols do you use?',
         'How do you handle global CDN distribution?',
@@ -1662,7 +1669,8 @@ export async function seedDatabase() {
           title: 'Engineering Manager',
         },
       ],
-      preparationNotes: 'Security-focused coding challenge, authentication, encryption, and secure coding practices',
+      preparationNotes:
+        'Security-focused coding challenge, authentication, encryption, and secure coding practices',
       questionsToAsk: [
         'What security certifications does the team hold?',
         'How do you handle security incidents?',
@@ -1720,7 +1728,7 @@ export async function seedDatabase() {
   const baseDocumentId1 = generateId();
   const baseDocumentId2 = generateId();
   const baseDocumentId3 = generateId();
-  
+
   const sampleDocuments: Array<Omit<Document, 'id' | 'createdAt' | 'updatedAt'>> = [
     // Resumes with version history
     {
@@ -1728,7 +1736,8 @@ export async function seedDatabase() {
       type: 'resume',
       version: 1,
       versionName: 'Original',
-      content: 'PROFESSIONAL SUMMARY\n\nExperienced software engineer with 5+ years building web applications...\n\nSKILLS\n- JavaScript, React, Node.js\n- HTML, CSS, SQL',
+      content:
+        'PROFESSIONAL SUMMARY\n\nExperienced software engineer with 5+ years building web applications...\n\nSKILLS\n- JavaScript, React, Node.js\n- HTML, CSS, SQL',
       tags: ['tech', 'general'],
       notes: 'Initial resume version - too generic',
     },
@@ -1738,7 +1747,8 @@ export async function seedDatabase() {
       version: 2,
       versionName: 'General Tech',
       baseDocumentId: baseDocumentId1,
-      content: 'PROFESSIONAL SUMMARY\n\nSoftware Engineer with 5+ years of experience building scalable web applications using modern frameworks. Strong background in React, TypeScript, and cloud architecture...\n\nSKILLS\n- Frontend: React, TypeScript, Next.js, Redux\n- Backend: Node.js, Express, PostgreSQL\n- Cloud: AWS, Docker, Kubernetes',
+      content:
+        'PROFESSIONAL SUMMARY\n\nSoftware Engineer with 5+ years of experience building scalable web applications using modern frameworks. Strong background in React, TypeScript, and cloud architecture...\n\nSKILLS\n- Frontend: React, TypeScript, Next.js, Redux\n- Backend: Node.js, Express, PostgreSQL\n- Cloud: AWS, Docker, Kubernetes',
       tags: ['tech', 'general', 'updated'],
       notes: 'Improved with metrics and specific technologies',
       lastUsedDate: new Date('2025-01-15'),
@@ -1748,7 +1758,8 @@ export async function seedDatabase() {
       type: 'resume',
       version: 1,
       versionName: 'Frontend Focus v1',
-      content: 'PROFESSIONAL SUMMARY\n\nFrontend specialist with deep expertise in React, TypeScript...\n\nEXPERIENCE\nSenior Frontend Developer - Current Company (2022-Present)\n- Built responsive web applications',
+      content:
+        'PROFESSIONAL SUMMARY\n\nFrontend specialist with deep expertise in React, TypeScript...\n\nEXPERIENCE\nSenior Frontend Developer - Current Company (2022-Present)\n- Built responsive web applications',
       tags: ['frontend', 'react'],
       notes: 'First version - needs more detail',
     },
@@ -1758,7 +1769,8 @@ export async function seedDatabase() {
       version: 2,
       versionName: 'Frontend Focus - Current',
       baseDocumentId: baseDocumentId2,
-      content: 'PROFESSIONAL SUMMARY\n\nFrontend specialist with 6+ years crafting exceptional user experiences. Deep expertise in React, TypeScript, state management, and component architecture...\n\nEXPERIENCE\nSenior Frontend Developer - Current Company (2022-Present)\n- Built 15+ responsive web applications serving 100K+ users\n- Reduced initial load time by 40% through code splitting and optimization\n- Led migration from JavaScript to TypeScript across 50+ components',
+      content:
+        'PROFESSIONAL SUMMARY\n\nFrontend specialist with 6+ years crafting exceptional user experiences. Deep expertise in React, TypeScript, state management, and component architecture...\n\nEXPERIENCE\nSenior Frontend Developer - Current Company (2022-Present)\n- Built 15+ responsive web applications serving 100K+ users\n- Reduced initial load time by 40% through code splitting and optimization\n- Led migration from JavaScript to TypeScript across 50+ components',
       tags: ['frontend', 'react', 'senior'],
       notes: 'Enhanced with metrics and achievements',
       usedInApplicationIds: [applicationIds['TechCorp Inc'], applicationIds.InnovateLabs],
@@ -1769,13 +1781,14 @@ export async function seedDatabase() {
       type: 'resume',
       version: 1,
       versionName: 'Full Stack v1',
-      content: 'PROFESSIONAL SUMMARY\n\nVersatile full stack engineer comfortable working across the entire technology stack...\n\nSKILLS\n- Frontend: React, Vue.js, Angular\n- Backend: Node.js, Python, Java\n- Database: PostgreSQL, MongoDB, Redis\n- DevOps: Docker, CI/CD, AWS',
+      content:
+        'PROFESSIONAL SUMMARY\n\nVersatile full stack engineer comfortable working across the entire technology stack...\n\nSKILLS\n- Frontend: React, Vue.js, Angular\n- Backend: Node.js, Python, Java\n- Database: PostgreSQL, MongoDB, Redis\n- DevOps: Docker, CI/CD, AWS',
       tags: ['fullstack', 'backend', 'frontend'],
       notes: 'Comprehensive full stack resume',
       usedInApplicationIds: [applicationIds.StartupXYZ],
       lastUsedDate: new Date('2025-01-20'),
     },
-    
+
     // Cover Letters with versions
     {
       name: 'TechCorp Cover Letter',
@@ -1783,7 +1796,8 @@ export async function seedDatabase() {
       version: 1,
       versionName: 'Draft',
       applicationId: applicationIds['TechCorp Inc'],
-      content: 'Dear Hiring Manager,\n\nI am excited to apply for the Senior Frontend Developer position at TechCorp...',
+      content:
+        'Dear Hiring Manager,\n\nI am excited to apply for the Senior Frontend Developer position at TechCorp...',
       tags: ['techcorp', 'draft'],
       notes: 'Initial draft - too generic',
     },
@@ -1794,7 +1808,8 @@ export async function seedDatabase() {
       versionName: 'Final',
       baseDocumentId: baseDocumentId3,
       applicationId: applicationIds['TechCorp Inc'],
-      content: 'Dear Sarah Johnson,\n\nI am thrilled to apply for the Senior Frontend Developer position at TechCorp. With over 5 years of experience building scalable React applications and a passion for creating exceptional user experiences, I am confident I would be a valuable addition to your team.\n\nYour focus on cloud infrastructure and modern development practices aligns perfectly with my background in AWS, TypeScript, and component-driven architecture...\n\nBest regards,\n[Your Name]',
+      content:
+        'Dear Sarah Johnson,\n\nI am thrilled to apply for the Senior Frontend Developer position at TechCorp. With over 5 years of experience building scalable React applications and a passion for creating exceptional user experiences, I am confident I would be a valuable addition to your team.\n\nYour focus on cloud infrastructure and modern development practices aligns perfectly with my background in AWS, TypeScript, and component-driven architecture...\n\nBest regards,\n[Your Name]',
       tags: ['techcorp', 'final'],
       notes: 'Personalized with recruiter name and company specifics',
       usedInApplicationIds: [applicationIds['TechCorp Inc']],
@@ -1806,7 +1821,8 @@ export async function seedDatabase() {
       version: 1,
       versionName: 'Final',
       applicationId: applicationIds.StartupXYZ,
-      content: 'Dear Hiring Team,\n\nI am writing to express my strong interest in the Full Stack Engineer position at StartupXYZ. As someone passionate about fintech innovation, I am excited about the opportunity to contribute to your mission of disrupting the payments industry.\n\nMy experience with Node.js, React, and MongoDB makes me well-suited for this role...\n\nSincerely,\n[Your Name]',
+      content:
+        'Dear Hiring Team,\n\nI am writing to express my strong interest in the Full Stack Engineer position at StartupXYZ. As someone passionate about fintech innovation, I am excited about the opportunity to contribute to your mission of disrupting the payments industry.\n\nMy experience with Node.js, React, and MongoDB makes me well-suited for this role...\n\nSincerely,\n[Your Name]',
       tags: ['startup', 'fintech'],
       notes: 'Tailored for startup culture and fintech focus',
       usedInApplicationIds: [applicationIds.StartupXYZ],
@@ -1818,13 +1834,14 @@ export async function seedDatabase() {
       version: 1,
       versionName: 'Final',
       applicationId: applicationIds['BigTech Solutions'],
-      content: 'Dear Michael Chen,\n\nI am excited to apply for the React Developer position at BigTech Solutions. With a proven track record of building enterprise-scale applications and deep expertise in React, Redux, and GraphQL, I am confident I can contribute to your team from day one.\n\nYour company\'s commitment to engineering excellence and innovation resonates with my professional values...\n\nBest regards,\n[Your Name]',
+      content:
+        "Dear Michael Chen,\n\nI am excited to apply for the React Developer position at BigTech Solutions. With a proven track record of building enterprise-scale applications and deep expertise in React, Redux, and GraphQL, I am confident I can contribute to your team from day one.\n\nYour company's commitment to engineering excellence and innovation resonates with my professional values...\n\nBest regards,\n[Your Name]",
       tags: ['bigtech', 'enterprise'],
       notes: 'Emphasizes enterprise experience and scale',
       usedInApplicationIds: [applicationIds['BigTech Solutions']],
       lastUsedDate: new Date('2025-01-05'),
     },
-    
+
     // Portfolio and other documents
     {
       name: 'Portfolio Website',
@@ -1848,13 +1865,11 @@ export async function seedDatabase() {
       version: 1,
       fileName: 'github-projects.pdf',
       fileUrl: 'https://github.com/yourname',
-      content: 'GitHub Profile\n\nOpen Source Contributions:\n- React Component Library (2.3k stars)\n- TypeScript Utilities Package (890 stars)\n- Code review participation in 50+ repositories',
+      content:
+        'GitHub Profile\n\nOpen Source Contributions:\n- React Component Library (2.3k stars)\n- TypeScript Utilities Package (890 stars)\n- Code review participation in 50+ repositories',
       tags: ['github', 'opensource'],
       notes: 'GitHub profile with open source contributions',
-      usedInApplicationIds: [
-        applicationIds['TechCorp Inc'],
-        applicationIds.StartupXYZ,
-      ],
+      usedInApplicationIds: [applicationIds['TechCorp Inc'], applicationIds.StartupXYZ],
       lastUsedDate: new Date('2025-01-20'),
     },
     {
@@ -1867,10 +1882,7 @@ export async function seedDatabase() {
       mimeType: 'application/pdf',
       tags: ['aws', 'cloud', 'certification'],
       notes: 'AWS Solutions Architect Associate certification - Valid until Dec 2026',
-      usedInApplicationIds: [
-        applicationIds['CloudScale Systems'],
-        applicationIds['TechCorp Inc'],
-      ],
+      usedInApplicationIds: [applicationIds['CloudScale Systems'], applicationIds['TechCorp Inc']],
       lastUsedDate: new Date('2025-01-15'),
     },
     {
@@ -1906,7 +1918,8 @@ export async function seedDatabase() {
       type: 'other',
       version: 1,
       fileName: 'professional-references.pdf',
-      content: 'PROFESSIONAL REFERENCES\n\n1. Jane Smith - Former Manager\n   Senior Engineering Manager, Tech Company\n   jane.smith@example.com | (555) 123-4567\n\n2. Robert Johnson - Tech Lead\n   Principal Engineer, Innovation Labs\n   robert.j@example.com | (555) 234-5678\n\n3. Maria Garcia - Director of Engineering\n   VP Engineering, StartupCo\n   maria.garcia@example.com | (555) 345-6789',
+      content:
+        'PROFESSIONAL REFERENCES\n\n1. Jane Smith - Former Manager\n   Senior Engineering Manager, Tech Company\n   jane.smith@example.com | (555) 123-4567\n\n2. Robert Johnson - Tech Lead\n   Principal Engineer, Innovation Labs\n   robert.j@example.com | (555) 234-5678\n\n3. Maria Garcia - Director of Engineering\n   VP Engineering, StartupCo\n   maria.garcia@example.com | (555) 345-6789',
       tags: ['references', 'contacts'],
       notes: 'Professional references - contacted all, confirmed availability',
       usedInApplicationIds: [applicationIds['BigTech Solutions']],
@@ -1916,13 +1929,11 @@ export async function seedDatabase() {
       type: 'portfolio',
       version: 1,
       fileName: 'side-projects.pdf',
-      content: 'SIDE PROJECTS\n\n1. Task Management App\n   - Full-stack React + Node.js application\n   - 500+ active users\n   - Tech: React, TypeScript, PostgreSQL, AWS\n\n2. Open Source Component Library\n   - 2.3k GitHub stars\n   - 50+ contributors\n   - Used by 100+ projects\n\n3. Dev Tools Chrome Extension\n   - 10k+ downloads\n   - 4.5 star rating',
+      content:
+        'SIDE PROJECTS\n\n1. Task Management App\n   - Full-stack React + Node.js application\n   - 500+ active users\n   - Tech: React, TypeScript, PostgreSQL, AWS\n\n2. Open Source Component Library\n   - 2.3k GitHub stars\n   - 50+ contributors\n   - Used by 100+ projects\n\n3. Dev Tools Chrome Extension\n   - 10k+ downloads\n   - 4.5 star rating',
       tags: ['projects', 'opensource', 'portfolio'],
       notes: 'Detailed side project documentation with links and metrics',
-      usedInApplicationIds: [
-        applicationIds.StartupXYZ,
-        applicationIds.InnovateLabs,
-      ],
+      usedInApplicationIds: [applicationIds.StartupXYZ, applicationIds.InnovateLabs],
       lastUsedDate: new Date('2025-01-20'),
     },
     {
@@ -1930,7 +1941,8 @@ export async function seedDatabase() {
       type: 'other',
       version: 1,
       fileName: 'salary-research.pdf',
-      content: 'SALARY RESEARCH NOTES\n\nSenior Frontend Developer - Bay Area\n- Average: $150k-180k\n- Top companies: $180k-220k\n- Equity typically: 0.1-0.5%\n\nSources: Levels.fyi, Glassdoor, Blind',
+      content:
+        'SALARY RESEARCH NOTES\n\nSenior Frontend Developer - Bay Area\n- Average: $150k-180k\n- Top companies: $180k-220k\n- Equity typically: 0.1-0.5%\n\nSources: Levels.fyi, Glassdoor, Blind',
       tags: ['research', 'salary', 'negotiation'],
       notes: 'Compiled salary research for negotiation preparation',
     },
@@ -1939,15 +1951,13 @@ export async function seedDatabase() {
       type: 'portfolio',
       version: 1,
       fileUrl: 'https://dev.to/yourname',
-      content: 'PUBLISHED TECHNICAL CONTENT\n\n- "Advanced React Patterns" (15k views)\n- "Building Scalable Frontend Architecture" (8k views)\n- "TypeScript Best Practices" (12k views)\n- "State Management Deep Dive" (6k views)',
+      content:
+        'PUBLISHED TECHNICAL CONTENT\n\n- "Advanced React Patterns" (15k views)\n- "Building Scalable Frontend Architecture" (8k views)\n- "TypeScript Best Practices" (12k views)\n- "State Management Deep Dive" (6k views)',
       tags: ['blog', 'writing', 'technical'],
       notes: 'Technical blog with combined 50k+ views',
-      usedInApplicationIds: [
-        applicationIds['TechCorp Inc'],
-        applicationIds.InnovateLabs,
-      ],
+      usedInApplicationIds: [applicationIds['TechCorp Inc'], applicationIds.InnovateLabs],
     },
-    
+
     // Deleted/outdated documents
     {
       name: 'Old Resume 2020',
@@ -2019,7 +2029,8 @@ export async function seedDatabase() {
       name: 'Old References 2022',
       type: 'other',
       version: 1,
-      content: 'OLD REFERENCES\n\n1. John Doe - Former colleague (contact lost)\n2. Sarah Wilson - Moved to different company',
+      content:
+        'OLD REFERENCES\n\n1. John Doe - Former colleague (contact lost)\n2. Sarah Wilson - Moved to different company',
       tags: ['references', 'outdated'],
       notes: 'Outdated reference list - contacts no longer valid',
       deletedAt: new Date('2024-12-20'),
@@ -2028,17 +2039,23 @@ export async function seedDatabase() {
 
   // Add documents and track IDs for version history
   const documentIdMap = new Map<string, string>();
-  
+
   for (const document of sampleDocuments) {
     let docId: string;
-    
+
     // For base documents (version 1 without baseDocumentId), use the pre-generated IDs
     if (document.version === 1 && !document.baseDocumentId) {
       if (document.name === 'Software Engineer Resume') {
         docId = baseDocumentId1;
-      } else if (document.name === 'Frontend Specialist Resume' && !documentIdMap.has('Frontend Specialist Resume-v1')) {
+      } else if (
+        document.name === 'Frontend Specialist Resume' &&
+        !documentIdMap.has('Frontend Specialist Resume-v1')
+      ) {
         docId = baseDocumentId2;
-      } else if (document.name === 'TechCorp Cover Letter' && !documentIdMap.has('TechCorp Cover Letter-v1')) {
+      } else if (
+        document.name === 'TechCorp Cover Letter' &&
+        !documentIdMap.has('TechCorp Cover Letter-v1')
+      ) {
         docId = baseDocumentId3;
       } else {
         docId = generateId();
@@ -2047,20 +2064,21 @@ export async function seedDatabase() {
     } else {
       docId = generateId();
     }
-    
+
     await db.documents.add({
       ...document,
       id: docId,
-      createdAt: document.version === 1 
-        ? new Date('2024-11-01') // Older creation date for v1
-        : new Date('2025-01-15'), // Newer date for v2+
-      updatedAt: document.deletedAt 
-        ? document.deletedAt 
-        : new Date(),
+      createdAt:
+        document.version === 1
+          ? new Date('2024-11-01') // Older creation date for v1
+          : new Date('2025-01-15'), // Newer date for v2+
+      updatedAt: document.deletedAt ? document.deletedAt : new Date(),
     } as Document);
   }
 
-  console.log(`✅ Seeded ${sampleDocuments.length} sample documents (including ${sampleDocuments.filter(d => d.deletedAt).length} deleted)`);
+  console.log(
+    `✅ Seeded ${sampleDocuments.length} sample documents (including ${sampleDocuments.filter((d) => d.deletedAt).length} deleted)`
+  );
   console.log('🎉 Database fully seeded with demo data!');
 }
 

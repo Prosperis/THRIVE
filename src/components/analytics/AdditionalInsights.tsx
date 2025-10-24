@@ -1,28 +1,15 @@
+import { isWithinInterval } from 'date-fns';
+import { Calendar as CalendarIcon, Clock, Target, TrendingUp } from 'lucide-react';
 import { useMemo } from 'react';
-import {
-  Clock,
-  TrendingUp,
-  Calendar as CalendarIcon,
-  Target,
-} from 'lucide-react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   calculateAvgTimeToOffer,
-  calculateSourcePerformance,
   calculateDayOfWeekPerformance,
+  calculateSourcePerformance,
+  formatNumber,
 } from '@/lib/analytics';
 import { useApplicationsStore } from '@/stores/applicationsStore';
-import { formatNumber } from '@/lib/analytics';
-import { isWithinInterval } from 'date-fns';
 
 interface AdditionalInsightsProps {
   period?: {
@@ -37,7 +24,7 @@ export function AdditionalInsights({ period }: AdditionalInsightsProps = {}) {
   // Filter applications by period if provided
   const filteredApplications = useMemo(() => {
     if (!period) return applications;
-    
+
     return applications.filter((app) => {
       const appDate = new Date(app.appliedDate || app.createdAt);
       return isWithinInterval(appDate, { start: period.start, end: period.end });
@@ -60,11 +47,12 @@ export function AdditionalInsights({ period }: AdditionalInsightsProps = {}) {
   );
 
   const bestSource = sourcePerformance.length > 0 ? sourcePerformance[0] : null;
-  const bestDay = dayOfWeekPerformance.length > 0 
-    ? dayOfWeekPerformance.reduce((best, current) => 
-        current.successRate > best.successRate ? current : best
-      )
-    : null;
+  const bestDay =
+    dayOfWeekPerformance.length > 0
+      ? dayOfWeekPerformance.reduce((best, current) =>
+          current.successRate > best.successRate ? current : best
+        )
+      : null;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -78,9 +66,7 @@ export function AdditionalInsights({ period }: AdditionalInsightsProps = {}) {
           <div className="text-2xl font-bold">
             {avgTimeToOffer > 0 ? `${Math.round(avgTimeToOffer)}d` : 'N/A'}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            From application to offer
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">From application to offer</p>
         </CardContent>
       </Card>
 
@@ -109,13 +95,9 @@ export function AdditionalInsights({ period }: AdditionalInsightsProps = {}) {
           <CalendarIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {bestDay ? bestDay.day : 'N/A'}
-          </div>
+          <div className="text-2xl font-bold">{bestDay ? bestDay.day : 'N/A'}</div>
           <p className="text-xs text-muted-foreground mt-1">
-            {bestDay
-              ? `${bestDay.successRate.toFixed(0)}% success rate`
-              : 'No data yet'}
+            {bestDay ? `${bestDay.successRate.toFixed(0)}% success rate` : 'No data yet'}
           </p>
         </CardContent>
       </Card>
@@ -127,12 +109,8 @@ export function AdditionalInsights({ period }: AdditionalInsightsProps = {}) {
           <Target className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {formatNumber(sourcePerformance.length)}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Different sources used
-          </p>
+          <div className="text-2xl font-bold">{formatNumber(sourcePerformance.length)}</div>
+          <p className="text-xs text-muted-foreground mt-1">Different sources used</p>
         </CardContent>
       </Card>
 

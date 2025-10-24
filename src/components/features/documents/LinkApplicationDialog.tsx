@@ -1,21 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Link, Check } from 'lucide-react';
-import { useApplicationsStore } from '@/stores';
-import { useDocumentsStore } from '@/stores';
-import type { Document } from '@/types';
+import { Check, Link } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { useApplicationsStore, useDocumentsStore } from '@/stores';
+import type { Document } from '@/types';
 
 interface LinkApplicationDialogProps {
   document: Document | null;
@@ -61,9 +60,7 @@ export function LinkApplicationDialog({
 
   const handleToggleApplication = (appId: string) => {
     setSelectedAppIds((prev) =>
-      prev.includes(appId)
-        ? prev.filter((id) => id !== appId)
-        : [...prev, appId]
+      prev.includes(appId) ? prev.filter((id) => id !== appId) : [...prev, appId]
     );
   };
 
@@ -73,16 +70,12 @@ export function LinkApplicationDialog({
     setIsSubmitting(true);
     try {
       const currentlyLinkedAppIds = document.usedInApplicationIds || [];
-      
+
       // Find applications to unlink (were linked before, not selected now)
-      const appsToUnlink = currentlyLinkedAppIds.filter(
-        (appId) => !selectedAppIds.includes(appId)
-      );
-      
+      const appsToUnlink = currentlyLinkedAppIds.filter((appId) => !selectedAppIds.includes(appId));
+
       // Find applications to link (selected now, weren't linked before)
-      const appsToLink = selectedAppIds.filter(
-        (appId) => !currentlyLinkedAppIds.includes(appId)
-      );
+      const appsToLink = selectedAppIds.filter((appId) => !currentlyLinkedAppIds.includes(appId));
 
       // Unlink removed applications
       for (const appId of appsToUnlink) {
@@ -165,7 +158,7 @@ export function LinkApplicationDialog({
           {/* Applications list */}
           <div className="border rounded-md max-h-[300px] overflow-y-auto scrollbar-hide">
             <div className="p-2 space-y-1">
-                {filteredApplications.length === 0 ? (
+              {filteredApplications.length === 0 ? (
                 <div className="py-8 text-center text-sm text-muted-foreground">
                   {searchQuery ? 'No applications found' : 'No applications yet'}
                 </div>

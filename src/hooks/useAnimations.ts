@@ -111,7 +111,7 @@ export function usePulse(trigger: unknown, duration: number = 1000): boolean {
   useEffect(() => {
     // Only trigger if the trigger value actually changed
     if (triggerRef.current === trigger) return;
-    
+
     triggerRef.current = trigger;
     setIsPulsing(true);
 

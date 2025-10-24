@@ -104,7 +104,7 @@ export const useApplicationsStore = create<ApplicationsState>()(
             if (filters.salaryRange && app.salary) {
               const { min: filterMin, max: filterMax } = filters.salaryRange;
               const { min: appMin, max: appMax } = app.salary;
-              
+
               // Check if there's any overlap between filter range and app salary range
               // App salary range must overlap with filter range
               if (appMin !== undefined && appMax !== undefined) {
@@ -147,7 +147,7 @@ export const useApplicationsStore = create<ApplicationsState>()(
               applications: [...state.applications, newApplication],
               isLoading: false,
             }));
-            
+
             return newApplication;
           } catch (error) {
             set({

@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -13,7 +13,12 @@ interface TagInputProps {
 export function TagInput({ value = '', onChange, placeholder, className }: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
   const [tags, setTags] = useState<string[]>(
-    value ? value.split(',').map((t) => t.trim()).filter(Boolean) : []
+    value
+      ? value
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : []
   );
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
 
@@ -102,7 +107,7 @@ export function TagInput({ value = '', onChange, placeholder, className }: TagIn
         value={inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder={tags.length === 0 ? placeholder || "Type and press comma or enter..." : ""}
+        placeholder={tags.length === 0 ? placeholder || 'Type and press comma or enter...' : ''}
         className="flex-1 min-w-[120px] outline-none bg-transparent text-sm"
       />
     </div>

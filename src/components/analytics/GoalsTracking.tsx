@@ -1,20 +1,25 @@
-import { useState, useMemo, useCallback } from 'react';
-import { addWeeks, addMonths, startOfWeek, startOfMonth, endOfWeek, endOfMonth, isWithinInterval } from 'date-fns';
-import type { Application, Interview } from '@/types';
-import { useGoalsStore, type JobSearchGoal } from '@/stores/goalsStore';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
+  addMonths,
+  addWeeks,
+  endOfMonth,
+  endOfWeek,
+  isWithinInterval,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Plus,
+  Target,
+  Trash2,
+  TrendingUp,
+} from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +29,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Target, Plus, TrendingUp, CheckCircle2, AlertCircle, Trash2, Calendar } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { type JobSearchGoal, useGoalsStore } from '@/stores/goalsStore';
+import type { Application, Interview } from '@/types';
 
 interface GoalsTrackingProps {
   applications: Application[];
@@ -34,7 +50,7 @@ interface GoalsTrackingProps {
 export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) {
   const { goals, addGoal, deleteGoal } = useGoalsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+
   // New goal form state
   const [newGoalType, setNewGoalType] = useState<JobSearchGoal['type']>('applications');
   const [newGoalPeriod, setNewGoalPeriod] = useState<JobSearchGoal['period']>('weekly');
@@ -56,57 +72,60 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
   }, []);
 
   // Calculate progress for each goal
-  const calculateGoalProgress = useCallback((goal: JobSearchGoal) => {
-    const period = getCurrentPeriod(goal.period);
-    let current = 0;
+  const calculateGoalProgress = useCallback(
+    (goal: JobSearchGoal) => {
+      const period = getCurrentPeriod(goal.period);
+      let current = 0;
 
-    switch (goal.type) {
-      case 'applications':
-        current = applications.filter((app) => {
-          if (!app.appliedDate) return false;
-          const date = new Date(app.appliedDate);
-          return isWithinInterval(date, period);
-        }).length;
-        break;
+      switch (goal.type) {
+        case 'applications':
+          current = applications.filter((app) => {
+            if (!app.appliedDate) return false;
+            const date = new Date(app.appliedDate);
+            return isWithinInterval(date, period);
+          }).length;
+          break;
 
-      case 'interviews':
-        current = interviews.filter((interview) => {
-          if (!interview.scheduledAt) return false;
-          const date = new Date(interview.scheduledAt);
-          return isWithinInterval(date, period);
-        }).length;
-        break;
+        case 'interviews':
+          current = interviews.filter((interview) => {
+            if (!interview.scheduledAt) return false;
+            const date = new Date(interview.scheduledAt);
+            return isWithinInterval(date, period);
+          }).length;
+          break;
 
-      case 'offers':
-        current = applications.filter((app) => {
-          if (!app.offerDate) return false;
-          const date = new Date(app.offerDate);
-          return isWithinInterval(date, period);
-        }).length;
-        break;
+        case 'offers':
+          current = applications.filter((app) => {
+            if (!app.offerDate) return false;
+            const date = new Date(app.offerDate);
+            return isWithinInterval(date, period);
+          }).length;
+          break;
 
-      case 'responseRate': {
-        const periodApps = applications.filter((app) => {
-          if (!app.appliedDate) return false;
-          const date = new Date(app.appliedDate);
-          return isWithinInterval(date, period);
-        });
-        const responded = periodApps.filter(
-          (app) => app.status !== 'applied' && app.status !== 'target' && app.status !== 'hunting'
-        ).length;
-        current = periodApps.length > 0 ? (responded / periodApps.length) * 100 : 0;
-        break;
+        case 'responseRate': {
+          const periodApps = applications.filter((app) => {
+            if (!app.appliedDate) return false;
+            const date = new Date(app.appliedDate);
+            return isWithinInterval(date, period);
+          });
+          const responded = periodApps.filter(
+            (app) => app.status !== 'applied' && app.status !== 'target' && app.status !== 'hunting'
+          ).length;
+          current = periodApps.length > 0 ? (responded / periodApps.length) * 100 : 0;
+          break;
+        }
       }
-    }
 
-    const percentage = goal.target > 0 ? (current / goal.target) * 100 : 0;
-    return {
-      current: goal.type === 'responseRate' ? Math.round(current) : current,
-      target: goal.target,
-      percentage: Math.min(percentage, 100),
-      status: percentage >= 100 ? 'achieved' : percentage >= 75 ? 'on-track' : 'behind',
-    };
-  }, [applications, interviews, getCurrentPeriod]);
+      const percentage = goal.target > 0 ? (current / goal.target) * 100 : 0;
+      return {
+        current: goal.type === 'responseRate' ? Math.round(current) : current,
+        target: goal.target,
+        percentage: Math.min(percentage, 100),
+        status: percentage >= 100 ? 'achieved' : percentage >= 75 ? 'on-track' : 'behind',
+      };
+    },
+    [applications, interviews, getCurrentPeriod]
+  );
 
   const activeGoals = goals.filter((g) => g.active);
 
@@ -121,7 +140,8 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
       period: newGoalPeriod,
       target,
       startDate: period.start,
-      endDate: newGoalPeriod === 'weekly' ? addWeeks(period.start, 52) : addMonths(period.start, 12),
+      endDate:
+        newGoalPeriod === 'weekly' ? addWeeks(period.start, 52) : addMonths(period.start, 12),
       active: true,
     });
 
@@ -214,14 +234,15 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Goal</DialogTitle>
-              <DialogDescription>
-                Set a target to track your job search progress
-              </DialogDescription>
+              <DialogDescription>Set a target to track your job search progress</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="goal-type">Goal Type</Label>
-                <Select value={newGoalType} onValueChange={(v) => setNewGoalType(v as JobSearchGoal['type'])}>
+                <Select
+                  value={newGoalType}
+                  onValueChange={(v) => setNewGoalType(v as JobSearchGoal['type'])}
+                >
                   <SelectTrigger id="goal-type">
                     <SelectValue />
                   </SelectTrigger>
@@ -236,7 +257,10 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
 
               <div className="space-y-2">
                 <Label htmlFor="goal-period">Time Period</Label>
-                <Select value={newGoalPeriod} onValueChange={(v) => setNewGoalPeriod(v as JobSearchGoal['period'])}>
+                <Select
+                  value={newGoalPeriod}
+                  onValueChange={(v) => setNewGoalPeriod(v as JobSearchGoal['period'])}
+                >
                   <SelectTrigger id="goal-period">
                     <SelectValue />
                   </SelectTrigger>
@@ -347,20 +371,19 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-semibold">
-                              {getGoalLabel(goal.type)} - {goal.period === 'weekly' ? 'Weekly' : 'Monthly'}
+                              {getGoalLabel(goal.type)} -{' '}
+                              {goal.period === 'weekly' ? 'Weekly' : 'Monthly'}
                             </h4>
                             {getStatusBadge(progress.status)}
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Target: {goal.target}{goal.type === 'responseRate' ? '%' : ''} per {goal.period === 'weekly' ? 'week' : 'month'}
+                            Target: {goal.target}
+                            {goal.type === 'responseRate' ? '%' : ''} per{' '}
+                            {goal.period === 'weekly' ? 'week' : 'month'}
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteGoal(goal.id)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleDeleteGoal(goal.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -370,7 +393,8 @@ export function GoalsTracking({ applications, interviews }: GoalsTrackingProps) 
                         <span className="text-muted-foreground">Progress</span>
                         <span className="font-semibold">
                           {progress.current} / {progress.target}
-                          {goal.type === 'responseRate' ? '%' : ''} ({progress.percentage.toFixed(0)}%)
+                          {goal.type === 'responseRate' ? '%' : ''} (
+                          {progress.percentage.toFixed(0)}%)
                         </span>
                       </div>
                       <Progress value={progress.percentage} className="h-2" />

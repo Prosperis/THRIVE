@@ -1,6 +1,6 @@
-import { ChevronRight, ChevronDown } from 'lucide-react';
-import { useEffect, useRef, useState, useCallback } from 'react';
 import { useThrottledCallback } from '@tanstack/react-pacer';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ScrollIndicatorProps {
@@ -23,11 +23,11 @@ export function ScrollIndicator({ containerRef, threshold = 50 }: ScrollIndicato
     }
 
     const { scrollWidth, clientWidth, scrollLeft, scrollHeight, clientHeight, scrollTop } = element;
-    
+
     // Check horizontal scroll
     const hasHorizontalScroll = scrollWidth > clientWidth + 5; // 5px tolerance
     const isNearRightEnd = scrollWidth - (scrollLeft + clientWidth) < threshold;
-    
+
     // Check vertical scroll
     const hasVerticalScroll = scrollHeight > clientHeight + 5; // 5px tolerance
     const isNearBottom = scrollHeight - (scrollTop + clientHeight) < threshold;
@@ -54,7 +54,7 @@ export function ScrollIndicator({ containerRef, threshold = 50 }: ScrollIndicato
 
     // Add throttled scroll listener
     element.addEventListener('scroll', throttledCheckScroll);
-    
+
     // Add resize observer to detect content changes
     const resizeObserver = new ResizeObserver(checkScroll);
     resizeObserver.observe(element);

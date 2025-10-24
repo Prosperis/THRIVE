@@ -1,16 +1,16 @@
+import { Calendar } from 'lucide-react';
 import { useMemo } from 'react';
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  Legend,
 } from 'recharts';
-import { Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { calculateInterviewStageStats } from '@/lib/analytics';
 import { useInterviewsStore } from '@/stores/interviewsStore';
@@ -24,11 +24,11 @@ interface InterviewStageChartProps {
 
 const STAGE_COLORS: Record<string, string> = {
   'phone screen': '#3b82f6',
-  'technical': '#8b5cf6',
-  'behavioral': '#f59e0b',
+  technical: '#8b5cf6',
+  behavioral: '#f59e0b',
   'on site': '#10b981',
-  'final': '#06b6d4',
-  'other': '#6b7280',
+  final: '#06b6d4',
+  other: '#6b7280',
 };
 
 export function InterviewStageChart({ period }: InterviewStageChartProps = {}) {
@@ -117,8 +117,7 @@ export function InterviewStageChart({ period }: InterviewStageChartProps = {}) {
                 <div
                   className="w-3 h-3 rounded-sm"
                   style={{
-                    backgroundColor:
-                      STAGE_COLORS[stat.stage.toLowerCase()] || STAGE_COLORS.other,
+                    backgroundColor: STAGE_COLORS[stat.stage.toLowerCase()] || STAGE_COLORS.other,
                   }}
                 />
                 <span className="text-sm capitalize">{stat.stage}</span>

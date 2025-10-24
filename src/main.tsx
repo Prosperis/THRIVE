@@ -4,17 +4,17 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import './styles/print.css';
 import { ThemeProvider } from '@/components/layout';
-import { QueryProvider } from '@/lib/queryClient';
-import { autoMigrateOnLoad } from '@/lib/migrate-companies';
 import { ConfirmProvider } from '@/hooks/useConfirm';
+import { autoMigrateOnLoad } from '@/lib/migrate-companies';
+import { QueryProvider } from '@/lib/queryClient';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
 // Create a new router instance with basepath for GitHub Pages
-const router = createRouter({ 
+const router = createRouter({
   routeTree,
-  basepath: '/THRIVE'
+  basepath: '/THRIVE',
 });
 
 // Register the router instance for type safety

@@ -1,7 +1,7 @@
+import { addDays, startOfDay, subDays } from 'date-fns';
 import { useMemo } from 'react';
-import { subDays, addDays, startOfDay } from 'date-fns';
-import { RangeSlider } from './range-slider';
 import { cn } from '@/lib/utils';
+import { RangeSlider } from './range-slider';
 
 export interface RelativeDateRange {
   label: string;
@@ -22,10 +22,10 @@ interface RelativeDateRangeSliderProps {
 
 /**
  * Relative Date Range Slider Component
- * 
+ *
  * Provides quick preset date range selection using a visual slider.
  * Complements calendar pickers by offering common relative ranges.
- * 
+ *
  * @example
  * ```tsx
  * const RELATIVE_RANGES: RelativeDateRange[] = [
@@ -33,7 +33,7 @@ interface RelativeDateRangeSliderProps {
  *   { label: 'Last 30 days', shortLabel: '30d', value: 'last-30d', days: 30, direction: 'past' },
  *   { label: 'Next 7 days', shortLabel: '+7d', value: 'next-7d', days: 7, direction: 'future' },
  * ];
- * 
+ *
  * <RelativeDateRangeSlider
  *   ranges={RELATIVE_RANGES}
  *   selectedValue="last-7d"
@@ -59,9 +59,9 @@ export function RelativeDateRangeSlider({
   // Calculate actual date range for current selection
   const calculatedDateRange = useMemo(() => {
     if (!currentRange) return null;
-    
+
     const now = startOfDay(new Date());
-    
+
     if (currentRange.direction === 'past') {
       return {
         start: subDays(now, currentRange.days),
@@ -85,11 +85,11 @@ export function RelativeDateRangeSlider({
   const handleSliderChange = (values: number[]) => {
     const index = Math.round(values[0]);
     const range = ranges[index];
-    
+
     if (range && range.value !== selectedValue) {
       const now = startOfDay(new Date());
       let dateRange: { start: Date; end: Date };
-      
+
       if (range.direction === 'past') {
         dateRange = {
           start: subDays(now, range.days),
@@ -107,7 +107,7 @@ export function RelativeDateRangeSlider({
           end: addDays(now, halfDays),
         };
       }
-      
+
       onChange(range.value, dateRange);
     }
   };
@@ -123,13 +123,14 @@ export function RelativeDateRangeSlider({
 
   const formatRangeInfo = () => {
     if (!currentRange || !calculatedDateRange) return '';
-    
-    const directionLabel = currentRange.direction === 'past' 
-      ? '← Past'
-      : currentRange.direction === 'future'
-      ? 'Future →'
-      : '← Today →';
-    
+
+    const directionLabel =
+      currentRange.direction === 'past'
+        ? '← Past'
+        : currentRange.direction === 'future'
+          ? 'Future →'
+          : '← Today →';
+
     return `${currentRange.days} days ${directionLabel}`;
   };
 
@@ -182,8 +183,8 @@ export function RelativeDateRangeSlider({
                     index === currentIndex
                       ? 'bg-primary'
                       : index < currentIndex
-                      ? 'bg-primary/50'
-                      : 'bg-muted'
+                        ? 'bg-primary/50'
+                        : 'bg-muted'
                   )}
                 />
                 {/* Label */}

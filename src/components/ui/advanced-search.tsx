@@ -1,6 +1,6 @@
-import { ArrowRight, Clock, Search, TrendingUp, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useThrottledCallback } from '@tanstack/react-pacer';
+import { ArrowRight, Clock, Search, TrendingUp, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';

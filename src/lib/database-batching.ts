@@ -1,6 +1,6 @@
 /**
  * Database Batching Utilities using TanStack Pacer
- * 
+ *
  * Groups multiple database operations together for better performance.
  * Useful for rapid updates like tag editing, bulk imports, or form auto-save.
  */
@@ -13,26 +13,26 @@ import type { Table, UpdateSpec } from 'dexie';
 export interface BatcherConfig<T> {
   /** Dexie table to batch operations on */
   table: Table<T, string>;
-  
+
   /** Wait time in ms before executing batch (default: 500ms) */
   wait?: number;
-  
+
   /** Maximum batch size before forcing execution (default: 10) */
   maxBatchSize?: number;
-  
+
   /** Callback for successful batch */
   onSuccess?: (count: number) => void;
-  
+
   /** Callback for batch errors */
   onError?: (error: Error) => void;
 }
 
 /**
  * Create a batched database updater
- * 
+ *
  * Collects multiple update operations and executes them together using bulkUpdate.
  * Automatically flushes after `wait` milliseconds or when `maxBatchSize` is reached.
- * 
+ *
  * @example
  * ```ts
  * const batcher = createDatabaseBatcher({
@@ -40,27 +40,21 @@ export interface BatcherConfig<T> {
  *   wait: 500,
  *   maxBatchSize: 10,
  * });
- * 
+ *
  * // These will be batched together
  * batcher.update('id1', { status: 'applied' });
  * batcher.update('id2', { status: 'interview' });
  * batcher.update('id3', { status: 'rejected' });
- * 
+ *
  * // Batch is automatically flushed after 500ms or 10 items
  * ```
  */
 export function createDatabaseBatcher<T>(config: BatcherConfig<T>) {
-  const {
-    table,
-    wait = 500,
-    maxBatchSize = 10,
-    onSuccess,
-    onError,
-  } = config;
+  const { table, wait = 500, maxBatchSize = 10, onSuccess, onError } = config;
 
   // Pending updates keyed by ID (later updates override earlier ones)
   const pendingUpdates = new Map<string, Partial<T>>();
-  
+
   let flushTimer: NodeJS.Timeout | null = null;
   let isProcessing = false;
 
@@ -93,7 +87,7 @@ export function createDatabaseBatcher<T>(config: BatcherConfig<T>) {
     try {
       // Execute bulk update
       await table.bulkUpdate(updates);
-      
+
       if (onSuccess) {
         onSuccess(count);
       }
@@ -172,9 +166,9 @@ export function createDatabaseBatcher<T>(config: BatcherConfig<T>) {
 
 /**
  * Create a batched database adder for bulk inserts
- * 
+ *
  * Similar to the updater but for adding new records.
- * 
+ *
  * @example
  * ```ts
  * const batcher = createDatabaseAdder({
@@ -182,22 +176,16 @@ export function createDatabaseBatcher<T>(config: BatcherConfig<T>) {
  *   wait: 1000,
  *   maxBatchSize: 20,
  * });
- * 
+ *
  * // Queue multiple adds
  * batcher.add({ id: 'id1', position: 'Engineer' });
  * batcher.add({ id: 'id2', position: 'Designer' });
- * 
+ *
  * // Batch is automatically flushed
  * ```
  */
 export function createDatabaseAdder<T>(config: BatcherConfig<T>) {
-  const {
-    table,
-    wait = 1000,
-    maxBatchSize = 20,
-    onSuccess,
-    onError,
-  } = config;
+  const { table, wait = 1000, maxBatchSize = 20, onSuccess, onError } = config;
 
   const pendingAdds: T[] = [];
   let flushTimer: NodeJS.Timeout | null = null;
@@ -215,13 +203,13 @@ export function createDatabaseAdder<T>(config: BatcherConfig<T>) {
 
     const items = [...pendingAdds];
     const count = items.length;
-    
+
     pendingAdds.length = 0;
     isProcessing = true;
 
     try {
       await table.bulkAdd(items);
-      
+
       if (onSuccess) {
         onSuccess(count);
       }

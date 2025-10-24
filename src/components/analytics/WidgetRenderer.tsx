@@ -11,6 +11,6 @@ interface WidgetContainerProps {
  */
 export function WidgetContainer({ widgetId, isVisible, children }: WidgetContainerProps) {
   if (!isVisible) return null;
-  
+
   return <div data-widget-id={widgetId}>{children}</div>;
 }

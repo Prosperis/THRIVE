@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitepress'
-import { withMermaid } from 'vitepress-plugin-mermaid'
+import { defineConfig } from 'vitepress';
+import { withMermaid } from 'vitepress-plugin-mermaid';
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(
@@ -7,7 +7,7 @@ export default withMermaid(
     title: 'Thrive Documentation',
     description: 'Comprehensive job application tracking system',
     base: '/thrive/docs/',
-    
+
     head: [
       ['link', { rel: 'icon', href: '/thrive/vite.svg' }],
       ['meta', { name: 'theme-color', content: '#3b82f6' }],
@@ -21,18 +21,18 @@ export default withMermaid(
     themeConfig: {
       // https://vitepress.dev/reference/default-theme-config
       logo: '/vite.svg',
-      
+
       nav: [
         { text: 'Home', link: '/' },
         { text: 'Guide', link: '/getting-started/quick-start' },
         { text: 'API', link: '/api-reference/complete-api' },
-        { 
+        {
           text: 'v1.0.0',
           items: [
             { text: 'Changelog', link: '/development-history/progress' },
-            { text: 'Live App', link: 'https://adriandarian.github.io/thrive/' }
-          ]
-        }
+            { text: 'Live App', link: 'https://adriandarian.github.io/thrive/' },
+          ],
+        },
       ],
 
       sidebar: {
@@ -41,34 +41,30 @@ export default withMermaid(
             text: 'Getting Started',
             items: [
               { text: 'Quick Start', link: '/getting-started/quick-start' },
-              { text: 'Setup Checklist', link: '/getting-started/setup-checklist' }
-            ]
-          }
+              { text: 'Setup Checklist', link: '/getting-started/setup-checklist' },
+            ],
+          },
         ],
         '/user-guide/': [
           {
             text: 'User Guide',
-            items: [
-              { text: 'Overview', link: '/user-guide/overview' }
-            ]
-          }
+            items: [{ text: 'Overview', link: '/user-guide/overview' }],
+          },
         ],
         '/developer-guide/': [
           {
             text: 'Developer Guide',
             items: [
               { text: 'Overview', link: '/developer-guide/overview' },
-              { text: 'Scripts Reference', link: '/developer-guide/scripts' }
-            ]
-          }
+              { text: 'Scripts Reference', link: '/developer-guide/scripts' },
+            ],
+          },
         ],
         '/api-reference/': [
           {
             text: 'API Reference',
-            items: [
-              { text: 'Complete API', link: '/api-reference/complete-api' }
-            ]
-          }
+            items: [{ text: 'Complete API', link: '/api-reference/complete-api' }],
+          },
         ],
         '/deployment/': [
           {
@@ -76,26 +72,24 @@ export default withMermaid(
             items: [
               { text: 'GitHub Pages', link: '/deployment/github-pages' },
               { text: 'Deployment Checklist', link: '/deployment/deployment-checklist' },
-              { text: 'Monitoring & Analytics', link: '/deployment/monitoring-and-analytics' }
-            ]
-          }
+              { text: 'Monitoring & Analytics', link: '/deployment/monitoring-and-analytics' },
+            ],
+          },
         ],
         '/testing/': [
           {
             text: 'Testing',
             items: [
               { text: 'Accessibility Testing', link: '/testing/accessibility-testing' },
-              { text: 'Cross-Browser Testing', link: '/testing/cross-browser-testing' }
-            ]
-          }
+              { text: 'Cross-Browser Testing', link: '/testing/cross-browser-testing' },
+            ],
+          },
         ],
         '/troubleshooting/': [
           {
             text: 'Troubleshooting',
-            items: [
-              { text: 'Common Issues', link: '/troubleshooting/common-issues' }
-            ]
-          }
+            items: [{ text: 'Common Issues', link: '/troubleshooting/common-issues' }],
+          },
         ],
         '/development-history/': [
           {
@@ -104,29 +98,27 @@ export default withMermaid(
               { text: 'Project Completion', link: '/development-history/project-completion' },
               { text: 'Phase Summaries', link: '/development-history/phase-summaries' },
               { text: 'Project Plan', link: '/development-history/project-plan' },
-              { text: 'Progress', link: '/development-history/progress' }
-            ]
-          }
-        ]
+              { text: 'Progress', link: '/development-history/progress' },
+            ],
+          },
+        ],
       },
 
-      socialLinks: [
-        { icon: 'github', link: 'https://github.com/adriandarian/thrive' }
-      ],
+      socialLinks: [{ icon: 'github', link: 'https://github.com/adriandarian/thrive' }],
 
       search: {
-        provider: 'local'
+        provider: 'local',
       },
 
       editLink: {
         pattern: 'https://github.com/adriandarian/thrive/edit/main/docs/:path',
-        text: 'Edit this page on GitHub'
+        text: 'Edit this page on GitHub',
       },
 
       footer: {
         message: 'Released under the MIT License.',
-        copyright: 'Copyright © 2025 Adrian Darian'
-      }
+        copyright: 'Copyright © 2025 Adrian Darian',
+      },
     },
 
     // Mermaid config
@@ -137,11 +129,11 @@ export default withMermaid(
     markdown: {
       theme: {
         light: 'github-light',
-        dark: 'github-dark'
+        dark: 'github-dark',
       },
-      lineNumbers: true
+      lineNumbers: true,
     },
 
-    ignoreDeadLinks: true
+    ignoreDeadLinks: true,
   })
-)
+);

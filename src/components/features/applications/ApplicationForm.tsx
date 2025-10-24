@@ -1,37 +1,16 @@
 // @ts-nocheck - Complex react-hook-form type inference issues with Zod resolver
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { FileText, Plus, Search, X, CalendarIcon } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { CalendarIcon, FileText, Plus, Search, X } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { TagInput } from '@/components/ui/tag-input';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FormSalarySlider } from '@/components/ui/form-salary-slider';
 import {
   Dialog,
   DialogContent,
@@ -41,12 +20,33 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { FormSalarySlider } from '@/components/ui/form-salary-slider';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { TagInput } from '@/components/ui/tag-input';
+import { Textarea } from '@/components/ui/textarea';
+import {
   APPLICATION_STATUSES,
   EMPLOYMENT_TYPES,
   PRIORITY_LEVELS,
   WORK_TYPES,
 } from '@/lib/constants';
-import { useDocumentsStore, useApplicationsStore } from '@/stores';
+import { useApplicationsStore, useDocumentsStore } from '@/stores';
 import type { Application, Document } from '@/types';
 
 // Form schema based on application schema
@@ -98,11 +98,11 @@ export function ApplicationForm({
   const [uploadedFile, setUploadedFile] = useState<{ file: File; content: string } | null>(null);
   const [selectedDocType, setSelectedDocType] = useState<Document['type']>('resume');
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Document search and filter state
   const [documentSearch, setDocumentSearch] = useState('');
   const [documentTypeFilter, setDocumentTypeFilter] = useState<Document['type'] | 'all'>('all');
-  
+
   // Get currently linked documents if editing
   const currentlyLinkedDocuments = application
     ? documents.filter((doc) => doc.usedInApplicationIds?.includes(application.id))
@@ -142,20 +142,20 @@ export function ApplicationForm({
     const position = form.watch('position')?.toLowerCase() || '';
     const companyName = form.watch('companyName')?.toLowerCase() || '';
     const selectedIds = form.watch('linkedDocumentIds') || [];
-    
+
     if (!position && !companyName) return [];
-    
+
     return documents
       .filter((doc) => !selectedIds.includes(doc.id)) // Exclude already selected
       .map((doc) => {
         let score = 0;
         const docName = doc.name.toLowerCase();
-        
+
         // Higher score for resume/CV for any application
         if (doc.type === 'resume' || doc.type === 'cv') {
           score += 10;
         }
-        
+
         // Score based on previous usage with same company
         if (companyName && doc.usedInApplicationIds && doc.usedInApplicationIds.length > 0) {
           // Check if this document was used for applications at the same company
@@ -165,19 +165,20 @@ export function ApplicationForm({
           });
           if (usedForSameCompany) score += 15;
         }
-        
+
         // Score based on position keywords in document name
         const positionWords = position.split(' ').filter((word) => word.length > 2);
         positionWords.forEach((word) => {
           if (docName.includes(word)) score += 5;
         });
-        
+
         // Bonus for recently used documents
         if (doc.lastUsedDate) {
-          const daysSinceUsed = (Date.now() - new Date(doc.lastUsedDate).getTime()) / (1000 * 60 * 60 * 24);
+          const daysSinceUsed =
+            (Date.now() - new Date(doc.lastUsedDate).getTime()) / (1000 * 60 * 60 * 24);
           if (daysSinceUsed < 30) score += 3;
         }
-        
+
         return { doc, score };
       })
       .filter((item) => item.score > 0) // Only show documents with relevance
@@ -187,7 +188,7 @@ export function ApplicationForm({
   };
 
   const suggestedDocuments = getSuggestedDocuments();
-  
+
   // Filter documents based on search and type
   const filteredDocuments = documents.filter((doc) => {
     // Filter by search query
@@ -197,12 +198,12 @@ export function ApplicationForm({
       const matchesType = doc.type.toLowerCase().includes(searchLower);
       if (!matchesName && !matchesType) return false;
     }
-    
+
     // Filter by document type
     if (documentTypeFilter !== 'all' && doc.type !== documentTypeFilter) {
       return false;
     }
-    
+
     return true;
   });
 
@@ -212,7 +213,7 @@ export function ApplicationForm({
 
     try {
       const content = await file.text();
-      
+
       // Auto-detect document type from filename
       const fileName = file.name.toLowerCase();
       let detectedType: Document['type'] = 'resume';
@@ -221,11 +222,11 @@ export function ApplicationForm({
       else if (fileName.includes('portfolio')) detectedType = 'portfolio';
       else if (fileName.includes('transcript')) detectedType = 'transcript';
       else if (fileName.includes('cert')) detectedType = 'certification';
-      
+
       setUploadedFile({ file, content });
       setSelectedDocType(detectedType);
       setUploadDialogOpen(true);
-      
+
       // Reset the file input
       e.target.value = '';
     } catch (error) {
@@ -242,12 +243,12 @@ export function ApplicationForm({
     setIsUploading(true);
     try {
       const fileExtension = uploadedFile.file.name.split('.').pop()?.toLowerCase();
-      
+
       // Determine format
       let format: 'pdf' | 'markdown' | 'text' = 'text';
       if (fileExtension === 'pdf') format = 'pdf';
       else if (fileExtension === 'md') format = 'markdown';
-      
+
       const newDoc = await addDocument({
         name: uploadedFile.file.name.replace(/\.[^/.]+$/, ''), // Remove extension
         type: selectedDocType,
@@ -255,15 +256,15 @@ export function ApplicationForm({
         content: uploadedFile.content,
         version: 1,
       });
-      
+
       // Auto-select the newly uploaded document
       const currentIds = form.getValues('linkedDocumentIds') || [];
       form.setValue('linkedDocumentIds', [...currentIds, newDoc.id], { shouldDirty: true });
-      
+
       toast.success('Document uploaded', {
         description: `${newDoc.name} has been added and linked to this application`,
       });
-      
+
       setUploadDialogOpen(false);
       setUploadedFile(null);
     } catch (error) {
@@ -351,7 +352,7 @@ export function ApplicationForm({
               control={form.control}
               name="status"
               render={({ field }) => {
-                const selectedStatus = APPLICATION_STATUSES.find(s => s.value === field.value);
+                const selectedStatus = APPLICATION_STATUSES.find((s) => s.value === field.value);
                 return (
                   <FormItem>
                     <FormLabel>Status *</FormLabel>
@@ -363,7 +364,7 @@ export function ApplicationForm({
                           </SelectValue>
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent 
+                      <SelectContent
                         position="popper"
                         side="bottom"
                         align="start"
@@ -571,11 +572,11 @@ export function ApplicationForm({
                         <Button
                           variant="outline"
                           className={`w-full pl-3 text-left font-normal ${
-                            !field.value && "text-muted-foreground"
+                            !field.value && 'text-muted-foreground'
                           }`}
                         >
                           {field.value ? (
-                            format(new Date(field.value), "PPP")
+                            format(new Date(field.value), 'PPP')
                           ) : (
                             <span>Pick a date</span>
                           )}
@@ -612,11 +613,11 @@ export function ApplicationForm({
                         <Button
                           variant="outline"
                           className={`w-full pl-3 text-left font-normal ${
-                            !field.value && "text-muted-foreground"
+                            !field.value && 'text-muted-foreground'
                           }`}
                         >
                           {field.value ? (
-                            format(new Date(field.value), "PPP")
+                            format(new Date(field.value), 'PPP')
                           ) : (
                             <span>Pick a date</span>
                           )}
@@ -719,22 +720,21 @@ export function ApplicationForm({
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Upload Document</DialogTitle>
-                <DialogDescription>
-                  Select the type of document you're uploading
-                </DialogDescription>
+                <DialogDescription>Select the type of document you're uploading</DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <p className="text-sm font-medium">File</p>
-                  <p className="text-sm text-muted-foreground">
-                    {uploadedFile?.file.name}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{uploadedFile?.file.name}</p>
                 </div>
-                
+
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Document Type</p>
-                  <Select value={selectedDocType} onValueChange={(value) => setSelectedDocType(value as Document['type'])}>
+                  <Select
+                    value={selectedDocType}
+                    onValueChange={(value) => setSelectedDocType(value as Document['type'])}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -750,7 +750,7 @@ export function ApplicationForm({
                   </Select>
                 </div>
               </div>
-              
+
               <DialogFooter>
                 <Button
                   type="button"
@@ -763,11 +763,7 @@ export function ApplicationForm({
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="button"
-                  onClick={handleConfirmUpload}
-                  disabled={isUploading}
-                >
+                <Button type="button" onClick={handleConfirmUpload} disabled={isUploading}>
                   {isUploading ? 'Uploading...' : 'Upload & Link'}
                 </Button>
               </DialogFooter>
@@ -783,7 +779,7 @@ export function ApplicationForm({
                 <FormDescription>
                   Select documents to link with this application (resume, cover letter, etc.)
                 </FormDescription>
-                
+
                 {/* Document Suggestions */}
                 {suggestedDocuments.length > 0 && (
                   <div className="mb-3 p-3 bg-accent/30 border border-accent rounded-md space-y-2">
@@ -815,7 +811,7 @@ export function ApplicationForm({
                     </div>
                   </div>
                 )}
-                
+
                 {/* Search and Filter */}
                 <div className="space-y-2 mb-3">
                   <div className="relative">
@@ -839,7 +835,7 @@ export function ApplicationForm({
                       </Button>
                     )}
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
@@ -915,11 +911,11 @@ export function ApplicationForm({
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="border rounded-md p-3 max-h-[300px] overflow-y-auto scrollbar-hide space-y-2">
                   {filteredDocuments.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
-                      {documentSearch || documentTypeFilter !== 'all' 
+                      {documentSearch || documentTypeFilter !== 'all'
                         ? 'No documents match your search or filter.'
                         : 'No documents available. Create documents first to link them.'}
                     </p>

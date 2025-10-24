@@ -1,6 +1,8 @@
-import { useState, type ReactElement } from 'react';
-import { Save, Trash2, Calendar, Filter, Search } from 'lucide-react';
-import { useConfirm } from '@/hooks/useConfirm';
+import { Calendar, Filter, Save, Search, Trash2 } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,14 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { COMPANY_STATUSES, REMOTE_POLICIES, PRIORITY_LEVELS } from '@/lib/constants';
+import { useConfirm } from '@/hooks/useConfirm';
+import { COMPANY_STATUSES, PRIORITY_LEVELS, REMOTE_POLICIES } from '@/lib/constants';
 
 export interface CompanySavedFilter {
   id: string;
@@ -101,7 +101,7 @@ export function SavedFiltersDialog({
     const updated = [...savedFilters, newFilter];
     persistFilters(updated);
     toast.success(`Filter "${filterName}" saved`);
-    
+
     setFilterName('');
     setFilterDescription('');
     setShowSaveDialog(false);
@@ -117,7 +117,7 @@ export function SavedFiltersDialog({
     });
 
     if (confirmed) {
-      const updated = savedFilters.filter(f => f.id !== id);
+      const updated = savedFilters.filter((f) => f.id !== id);
       persistFilters(updated);
       toast.success(`Filter "${name}" deleted`);
     }
@@ -131,7 +131,7 @@ export function SavedFiltersDialog({
 
   const getFilterSummary = (filters: CompanySavedFilter['filters']) => {
     const parts: string[] = [];
-    
+
     if (filters.status?.length) {
       parts.push(`${filters.status.length} status`);
     }
@@ -144,16 +144,16 @@ export function SavedFiltersDialog({
     if (filters.researched !== undefined) {
       parts.push(filters.researched ? 'researched' : 'not researched');
     }
-    
+
     return parts.join(', ') || 'No filters';
   };
 
   const getFilterBadges = (filters: CompanySavedFilter['filters']) => {
     const badges: ReactElement[] = [];
-    
+
     if (filters.status?.length) {
-      filters.status.forEach(status => {
-        const config = COMPANY_STATUSES.find(s => s.value === status);
+      filters.status.forEach((status) => {
+        const config = COMPANY_STATUSES.find((s) => s.value === status);
         if (config) {
           badges.push(
             <Badge key={`status-${status}`} variant="outline" className="text-xs">
@@ -163,10 +163,10 @@ export function SavedFiltersDialog({
         }
       });
     }
-    
+
     if (filters.remotePolicy?.length) {
-      filters.remotePolicy.forEach(policy => {
-        const config = REMOTE_POLICIES.find(p => p.value === policy);
+      filters.remotePolicy.forEach((policy) => {
+        const config = REMOTE_POLICIES.find((p) => p.value === policy);
         if (config) {
           badges.push(
             <Badge key={`remote-${policy}`} variant="outline" className="text-xs">
@@ -176,10 +176,10 @@ export function SavedFiltersDialog({
         }
       });
     }
-    
+
     if (filters.priority?.length) {
-      filters.priority.forEach(priority => {
-        const config = PRIORITY_LEVELS.find(p => p.value === priority);
+      filters.priority.forEach((priority) => {
+        const config = PRIORITY_LEVELS.find((p) => p.value === priority);
         if (config) {
           badges.push(
             <Badge key={`priority-${priority}`} variant="outline" className="text-xs">
@@ -189,7 +189,7 @@ export function SavedFiltersDialog({
         }
       });
     }
-    
+
     if (filters.researched !== undefined) {
       badges.push(
         <Badge key="researched" variant="secondary" className="text-xs">
@@ -197,18 +197,19 @@ export function SavedFiltersDialog({
         </Badge>
       );
     }
-    
+
     return badges;
   };
 
   const filteredSavedFilters = searchQuery
-    ? savedFilters.filter(filter =>
-        filter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        filter.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    ? savedFilters.filter(
+        (filter) =>
+          filter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          filter.description?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : savedFilters;
 
-  const hasActiveFilters = 
+  const hasActiveFilters =
     (currentFilters.status?.length ?? 0) > 0 ||
     (currentFilters.remotePolicy?.length ?? 0) > 0 ||
     currentFilters.researched !== undefined;
@@ -237,15 +238,9 @@ export function SavedFiltersDialog({
                     <div className="text-xs text-muted-foreground mb-2">
                       {getFilterSummary(currentFilters)}
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                      {getFilterBadges(currentFilters)}
-                    </div>
+                    <div className="flex flex-wrap gap-1">{getFilterBadges(currentFilters)}</div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowSaveDialog(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setShowSaveDialog(true)}>
                     <Save className="h-4 w-4 mr-2" />
                     Save
                   </Button>
@@ -278,7 +273,7 @@ export function SavedFiltersDialog({
                 </div>
               ) : (
                 <div className="space-y-2 pr-4">
-                  {filteredSavedFilters.map(filter => (
+                  {filteredSavedFilters.map((filter) => (
                     <div
                       key={filter.id}
                       className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -313,9 +308,7 @@ export function SavedFiltersDialog({
                           </Button>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        {getFilterBadges(filter.filters)}
-                      </div>
+                      <div className="flex flex-wrap gap-1">{getFilterBadges(filter.filters)}</div>
                     </div>
                   ))}
                 </div>
@@ -365,9 +358,7 @@ export function SavedFiltersDialog({
 
             <div className="p-3 border rounded-lg bg-muted/30">
               <div className="text-sm font-medium mb-2">Filter Preview</div>
-              <div className="flex flex-wrap gap-1">
-                {getFilterBadges(currentFilters)}
-              </div>
+              <div className="flex flex-wrap gap-1">{getFilterBadges(currentFilters)}</div>
             </div>
           </div>
 

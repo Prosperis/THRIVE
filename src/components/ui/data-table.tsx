@@ -13,7 +13,6 @@ import {
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ScrollIndicator } from '@/components/ui/scroll-indicator';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -21,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { ScrollIndicator } from '@/components/ui/scroll-indicator';
 import {
   Table,
   TableBody,
@@ -80,7 +80,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  
+
   // Track pagination state separately to make it controlled
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [pageIndex, setPageIndex] = useState(0);
@@ -111,9 +111,8 @@ export function DataTable<TData, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: (updater) => {
-      const newPagination = typeof updater === 'function' 
-        ? updater({ pageIndex, pageSize })
-        : updater;
+      const newPagination =
+        typeof updater === 'function' ? updater({ pageIndex, pageSize }) : updater;
       setPageIndex(newPagination.pageIndex);
       setPageSize(newPagination.pageSize);
     },
@@ -185,28 +184,28 @@ export function DataTable<TData, TValue>({
             <TableHelpDialog />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="ml-auto">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <Button variant="outline" size="sm" className="ml-auto">
+                  Columns <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       )}
@@ -216,49 +215,51 @@ export function DataTable<TData, TValue>({
         <div className="rounded-md border">
           <Table containerRef={tableContainerRef}>
             <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => {
+                  const rowContent = (
+                    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
                   );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => {
-                const rowContent = (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
 
-                return renderRowContextMenu ? renderRowContextMenu(row.original, rowContent) : rowContent;
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                    <p className="text-sm font-medium">No results found</p>
-                    {(columnFilters.length > 0 || sorting.length > 0) && (
-                      <p className="text-xs">Try adjusting your filters or clearing the sort</p>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  return renderRowContextMenu
+                    ? renderRowContextMenu(row.original, rowContent)
+                    : rowContent;
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                      <p className="text-sm font-medium">No results found</p>
+                      {(columnFilters.length > 0 || sorting.length > 0) && (
+                        <p className="text-xs">Try adjusting your filters or clearing the sort</p>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
         <ScrollIndicator containerRef={tableContainerRef} />
       </div>
@@ -270,7 +271,7 @@ export function DataTable<TData, TValue>({
             {table.getFilteredSelectedRowModel().rows.length} of{' '}
             {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
-          
+
           {/* Page Navigation - Center */}
           <div className="flex items-center gap-2">
             {/* Jump to first page */}
@@ -295,7 +296,8 @@ export function DataTable<TData, TValue>({
             </Button>
             {/* Page indicator */}
             <div className="flex items-center justify-center text-sm font-medium min-w-[100px]">
-              Page {table.getPageCount() === 0 ? 0 : table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              Page {table.getPageCount() === 0 ? 0 : table.getState().pagination.pageIndex + 1} of{' '}
+              {table.getPageCount()}
             </div>
             {/* Next page */}
             <Button

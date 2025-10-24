@@ -1,6 +1,6 @@
 /**
  * TanStack Pacer utilities for debouncing, throttling, and rate limiting
- * 
+ *
  * This module provides convenient wrappers around TanStack Pacer functionality
  * for use throughout the application.
  */
@@ -8,12 +8,12 @@
 /**
  * Create a debounced function that delays invoking func until after wait milliseconds
  * have elapsed since the last time the debounced function was invoked.
- * 
+ *
  * @param func - The function to debounce
  * @param wait - The number of milliseconds to delay
  * @param options - Additional options (leading, trailing)
  * @returns A debounced version of the function
- * 
+ *
  * @example
  * ```ts
  * const debouncedSave = createDebouncedFn(saveSettings, 1000);
@@ -57,12 +57,12 @@ export function createDebouncedFn<T extends (...args: any[]) => any>(
 
 /**
  * Create a throttled function that only invokes func at most once per every wait milliseconds.
- * 
+ *
  * @param func - The function to throttle
  * @param wait - The number of milliseconds to throttle invocations to
  * @param options - Additional options (leading, trailing)
  * @returns A throttled version of the function
- * 
+ *
  * @example
  * ```ts
  * const throttledScroll = createThrottledFn(handleScroll, 100);

@@ -11,10 +11,10 @@ interface FormSalarySliderProps {
 
 /**
  * Form-friendly salary slider component
- * 
+ *
  * Wraps SalaryRangeSlider for use in react-hook-form contexts.
  * Replaces separate min/max number inputs with a visual dual-handle slider.
- * 
+ *
  * @example
  * ```tsx
  * // In a form with Controller or custom handling

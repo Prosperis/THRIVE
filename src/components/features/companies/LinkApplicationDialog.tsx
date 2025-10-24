@@ -1,6 +1,10 @@
-import { useState, useMemo, useRef } from 'react';
-import { Link2, Briefcase, Search } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Briefcase, Link2, Search } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -9,14 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
-import type { Company } from '@/types';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCompaniesStore } from '@/stores/companiesStore';
+import type { Company } from '@/types';
 
 interface LinkApplicationDialogProps {
   company: Company;
@@ -33,12 +33,12 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
 
   // Filter applications that could be linked
   const availableApplications = useMemo(() => {
-    return applications.filter(app => {
+    return applications.filter((app) => {
       // Already linked to this company
       if (company.applicationIds.includes(app.id)) {
         return false;
       }
-      
+
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -48,14 +48,14 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
           app.location?.toLowerCase().includes(query)
         );
       }
-      
+
       return true;
     });
   }, [applications, company.applicationIds, searchQuery]);
 
   // Currently linked applications
   const linkedApplications = useMemo(() => {
-    return applications.filter(app => company.applicationIds.includes(app.id));
+    return applications.filter((app) => company.applicationIds.includes(app.id));
   }, [applications, company.applicationIds]);
 
   const virtualizer = useVirtualizer({
@@ -85,14 +85,14 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
   };
 
   const handleUnlink = (appId: string) => {
-    const updatedApplicationIds = company.applicationIds.filter(id => id !== appId);
+    const updatedApplicationIds = company.applicationIds.filter((id) => id !== appId);
     updateCompany(company.id, { applicationIds: updatedApplicationIds });
     toast.success('Application unlinked');
   };
 
   const toggleSelection = (appId: string) => {
-    setSelectedAppIds(prev =>
-      prev.includes(appId) ? prev.filter(id => id !== appId) : [...prev, appId]
+    setSelectedAppIds((prev) =>
+      prev.includes(appId) ? prev.filter((id) => id !== appId) : [...prev, appId]
     );
   };
 
@@ -117,7 +117,7 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
                 Linked Applications ({linkedApplications.length})
               </h3>
               <div className="space-y-2">
-                {linkedApplications.map(app => (
+                {linkedApplications.map((app) => (
                   <div
                     key={app.id}
                     className="flex items-center justify-between p-3 border rounded-lg bg-muted/30"
@@ -131,16 +131,10 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
                         </Badge>
                       </div>
                       {app.location && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {app.location}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{app.location}</p>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleUnlink(app.id)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleUnlink(app.id)}>
                       Unlink
                     </Button>
                   </div>
@@ -152,7 +146,7 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
           {/* Search and Link New */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium">Link New Applications</h3>
-            
+
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -174,11 +168,7 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
                   </p>
                 </div>
               ) : (
-                <div
-                  ref={scrollRef}
-                  className="h-full overflow-auto"
-                  style={{ contain: 'strict' }}
-                >
+                <div ref={scrollRef} className="h-full overflow-auto" style={{ contain: 'strict' }}>
                   <div
                     style={{
                       height: `${virtualizer.getTotalSize()}px`,
@@ -237,14 +227,8 @@ export function LinkApplicationDialog({ company, open, onOpenChange }: LinkAppli
 
             {selectedAppIds.length > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {selectedAppIds.length} selected
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedAppIds([])}
-                >
+                <span className="text-muted-foreground">{selectedAppIds.length} selected</span>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedAppIds([])}>
                   Clear Selection
                 </Button>
               </div>

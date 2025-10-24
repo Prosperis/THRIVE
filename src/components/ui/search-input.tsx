@@ -1,6 +1,6 @@
+import { useDebouncedCallback } from '@tanstack/react-pacer';
 import { Search, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { useDebouncedCallback } from '@tanstack/react-pacer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -33,10 +33,13 @@ export function SearchInput({
   );
 
   // Update local value and trigger debounced onChange
-  const handleChange = useCallback((newValue: string) => {
-    setLocalValue(newValue);
-    debouncedOnChange(newValue);
-  }, [debouncedOnChange]);
+  const handleChange = useCallback(
+    (newValue: string) => {
+      setLocalValue(newValue);
+      debouncedOnChange(newValue);
+    },
+    [debouncedOnChange]
+  );
 
   // Sync with external value changes
   useEffect(() => {

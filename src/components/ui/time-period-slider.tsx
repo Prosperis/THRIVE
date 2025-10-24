@@ -1,5 +1,5 @@
-import { RangeSlider } from './range-slider';
 import { cn } from '@/lib/utils';
+import { RangeSlider } from './range-slider';
 
 interface TimePeriod {
   label: string;
@@ -42,17 +42,11 @@ export function TimePeriodSlider({
     <div className={cn('space-y-3', className)}>
       {/* Current selection display */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-muted-foreground">
-          Time Period
-        </span>
+        <span className="text-sm font-medium text-muted-foreground">Time Period</span>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold">
-            {selectedPeriod.label}
-          </span>
+          <span className="text-sm font-semibold">{selectedPeriod.label}</span>
           {selectedPeriod.days && (
-            <span className="text-xs text-muted-foreground">
-              ({selectedPeriod.days} days)
-            </span>
+            <span className="text-xs text-muted-foreground">({selectedPeriod.days} days)</span>
           )}
         </div>
       </div>
@@ -82,18 +76,14 @@ export function TimePeriodSlider({
                 'flex flex-col items-center gap-0.5 text-xs transition-colors',
                 'hover:text-foreground',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
-                currentIndex === index
-                  ? 'text-primary font-medium'
-                  : 'text-muted-foreground'
+                currentIndex === index ? 'text-primary font-medium' : 'text-muted-foreground'
               )}
               title={period.label}
             >
               <div
                 className={cn(
                   'h-1.5 w-1.5 rounded-full transition-colors',
-                  currentIndex === index
-                    ? 'bg-primary'
-                    : 'bg-muted-foreground/30'
+                  currentIndex === index ? 'bg-primary' : 'bg-muted-foreground/30'
                 )}
               />
               <span>{period.shortLabel}</span>

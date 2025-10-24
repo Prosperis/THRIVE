@@ -24,9 +24,7 @@ export function TableHelpDialog() {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Quick Tips</DialogTitle>
-          <DialogDescription>
-            Power features you might not know about
-          </DialogDescription>
+          <DialogDescription>Power features you might not know about</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div>
@@ -56,9 +54,7 @@ export function TableHelpDialog() {
           </div>
 
           <div>
-            <h4 className="font-medium text-sm mb-1.5 flex items-center gap-2">
-              🎯 Pro Tips
-            </h4>
+            <h4 className="font-medium text-sm mb-1.5 flex items-center gap-2">🎯 Pro Tips</h4>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li>• Right-click rows for quick actions</li>
               <li>• Save filter combinations for reuse</li>

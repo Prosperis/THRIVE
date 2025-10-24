@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -52,7 +52,7 @@ export function WidgetFilterRow({ filter, onUpdate, onRemove }: WidgetFilterRowP
   const isNumericField = NUMERIC_FIELDS.includes(filter.field);
   const isBetweenOperator = filter.operator === 'between';
   const availableOperators = getOperatorsForField(filter.field);
-  
+
   // State for range values when using "between" operator
   const [rangeMin, setRangeMin] = useState<number>(0);
   const [rangeMax, setRangeMax] = useState<number>(100000);
@@ -75,11 +75,9 @@ export function WidgetFilterRow({ filter, onUpdate, onRemove }: WidgetFilterRowP
   const handleFieldChange = (newField: FilterField) => {
     const newOperators = getOperatorsForField(newField);
     // Reset operator if current one is not available for new field
-    const operator = newOperators.includes(filter.operator) 
-      ? filter.operator 
-      : newOperators[0];
-    
-    onUpdate({ 
+    const operator = newOperators.includes(filter.operator) ? filter.operator : newOperators[0];
+
+    onUpdate({
       field: newField,
       operator,
       value: NUMERIC_FIELDS.includes(newField) ? 0 : '',
@@ -99,7 +97,7 @@ export function WidgetFilterRow({ filter, onUpdate, onRemove }: WidgetFilterRowP
         onUpdate({ operator: newOperator, value: [String(min), String(max)] });
       }
     } else {
-      onUpdate({ 
+      onUpdate({
         operator: newOperator,
         value: isNumericField ? 0 : '',
       });
@@ -170,10 +168,7 @@ export function WidgetFilterRow({ filter, onUpdate, onRemove }: WidgetFilterRowP
           {/* Field selector */}
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Field</Label>
-            <Select
-              value={filter.field}
-              onValueChange={handleFieldChange}
-            >
+            <Select value={filter.field} onValueChange={handleFieldChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -191,10 +186,7 @@ export function WidgetFilterRow({ filter, onUpdate, onRemove }: WidgetFilterRowP
           {/* Operator selector */}
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Operator</Label>
-            <Select
-              value={filter.operator}
-              onValueChange={handleOperatorChange}
-            >
+            <Select value={filter.operator} onValueChange={handleOperatorChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -230,13 +222,7 @@ export function WidgetFilterRow({ filter, onUpdate, onRemove }: WidgetFilterRowP
       </div>
 
       {/* Remove button */}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={onRemove}
-        className="mt-6"
-      >
+      <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="mt-6">
         <X className="h-4 w-4" />
       </Button>
     </div>

@@ -60,7 +60,7 @@ export const useDocumentsStore = create<DocumentsState>()(
             documents: [...state.documents, newDocument],
             isLoading: false,
           }));
-          
+
           return newDocument;
         } catch (error) {
           set({
@@ -81,7 +81,7 @@ export const useDocumentsStore = create<DocumentsState>()(
 
           // Increment version if content is being updated
           const shouldIncrementVersion = updates.content && updates.content !== document.content;
-          
+
           const updatedData = {
             ...updates,
             ...(shouldIncrementVersion ? { version: document.version + 1 } : {}),
@@ -178,17 +178,17 @@ export const useDocumentsStore = create<DocumentsState>()(
           };
 
           await db.documents.update(documentId, updates);
-          
+
           // Update applications with version-tracked links
           const { useApplicationsStore } = await import('./applicationsStore');
           const applicationsStore = useApplicationsStore.getState();
-          
+
           for (const appId of applicationIds) {
             const app = applicationsStore.applications.find((a) => a.id === appId);
             if (app) {
               const existingLinks = app.linkedDocuments || [];
               const alreadyLinked = existingLinks.some((link) => link.documentId === documentId);
-              
+
               if (!alreadyLinked) {
                 const newLink = {
                   documentId: document.id,
@@ -198,7 +198,7 @@ export const useDocumentsStore = create<DocumentsState>()(
                   versionName: document.versionName,
                   linkedAt: new Date(),
                 };
-                
+
                 // Use the store's updateApplication method to trigger reactivity
                 await applicationsStore.updateApplication(appId, {
                   linkedDocuments: [...existingLinks, newLink],
@@ -208,7 +208,7 @@ export const useDocumentsStore = create<DocumentsState>()(
               }
             }
           }
-          
+
           set((state) => ({
             documents: state.documents.map((doc) =>
               doc.id === documentId ? { ...doc, ...updates } : doc
@@ -242,7 +242,7 @@ export const useDocumentsStore = create<DocumentsState>()(
           };
 
           await db.documents.update(documentId, updates);
-          
+
           // Remove from application's linkedDocuments
           const { useApplicationsStore } = await import('./applicationsStore');
           const applicationsStore = useApplicationsStore.getState();
@@ -252,14 +252,14 @@ export const useDocumentsStore = create<DocumentsState>()(
               (link) => link.documentId !== documentId
             );
             const updatedDocIds = (app.documentIds || []).filter((id) => id !== documentId);
-            
+
             // Use the store's updateApplication method to trigger reactivity
             await applicationsStore.updateApplication(applicationId, {
               linkedDocuments: updatedLinks,
               documentIds: updatedDocIds,
             });
           }
-          
+
           set((state) => ({
             documents: state.documents.map((doc) =>
               doc.id === documentId ? { ...doc, ...updates } : doc

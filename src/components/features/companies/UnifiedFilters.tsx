@@ -1,14 +1,10 @@
-import { Filter, X, Bookmark } from 'lucide-react';
+import { Bookmark, Filter, X } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { COMPANY_STATUSES, REMOTE_POLICIES } from '@/lib/constants';
@@ -29,7 +25,12 @@ interface UnifiedFiltersProps {
   onOpenSavedFilters?: () => void;
 }
 
-export function UnifiedFilters({ filters, onFiltersChange, activeFilterCount, onOpenSavedFilters }: UnifiedFiltersProps) {
+export function UnifiedFilters({
+  filters,
+  onFiltersChange,
+  activeFilterCount,
+  onOpenSavedFilters,
+}: UnifiedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Extract current filter values

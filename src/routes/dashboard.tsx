@@ -1,4 +1,13 @@
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
@@ -9,9 +18,9 @@ import { ApplicationsTimelineChart } from '@/components/analytics/ApplicationsTi
 import { ResponseMetricsCard } from '@/components/analytics/ResponseMetricsCard';
 import { StatsOverview } from '@/components/analytics/StatsOverview';
 import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
+import { CustomWidgetRenderer } from '@/components/dashboard/CustomWidgetRenderer';
 import { DashboardCustomizer } from '@/components/dashboard/DashboardCustomizer';
 import { DashboardWidgetWrapper } from '@/components/dashboard/DashboardWidgetWrapper';
-import { CustomWidgetRenderer } from '@/components/dashboard/CustomWidgetRenderer';
 import { ApplicationDialog } from '@/components/features/applications/ApplicationDialog';
 import { InterviewDialog } from '@/components/features/interviews/InterviewDialog';
 
@@ -21,7 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApplicationsStore } from '@/stores/applicationsStore';
 import { useCustomWidgetsStore } from '@/stores/customWidgetsStore';
-import { useDashboardStore, type DashboardWidgetType } from '@/stores/dashboardStore';
+import { type DashboardWidgetType, useDashboardStore } from '@/stores/dashboardStore';
 import { useInterviewsStore } from '@/stores/interviewsStore';
 
 export const Route = createFileRoute('/dashboard')({
@@ -37,7 +46,7 @@ function DashboardPage() {
       await fetchApplications();
       await fetchInterviews();
     };
-    
+
     initializeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchApplications, fetchInterviews]);
@@ -87,7 +96,7 @@ function DashboardPage() {
   const { widgets, reorderWidgets } = useDashboardStore();
   const { widgets: customWidgets } = useCustomWidgetsStore();
   const [activeId, setActiveId] = useState<string | null>(null);
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -113,26 +122,24 @@ function DashboardPage() {
         reorderWidgets(newWidgets);
       }
     }
-    
+
     setActiveId(null);
   };
 
   // Combine built-in and custom widgets
   const allVisibleWidgets = useMemo(() => {
-    const builtInWidgets = widgets
-      .filter((w) => w.visible)
-      .sort((a, b) => a.order - b.order);
-    
+    const builtInWidgets = widgets.filter((w) => w.visible).sort((a, b) => a.order - b.order);
+
     const visibleCustomWidgets = customWidgets
       .filter((w) => w.visible)
       .sort((a, b) => a.order - b.order);
-    
+
     return [...builtInWidgets, ...visibleCustomWidgets];
   }, [widgets, customWidgets]);
 
   const renderWidget = (widgetId: string) => {
     // Check if it's a custom widget
-    const customWidget = customWidgets.find(w => w.id === widgetId);
+    const customWidget = customWidgets.find((w) => w.id === widgetId);
     if (customWidget) {
       return <CustomWidgetRenderer widget={customWidget} />;
     }
@@ -141,19 +148,19 @@ function DashboardPage() {
     switch (widgetId as DashboardWidgetType) {
       case 'stats':
         return <StatsOverview />;
-      
+
       case 'funnel':
         return <ApplicationFunnelChart />;
-      
+
       case 'timeline':
         return <ApplicationsTimelineChart />;
-      
+
       case 'status-distribution':
         return <StatusDistributionChart />;
-      
+
       case 'response-metrics':
         return <ResponseMetricsCard />;
-      
+
       case 'quick-actions':
         return (
           <AnimatedCard hoverEffect="lift" animateOnMount delay={0.1}>
@@ -199,7 +206,7 @@ function DashboardPage() {
             </CardContent>
           </AnimatedCard>
         );
-      
+
       case 'recent-activity':
         return (
           <AnimatedCard hoverEffect="lift" animateOnMount delay={0.2}>
@@ -244,16 +251,18 @@ function DashboardPage() {
             </CardContent>
           </AnimatedCard>
         );
-      
+
       case 'upcoming-interviews': {
         const upcomingInterviews = interviews
-          .filter((interview) => interview.scheduledAt && new Date(interview.scheduledAt) >= new Date())
+          .filter(
+            (interview) => interview.scheduledAt && new Date(interview.scheduledAt) >= new Date()
+          )
           .sort((a, b) => {
             if (!a.scheduledAt || !b.scheduledAt) return 0;
             return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
           })
           .slice(0, 5);
-        
+
         return (
           <AnimatedCard hoverEffect="lift">
             <CardHeader>
@@ -273,7 +282,10 @@ function DashboardPage() {
                   {upcomingInterviews.map((interview) => {
                     const app = applications.find((a) => a.id === interview.applicationId);
                     return (
-                      <div key={interview.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div
+                        key={interview.id}
+                        className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                      >
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary flex-shrink-0">
                           <Calendar className="h-5 w-5" />
                         </div>
@@ -284,13 +296,14 @@ function DashboardPage() {
                           </p>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">
-                              {interview.scheduledAt && new Date(interview.scheduledAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                                hour: 'numeric',
-                                minute: '2-digit',
-                              })}
+                              {interview.scheduledAt &&
+                                new Date(interview.scheduledAt).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                })}
                             </span>
                             <Badge variant="outline" className="text-xs">
                               {interview.status}
@@ -306,20 +319,24 @@ function DashboardPage() {
           </AnimatedCard>
         );
       }
-      
+
       case 'application-goals': {
         const now = new Date();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        
-        const weeklyApps = applications.filter((app) => new Date(app.createdAt) >= startOfWeek).length;
-        const monthlyApps = applications.filter((app) => new Date(app.createdAt) >= startOfMonth).length;
-        
+
+        const weeklyApps = applications.filter(
+          (app) => new Date(app.createdAt) >= startOfWeek
+        ).length;
+        const monthlyApps = applications.filter(
+          (app) => new Date(app.createdAt) >= startOfMonth
+        ).length;
+
         const weeklyGoal = 10;
         const monthlyGoal = 40;
         const weeklyProgress = Math.min((weeklyApps / weeklyGoal) * 100, 100);
         const monthlyProgress = Math.min((monthlyApps / monthlyGoal) * 100, 100);
-        
+
         return (
           <AnimatedCard hoverEffect="lift">
             <CardHeader>
@@ -345,7 +362,7 @@ function DashboardPage() {
                   />
                 </div>
               </div>
-              
+
               {/* Monthly Goal */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -365,26 +382,29 @@ function DashboardPage() {
           </AnimatedCard>
         );
       }
-      
+
       case 'company-insights': {
-        const companyData = applications.reduce((acc, app) => {
-          const company = app.companyName;
-          if (!acc[company]) {
-            acc[company] = {
-              name: company,
-              count: 0,
-              statuses: [] as string[],
-            };
-          }
-          acc[company].count++;
-          acc[company].statuses.push(app.status);
-          return acc;
-        }, {} as Record<string, { name: string; count: number; statuses: string[] }>);
-        
+        const companyData = applications.reduce(
+          (acc, app) => {
+            const company = app.companyName;
+            if (!acc[company]) {
+              acc[company] = {
+                name: company,
+                count: 0,
+                statuses: [] as string[],
+              };
+            }
+            acc[company].count++;
+            acc[company].statuses.push(app.status);
+            return acc;
+          },
+          {} as Record<string, { name: string; count: number; statuses: string[] }>
+        );
+
         const topCompanies = Object.values(companyData)
           .sort((a, b) => b.count - a.count)
           .slice(0, 6);
-        
+
         return (
           <AnimatedCard hoverEffect="lift">
             <CardHeader>
@@ -425,14 +445,15 @@ function DashboardPage() {
           </AnimatedCard>
         );
       }
-      
+
       case 'salary-tracker': {
         const salaryData = applications
           .filter((app) => app.salary && (app.salary.min || app.salary.max))
           .map((app) => {
-            const avgSalary = app.salary?.min && app.salary?.max 
-              ? (app.salary.min + app.salary.max) / 2 
-              : (app.salary?.min || app.salary?.max || 0);
+            const avgSalary =
+              app.salary?.min && app.salary?.max
+                ? (app.salary.min + app.salary.max) / 2
+                : app.salary?.min || app.salary?.max || 0;
             return {
               company: app.companyName,
               position: app.position,
@@ -443,17 +464,16 @@ function DashboardPage() {
           })
           .sort((a, b) => b.salary - a.salary)
           .slice(0, 5);
-        
-        const avgSalary = salaryData.length > 0
-          ? salaryData.reduce((sum, app) => sum + app.salary, 0) / salaryData.length
-          : 0;
-        
+
+        const avgSalary =
+          salaryData.length > 0
+            ? salaryData.reduce((sum, app) => sum + app.salary, 0) / salaryData.length
+            : 0;
+
         return (
           <AnimatedCard hoverEffect="lift">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                💰 Salary Tracker
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2">💰 Salary Tracker</CardTitle>
               <CardDescription>Compare salary ranges and offers</CardDescription>
             </CardHeader>
             <CardContent>
@@ -469,10 +489,13 @@ function DashboardPage() {
                       ${(avgSalary / 1000).toFixed(0)}K
                     </p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     {salaryData.map((app, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-2 rounded border">
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-2 rounded border"
+                      >
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{app.company}</p>
                           <p className="text-xs text-muted-foreground truncate">{app.position}</p>
@@ -492,28 +515,39 @@ function DashboardPage() {
           </AnimatedCard>
         );
       }
-      
+
       case 'networking-tracker': {
-        const referralApps = applications.filter((app) => app.notes?.toLowerCase().includes('referral') || app.notes?.toLowerCase().includes('reference'));
-        const networkingApps = applications.filter((app) => app.notes?.toLowerCase().includes('network') || app.notes?.toLowerCase().includes('connection'));
-        
+        const referralApps = applications.filter(
+          (app) =>
+            app.notes?.toLowerCase().includes('referral') ||
+            app.notes?.toLowerCase().includes('reference')
+        );
+        const networkingApps = applications.filter(
+          (app) =>
+            app.notes?.toLowerCase().includes('network') ||
+            app.notes?.toLowerCase().includes('connection')
+        );
+
         const totalConnections = referralApps.length + networkingApps.length;
-        const referralResponseRate = referralApps.length > 0
-          ? (referralApps.filter((app) => ['interview', 'offer', 'accepted'].includes(app.status)).length / referralApps.length) * 100
-          : 0;
-        
+        const referralResponseRate =
+          referralApps.length > 0
+            ? (referralApps.filter((app) => ['interview', 'offer', 'accepted'].includes(app.status))
+                .length /
+                referralApps.length) *
+              100
+            : 0;
+
         return (
           <AnimatedCard hoverEffect="lift">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                👥 Networking Tracker
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2">👥 Networking Tracker</CardTitle>
               <CardDescription>Track connections and referrals</CardDescription>
             </CardHeader>
             <CardContent>
               {totalConnections === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  Add "referral" or "network" keywords to your application notes to track networking efforts
+                  Add "referral" or "network" keywords to your application notes to track networking
+                  efforts
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -527,23 +561,30 @@ function DashboardPage() {
                       <p className="text-2xl font-bold text-primary">{networkingApps.length}</p>
                     </div>
                   </div>
-                  
+
                   {referralApps.length > 0 && (
                     <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                       <p className="text-xs text-muted-foreground mb-1">Referral Response Rate</p>
-                      <p className="text-xl font-bold text-primary">{referralResponseRate.toFixed(0)}%</p>
+                      <p className="text-xl font-bold text-primary">
+                        {referralResponseRate.toFixed(0)}%
+                      </p>
                     </div>
                   )}
-                  
+
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground">Recent Referrals</p>
                     {referralApps.slice(0, 3).map((app) => (
-                      <div key={app.id} className="flex items-center gap-2 p-2 rounded border text-sm">
+                      <div
+                        key={app.id}
+                        className="flex items-center gap-2 p-2 rounded border text-sm"
+                      >
                         <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
                           {app.companyName.charAt(0)}
                         </div>
                         <span className="flex-1 truncate">{app.companyName}</span>
-                        <Badge variant="outline" className="text-xs">{app.status}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {app.status}
+                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -553,7 +594,7 @@ function DashboardPage() {
           </AnimatedCard>
         );
       }
-      
+
       default:
         return null;
     }
@@ -561,17 +602,17 @@ function DashboardPage() {
 
   const getGridClass = (widgetId: string) => {
     // Check if it's a custom widget
-    const customWidget = customWidgets.find(w => w.id === widgetId);
+    const customWidget = customWidgets.find((w) => w.id === widgetId);
     if (customWidget) {
       // Use size property for custom widgets
       if (customWidget.size === 'large') return 'col-span-full';
       if (customWidget.size === 'medium') return 'col-span-full md:col-span-1';
       return 'col-span-full md:col-span-1'; // small also takes half width
     }
-    
+
     // Full width widgets
     if (widgetId === 'stats') return 'col-span-full';
-    
+
     // Half width widgets (2 columns on md+)
     return 'col-span-full md:col-span-1';
   };
@@ -602,7 +643,7 @@ function DashboardPage() {
             ))}
           </div>
         </SortableContext>
-        
+
         <DragOverlay>
           {activeId ? (
             <div className="shadow-2xl ring-2 ring-primary/20 rounded-lg">

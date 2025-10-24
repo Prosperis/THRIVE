@@ -1,5 +1,5 @@
-import { RangeSlider } from './range-slider';
 import { cn } from '@/lib/utils';
+import { RangeSlider } from './range-slider';
 
 type DurationUnit = 'seconds' | 'minutes' | 'hours';
 
@@ -23,10 +23,10 @@ interface DurationSliderProps {
 
 /**
  * Duration Slider Component
- * 
+ *
  * Interactive slider for selecting time durations with visual feedback.
  * Supports seconds, minutes, and hours with smart formatting.
- * 
+ *
  * @example
  * ```tsx
  * // For practice sessions (seconds)
@@ -42,7 +42,7 @@ interface DurationSliderProps {
  *     { label: '30 min', value: 1800 },
  *   ]}
  * />
- * 
+ *
  * // For time limits (minutes)
  * <DurationSlider
  *   value={timeLimit}
@@ -65,11 +65,10 @@ export function DurationSlider({
   disabled = false,
   showPresets = true,
 }: DurationSliderProps) {
-  
   // Format duration based on unit
   const formatDuration = (val: number): string => {
     if (val === 0) return '0';
-    
+
     switch (unit) {
       case 'seconds': {
         if (val < 60) return `${val}s`;
@@ -82,17 +81,17 @@ export function DurationSlider({
         const remainingMins = Math.floor((val % 3600) / 60);
         return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
       }
-      
+
       case 'minutes': {
         if (val < 60) return `${val} min`;
         const hrs = Math.floor(val / 60);
         const mins = val % 60;
         return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
       }
-      
+
       case 'hours':
         return val === 1 ? '1 hour' : `${val} hours`;
-      
+
       default:
         return `${val}`;
     }
@@ -101,10 +100,14 @@ export function DurationSlider({
   // Get unit label
   const getUnitLabel = (): string => {
     switch (unit) {
-      case 'seconds': return 'sec';
-      case 'minutes': return 'min';
-      case 'hours': return 'hrs';
-      default: return '';
+      case 'seconds':
+        return 'sec';
+      case 'minutes':
+        return 'min';
+      case 'hours':
+        return 'hrs';
+      default:
+        return '';
     }
   };
 
@@ -165,26 +168,29 @@ export function DurationSlider({
       )}
 
       {/* Progress indicator for longer durations */}
-      {unit === 'seconds' && max >= 1800 && ( // Show for 30+ minutes
-        <div className="space-y-1">
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className={cn(
-                'h-full transition-all duration-300',
-                value < max * 0.33 ? 'bg-green-500' :
-                value < max * 0.66 ? 'bg-yellow-500' :
-                'bg-orange-500'
-              )}
-              style={{ width: `${(value / max) * 100}%` }}
-            />
+      {unit === 'seconds' &&
+        max >= 1800 && ( // Show for 30+ minutes
+          <div className="space-y-1">
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  'h-full transition-all duration-300',
+                  value < max * 0.33
+                    ? 'bg-green-500'
+                    : value < max * 0.66
+                      ? 'bg-yellow-500'
+                      : 'bg-orange-500'
+                )}
+                style={{ width: `${(value / max) * 100}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Quick</span>
+              <span>Standard</span>
+              <span>Extended</span>
+            </div>
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Quick</span>
-            <span>Standard</span>
-            <span>Extended</span>
-          </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

@@ -163,10 +163,10 @@ export const DEFAULT_LAYOUTS: DashboardLayout[] = [
       'company-stats': false,
       'monthly-trends': false,
       'goals-tracking': false,
-      'filters': false,
+      filters: false,
       'export-options': false,
       'report-generator': false,
-      'annotations': false,
+      annotations: false,
     },
   },
   {
@@ -186,13 +186,7 @@ export const DEFAULT_LAYOUTS: DashboardLayout[] = [
     id: 'performance',
     name: 'Performance Focus',
     description: 'Focus on metrics and trends',
-    widgets: [
-      'stats-overview',
-      'monthly-trends',
-      'company-stats',
-      'response-time',
-      'funnel-chart',
-    ],
+    widgets: ['stats-overview', 'monthly-trends', 'company-stats', 'response-time', 'funnel-chart'],
     widgetVisibility: {
       'stats-overview': true,
       'timeline-chart': false,
@@ -203,10 +197,10 @@ export const DEFAULT_LAYOUTS: DashboardLayout[] = [
       'company-stats': true,
       'monthly-trends': true,
       'goals-tracking': false,
-      'filters': false,
+      filters: false,
       'export-options': false,
       'report-generator': false,
-      'annotations': false,
+      annotations: false,
     },
   },
 ];
@@ -214,17 +208,17 @@ export const DEFAULT_LAYOUTS: DashboardLayout[] = [
 interface DashboardLayoutState {
   currentLayoutId: string;
   customLayouts: DashboardLayout[];
-  
+
   // Getters
   getCurrentLayout: () => DashboardLayout;
   getVisibleWidgets: () => WidgetId[];
-  
+
   // Layout management
   setCurrentLayout: (layoutId: string) => void;
   createCustomLayout: (name: string, description: string, basedOn?: string) => void;
   deleteCustomLayout: (layoutId: string) => void;
   duplicateLayout: (layoutId: string, newName: string) => void;
-  
+
   // Widget management
   toggleWidgetVisibility: (widgetId: WidgetId) => void;
   reorderWidgets: (newOrder: WidgetId[]) => void;
@@ -241,7 +235,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
         const { currentLayoutId, customLayouts } = get();
         const customLayout = customLayouts.find((l) => l.id === currentLayoutId);
         if (customLayout) return customLayout;
-        
+
         const defaultLayout = DEFAULT_LAYOUTS.find((l) => l.id === currentLayoutId);
         return defaultLayout || DEFAULT_LAYOUTS[0];
       },
@@ -257,10 +251,8 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
 
       createCustomLayout: (name: string, description: string, basedOn?: string) => {
         const { customLayouts } = get();
-        const baseLayout = basedOn
-          ? get().getCurrentLayout()
-          : DEFAULT_LAYOUTS[0];
-        
+        const baseLayout = basedOn ? get().getCurrentLayout() : DEFAULT_LAYOUTS[0];
+
         const newLayout: DashboardLayout = {
           id: `custom-${Date.now()}`,
           name,
@@ -268,7 +260,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
           widgets: [...baseLayout.widgets],
           widgetVisibility: { ...baseLayout.widgetVisibility },
         };
-        
+
         set({
           customLayouts: [...customLayouts, newLayout],
           currentLayoutId: newLayout.id,
@@ -278,7 +270,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
       deleteCustomLayout: (layoutId: string) => {
         const { customLayouts, currentLayoutId } = get();
         const filtered = customLayouts.filter((l) => l.id !== layoutId);
-        
+
         set({
           customLayouts: filtered,
           currentLayoutId: currentLayoutId === layoutId ? 'default' : currentLayoutId,
@@ -287,11 +279,12 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
 
       duplicateLayout: (layoutId: string, newName: string) => {
         const { customLayouts } = get();
-        const layoutToDuplicate = customLayouts.find((l) => l.id === layoutId) 
-          || DEFAULT_LAYOUTS.find((l) => l.id === layoutId);
-        
+        const layoutToDuplicate =
+          customLayouts.find((l) => l.id === layoutId) ||
+          DEFAULT_LAYOUTS.find((l) => l.id === layoutId);
+
         if (!layoutToDuplicate) return;
-        
+
         const newLayout: DashboardLayout = {
           id: `custom-${Date.now()}`,
           name: newName,
@@ -299,7 +292,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
           widgets: [...layoutToDuplicate.widgets],
           widgetVisibility: { ...layoutToDuplicate.widgetVisibility },
         };
-        
+
         set({
           customLayouts: [...customLayouts, newLayout],
           currentLayoutId: newLayout.id,
@@ -309,7 +302,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
       toggleWidgetVisibility: (widgetId: WidgetId) => {
         const { currentLayoutId, customLayouts } = get();
         const isCustomLayout = customLayouts.some((l) => l.id === currentLayoutId);
-        
+
         if (!isCustomLayout) {
           // Create a custom layout based on current
           const currentLayout = get().getCurrentLayout();
@@ -323,7 +316,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
               [widgetId]: !currentLayout.widgetVisibility[widgetId],
             },
           };
-          
+
           set({
             customLayouts: [...customLayouts, newLayout],
             currentLayoutId: newLayout.id,
@@ -349,7 +342,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
       reorderWidgets: (newOrder: WidgetId[]) => {
         const { currentLayoutId, customLayouts } = get();
         const isCustomLayout = customLayouts.some((l) => l.id === currentLayoutId);
-        
+
         if (!isCustomLayout) {
           // Create a custom layout with new order
           const currentLayout = get().getCurrentLayout();
@@ -360,7 +353,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
             widgets: newOrder,
             widgetVisibility: { ...currentLayout.widgetVisibility },
           };
-          
+
           set({
             customLayouts: [...customLayouts, newLayout],
             currentLayoutId: newLayout.id,
@@ -369,9 +362,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
           // Update existing custom layout
           set({
             customLayouts: customLayouts.map((layout) =>
-              layout.id === currentLayoutId
-                ? { ...layout, widgets: newOrder }
-                : layout
+              layout.id === currentLayoutId ? { ...layout, widgets: newOrder } : layout
             ),
           });
         }
