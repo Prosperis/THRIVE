@@ -1,5 +1,6 @@
 import { Search, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useDebouncedCallback } from '@tanstack/react-pacer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -21,16 +22,21 @@ export function SearchInput({
 }: SearchInputProps) {
   const [localValue, setLocalValue] = useState(value);
 
-  // Debounce the onChange callback
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localValue !== value) {
-        onChange(localValue);
+  // Debounce the onChange callback using TanStack Pacer
+  const debouncedOnChange = useDebouncedCallback(
+    (newValue: string) => {
+      if (newValue !== value) {
+        onChange(newValue);
       }
-    }, debounceMs);
+    },
+    { wait: debounceMs }
+  );
 
-    return () => clearTimeout(timer);
-  }, [localValue, onChange, value, debounceMs]);
+  // Update local value and trigger debounced onChange
+  const handleChange = useCallback((newValue: string) => {
+    setLocalValue(newValue);
+    debouncedOnChange(newValue);
+  }, [debouncedOnChange]);
 
   // Sync with external value changes
   useEffect(() => {
@@ -48,7 +54,7 @@ export function SearchInput({
       <Input
         type="text"
         value={localValue}
-        onChange={(e) => setLocalValue(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
         className="pl-9 pr-9"
       />
