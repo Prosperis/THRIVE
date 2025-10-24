@@ -14,7 +14,7 @@ import { routeTree } from './routeTree.gen';
 // Create a new router instance with basepath for GitHub Pages
 const router = createRouter({ 
   routeTree,
-  basepath: '/thrive'
+  basepath: '/THRIVE'
 });
 
 // Register the router instance for type safety

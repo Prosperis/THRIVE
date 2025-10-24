@@ -7,7 +7,7 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   // Base path for GitHub Pages deployment
-  base: '/thrive/',
+  base: '/THRIVE/',
   
   plugins: [devtools(), tanstackRouter(), react()],
   
