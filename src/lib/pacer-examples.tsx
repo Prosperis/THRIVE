@@ -52,6 +52,8 @@ export function AutoSaveExample() {
   const [content, setContent] = useState('');
   
   // Debounce the entire value
+  // @ts-expect-error - Example code showing debounced value usage
+  // biome-ignore lint/correctness/noUnusedVariables: Example code
   const _debouncedContent = useDebouncedValue(content, { wait: 1000 });
 
   // This effect will only run 1 second after the last edit
@@ -76,6 +78,7 @@ export function ThrottledScrollExample() {
   const [scrollY, setScrollY] = useState(0);
 
   // Throttle scroll updates to once per 100ms
+  // @ts-expect-error - Example code showing throttled callback usage
   const _throttledScroll = useThrottledCallback(
     () => {
       setScrollY(window.scrollY);
@@ -123,6 +126,7 @@ export function DatabaseBatchingExample() {
   //   onSuccess: (count) => toast.success(`Saved ${count} changes`),
   // });
 
+  // @ts-expect-error - Example code showing batched updates
   const _handleTagChange = (_applicationId: string, newTags: string[]) => {
     setTags(newTags);
     // batcher.update(applicationId, { tags: newTags });

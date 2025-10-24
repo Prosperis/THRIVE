@@ -5,8 +5,6 @@
  * for use throughout the application.
  */
 
-import { createDebounce, createThrottle } from '@tanstack/react-pacer';
-
 /**
  * Create a debounced function that delays invoking func until after wait milliseconds
  * have elapsed since the last time the debounced function was invoked.
@@ -31,14 +29,29 @@ export function createDebouncedFn<T extends (...args: any[]) => any>(
     trailing?: boolean;
   }
 ): (...args: Parameters<T>) => void {
-  const debounced = createDebounce(func, {
-    wait,
-    leading: options?.leading,
-    trailing: options?.trailing,
-  });
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let lastCallTime = 0;
 
   return (...args: Parameters<T>) => {
-    debounced(...args);
+    const now = Date.now();
+    const isLeading = options?.leading && now - lastCallTime > wait;
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    if (isLeading) {
+      func(...args);
+      lastCallTime = now;
+    }
+
+    if (options?.trailing !== false) {
+      timeoutId = setTimeout(() => {
+        func(...args);
+        lastCallTime = Date.now();
+        timeoutId = null;
+      }, wait);
+    }
   };
 }
 
@@ -65,14 +78,31 @@ export function createThrottledFn<T extends (...args: any[]) => any>(
     trailing?: boolean;
   }
 ): (...args: Parameters<T>) => void {
-  const throttled = createThrottle(func, {
-    wait,
-    leading: options?.leading,
-    trailing: options?.trailing,
-  });
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let lastCallTime = 0;
+  let lastArgs: Parameters<T> | null = null;
 
   return (...args: Parameters<T>) => {
-    throttled(...args);
+    const now = Date.now();
+    const timeSinceLastCall = now - lastCallTime;
+
+    lastArgs = args;
+
+    if (timeSinceLastCall >= wait) {
+      if (options?.leading !== false) {
+        func(...args);
+        lastCallTime = now;
+      }
+    } else if (!timeoutId && options?.trailing !== false) {
+      timeoutId = setTimeout(() => {
+        if (lastArgs) {
+          func(...lastArgs);
+        }
+        lastCallTime = Date.now();
+        timeoutId = null;
+        lastArgs = null;
+      }, wait - timeSinceLastCall);
+    }
   };
 }
 

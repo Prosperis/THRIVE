@@ -203,6 +203,7 @@ export function SyncStatusExample() {
     trailing: false,
   });
 
+  // @ts-expect-error - Example code showing throttled toast usage
   const _handleSync = () => {
     // Even if this is called 100 times in 5 seconds,
     // only the first one will show
@@ -231,6 +232,7 @@ export function ErrorHandlingExample() {
     leading: true,
   });
 
+  // @ts-expect-error - Example code showing throttled error toast
   const _handleError = (error: Error) => {
     // Multiple rapid errors won't spam the user
     errorToast.error('Operation failed', {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { Save, Trash2, Calendar, Filter, Search } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import {
@@ -149,7 +149,7 @@ export function SavedFiltersDialog({
   };
 
   const getFilterBadges = (filters: CompanySavedFilter['filters']) => {
-    const badges: JSX.Element[] = [];
+    const badges: ReactElement[] = [];
     
     if (filters.status?.length) {
       filters.status.forEach(status => {

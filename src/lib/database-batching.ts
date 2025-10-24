@@ -5,7 +5,7 @@
  * Useful for rapid updates like tag editing, bulk imports, or form auto-save.
  */
 
-import type { Table } from 'dexie';
+import type { Table, UpdateSpec } from 'dexie';
 
 /**
  * Configuration for a database batcher
@@ -81,7 +81,7 @@ export function createDatabaseBatcher<T>(config: BatcherConfig<T>) {
     // Get all pending updates
     const updates = Array.from(pendingUpdates.entries()).map(([id, changes]) => ({
       key: id,
-      changes: { ...changes, updatedAt: new Date() },
+      changes: { ...changes, updatedAt: new Date() } as UpdateSpec<T>,
     }));
 
     const count = updates.length;

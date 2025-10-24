@@ -14,7 +14,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     title: '',
     description: '',
   });
-  const resolveRef = React.useRef<(value: boolean) => void>();
+  const resolveRef = React.useRef<((value: boolean) => void) | null>(null);
 
   const confirm = React.useCallback((opts: ConfirmDialogOptions): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -40,7 +40,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
 
   const alert = React.useCallback(
     (title: string, description?: string): Promise<void> => {
-      return new Promise((resolve) => {
+      return new Promise<void>((resolve) => {
         resolveRef.current = () => resolve();
         setOptions({
           title,
@@ -62,6 +62,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     if (!isOpen && resolveRef.current) {
       // If dialog is closed without explicit confirm/cancel, treat as cancel
       resolveRef.current(false);
+      resolveRef.current = null;
     }
   }, []);
 
