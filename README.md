@@ -83,6 +83,24 @@ bun run lint
 bun run type-check
 ```
 
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run integration tests only
+npm run test:integration
+```
+
+See [TESTING.md](./TESTING.md) for detailed testing documentation.
+
 ### Deployment
 
 ```bash

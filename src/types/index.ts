@@ -71,16 +71,19 @@ export interface Interview {
   applicationId: string;
   round: number; // 1st interview, 2nd interview, etc.
   type:
+    | 'recruiter-screen'
     | 'phone-screen'
+    | 'hiring-manager-chat'
     | 'video'
+    | 'technical-assessment'
     | 'on-site'
-    | 'technical'
-    | 'behavioral'
+    | 'technical-interview'
+    | 'behavioral-interview'
+    | 'leadership-interview'
     | 'panel'
     | 'final'
     | 'other';
   status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show';
-
   scheduledAt?: Date; // Renamed from scheduledDate
   duration?: number; // minutes
   location?: string;
@@ -215,6 +218,9 @@ export interface Company {
   companyLinks?: {
     website?: string;
     linkedin?: string;
+    twitter?: string;
+    wellfound?: string;
+    crunchbase?: string;
     glassdoor?: string;
     careers?: string;
     news?: string;
@@ -228,6 +234,30 @@ export interface Company {
     careerGrowth?: number;
     management?: number;
     culture?: number;
+  };
+
+  // ATS (Parameters)
+  atsParams?: {
+    greenHouse?: {
+      active?: boolean;
+      identifier?: string;
+    };
+    lever?: {
+      active?: boolean;
+      identifier?: string;
+    };
+    workable?: {
+      active?: boolean;
+      identifier?: string;
+    };
+    ashbyHq?: {
+      active: boolean;
+      identifier?: string;
+    };
+    bambooHr?: {
+      active: boolean;
+      identifier?: string;
+    };
   };
 
   // Interview Information
@@ -306,11 +336,15 @@ export interface ApplicationFilters {
  */
 export interface InterviewFilters {
   type?: (
+    | 'recruiter-screen'
     | 'phone-screen'
+    | 'hiring-manager-chat'
     | 'video'
+    | 'technical-assessment'
     | 'on-site'
-    | 'technical'
-    | 'behavioral'
+    | 'technical-interview'
+    | 'behavioral-interview'
+    | 'leadership-interview'
     | 'panel'
     | 'final'
     | 'other'

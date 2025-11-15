@@ -1344,7 +1344,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['BigTech Solutions'],
       round: 2,
-      type: 'technical',
+      type: 'technical-interview',
       status: 'completed',
       scheduledAt: new Date('2024-01-15'),
       duration: 90,
@@ -1371,7 +1371,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['TechCorp Inc'],
       round: 2,
-      type: 'technical',
+      type: 'technical-interview',
       status: 'scheduled',
       scheduledAt: new Date('2025-10-25T14:00:00'),
       duration: 60,
@@ -1395,7 +1395,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['TechCorp Inc'],
       round: 3,
-      type: 'behavioral',
+      type: 'behavioral-interview',
       status: 'scheduled',
       scheduledAt: new Date('2025-10-28T10:30:00'),
       duration: 45,
@@ -1498,7 +1498,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['CloudScale Systems'],
       round: 1,
-      type: 'technical',
+      type: 'technical-interview',
       status: 'scheduled',
       scheduledAt: new Date('2025-11-05T16:00:00'),
       duration: 75,
@@ -1560,7 +1560,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['GreenTech Solutions'],
       round: 2,
-      type: 'technical',
+      type: 'technical-interview',
       status: 'completed',
       scheduledAt: new Date('2025-09-05'),
       duration: 60,
@@ -1578,7 +1578,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['GreenTech Solutions'],
       round: 3,
-      type: 'behavioral',
+      type: 'behavioral-interview',
       status: 'scheduled',
       scheduledAt: new Date('2025-10-26T15:00:00'),
       duration: 45,
@@ -1615,7 +1615,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['MediaStream Co'],
       round: 2,
-      type: 'technical',
+      type: 'technical-interview',
       status: 'scheduled',
       scheduledAt: new Date('2025-10-27T10:00:00'),
       duration: 75,
@@ -1658,7 +1658,7 @@ export async function seedDatabase() {
     {
       applicationId: applicationIds['CyberSecure Systems'],
       round: 2,
-      type: 'technical',
+      type: 'technical-interview',
       status: 'scheduled',
       scheduledAt: new Date('2025-10-29T14:00:00'),
       duration: 90,

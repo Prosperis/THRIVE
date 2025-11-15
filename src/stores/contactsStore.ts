@@ -1,128 +1,171 @@
+import { gql } from '@apollo/client';
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
-import { db } from '@/lib/db';
-import { generateId } from '@/lib/utils';
-import type { Contact } from '@/types';
+import { graphqlClient } from '../lib/graphql';
+import type { Contact } from '../types';
 
 interface ContactsState {
   contacts: Contact[];
-  selectedContactId: string | null;
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
-
-  // Actions
   fetchContacts: () => Promise<void>;
-  addContact: (contact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateContact: (id: string, updates: Partial<Contact>) => Promise<void>;
+  addContact: (contact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Contact>;
+  updateContact: (id: string, updates: Partial<Contact>) => Promise<Contact>;
   deleteContact: (id: string) => Promise<void>;
-  setSelectedContact: (id: string | null) => void;
-  clearError: () => void;
+  getContactById: (id: string) => Contact | undefined;
+  getContactsByCompany: (companyId: string) => Contact[];
 }
 
-export const useContactsStore = create<ContactsState>()(
-  devtools(
-    persist(
-      (set) => ({
-        contacts: [],
-        selectedContactId: null,
-        isLoading: false,
-        error: null,
+const GET_CONTACTS = gql`
+  query GetContacts {
+    contacts {
+      id
+      name
+      companyId
+      companyName
+      title
+      email
+      phone
+      linkedin
+      notes
+      relationship
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
-        fetchContacts: async () => {
-          set({ isLoading: true, error: null });
-          try {
-            const contacts = await db.contacts.toArray();
-            set({ contacts, isLoading: false });
-          } catch (error) {
-            set({
-              error: error instanceof Error ? error.message : 'Failed to fetch contacts',
-              isLoading: false,
-            });
-          }
-        },
+const CREATE_CONTACT = gql`
+  mutation CreateContact($input: ContactInput!) {
+    createContact(input: $input) {
+      id
+      name
+      companyId
+      companyName
+      title
+      email
+      phone
+      linkedin
+      notes
+      relationship
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
-        addContact: async (contactData) => {
-          set({ isLoading: true, error: null });
-          try {
-            const now = new Date();
-            const contact: Contact = {
-              ...contactData,
-              id: generateId(),
-              createdAt: now,
-              updatedAt: now,
-            };
+const UPDATE_CONTACT = gql`
+  mutation UpdateContact($id: ID!, $input: ContactInput!) {
+    updateContact(id: $id, input: $input) {
+      id
+      name
+      companyId
+      companyName
+      title
+      email
+      phone
+      linkedin
+      notes
+      relationship
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
-            await db.contacts.add(contact);
-            set((state) => ({
-              contacts: [...state.contacts, contact],
-              isLoading: false,
-            }));
-          } catch (error) {
-            set({
-              error: error instanceof Error ? error.message : 'Failed to add contact',
-              isLoading: false,
-            });
-            throw error;
-          }
-        },
+const DELETE_CONTACT = gql`
+  mutation DeleteContact($id: ID!) {
+    deleteContact(id: $id)
+  }
+`;
 
-        updateContact: async (id, updates) => {
-          set({ isLoading: true, error: null });
-          try {
-            const updatedContact = {
-              ...updates,
-              updatedAt: new Date(),
-            };
+export const useContactsStore = create<ContactsState>((set, get) => ({
+  contacts: [],
+  loading: false,
+  error: null,
 
-            await db.contacts.update(id, updatedContact);
-            set((state) => ({
-              contacts: state.contacts.map((contact) =>
-                contact.id === id ? { ...contact, ...updatedContact } : contact
-              ),
-              isLoading: false,
-            }));
-          } catch (error) {
-            set({
-              error: error instanceof Error ? error.message : 'Failed to update contact',
-              isLoading: false,
-            });
-            throw error;
-          }
-        },
+  fetchContacts: async () => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.query({
+        query: GET_CONTACTS,
+        fetchPolicy: 'network-only',
+      });
 
-        deleteContact: async (id) => {
-          set({ isLoading: true, error: null });
-          try {
-            await db.contacts.delete(id);
-            set((state) => ({
-              contacts: state.contacts.filter((contact) => contact.id !== id),
-              isLoading: false,
-            }));
-          } catch (error) {
-            set({
-              error: error instanceof Error ? error.message : 'Failed to delete contact',
-              isLoading: false,
-            });
-            throw error;
-          }
-        },
+      set({ contacts: (data as any).contacts, loading: false });
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      set({ error: 'Failed to fetch contacts', loading: false });
+    }
+  },
 
-        setSelectedContact: (id) => {
-          set({ selectedContactId: id });
-        },
+  addContact: async (contact) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.mutate({
+        mutation: CREATE_CONTACT,
+        variables: { input: contact },
+      });
 
-        clearError: () => {
-          set({ error: null });
-        },
-      }),
-      {
-        name: 'contacts-storage',
-        partialize: (state) => ({
-          contacts: state.contacts,
-          selectedContactId: state.selectedContactId,
-        }),
-      }
-    ),
-    { name: 'ContactsStore' }
-  )
-);
+      const newContact = (data as any).createContact;
+      set((state) => ({
+        contacts: [...state.contacts, newContact],
+        loading: false,
+      }));
+
+      return newContact;
+    } catch (error) {
+      console.error('Error creating contact:', error);
+      set({ error: 'Failed to create contact', loading: false });
+      throw error;
+    }
+  },
+
+  updateContact: async (id, updates) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.mutate({
+        mutation: UPDATE_CONTACT,
+        variables: { id, input: updates },
+      });
+
+      const updatedContact = (data as any).updateContact;
+      set((state) => ({
+        contacts: state.contacts.map((contact) => (contact.id === id ? updatedContact : contact)),
+        loading: false,
+      }));
+
+      return updatedContact;
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      set({ error: 'Failed to update contact', loading: false });
+      throw error;
+    }
+  },
+
+  deleteContact: async (id) => {
+    set({ loading: true, error: null });
+    try {
+      await graphqlClient.mutate({
+        mutation: DELETE_CONTACT,
+        variables: { id },
+      });
+
+      set((state) => ({
+        contacts: state.contacts.filter((contact) => contact.id !== id),
+        loading: false,
+      }));
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      set({ error: 'Failed to delete contact', loading: false });
+      throw error;
+    }
+  },
+
+  getContactById: (id) => {
+    return get().contacts.find((contact) => contact.id === id);
+  },
+
+  getContactsByCompany: (companyId) => {
+    return get().contacts.filter((contact) => contact.companyId === companyId);
+  },
+}));

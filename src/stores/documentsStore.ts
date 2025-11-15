@@ -1,288 +1,193 @@
+import { gql } from '@apollo/client';
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
-import { db } from '@/lib/db';
-import { generateId } from '@/lib/utils';
-import type { Document } from '@/types';
+import { graphqlClient } from '../lib/graphql';
+import type { Document } from '../types';
 
 interface DocumentsState {
   documents: Document[];
-  selectedDocumentId: string | null;
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
-
-  // Actions
   fetchDocuments: () => Promise<void>;
   addDocument: (document: Omit<Document, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Document>;
-  updateDocument: (id: string, updates: Partial<Document>) => Promise<void>;
-  updateVersionName: (id: string, versionName: string) => Promise<void>;
+  updateDocument: (id: string, updates: Partial<Document>) => Promise<Document>;
   deleteDocument: (id: string) => Promise<void>;
-  linkDocumentToApplications: (documentId: string, applicationIds: string[]) => Promise<void>;
-  unlinkDocumentFromApplication: (documentId: string, applicationId: string) => Promise<void>;
+  getDocumentById: (id: string) => Document | undefined;
   getDocumentsByApplication: (applicationId: string) => Document[];
-  getDocumentsByType: (type: Document['type']) => Document[];
-  setSelectedDocument: (id: string | null) => void;
-  clearError: () => void;
+  getDocumentsByType: (type: string) => Document[];
 }
 
-export const useDocumentsStore = create<DocumentsState>()(
-  devtools(
-    (set, get) => ({
-      documents: [],
-      selectedDocumentId: null,
-      isLoading: false,
-      error: null,
+const GET_DOCUMENTS = gql`
+  query GetDocuments {
+    documents {
+      id
+      name
+      type
+      url
+      size
+      mimeType
+      applicationId
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
-      fetchDocuments: async () => {
-        set({ isLoading: true, error: null });
-        try {
-          const documents = await db.documents.toArray();
-          set({ documents, isLoading: false });
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to fetch documents',
-            isLoading: false,
-          });
-        }
-      },
+const CREATE_DOCUMENT = gql`
+  mutation CreateDocument($input: DocumentInput!) {
+    createDocument(input: $input) {
+      id
+      name
+      type
+      url
+      size
+      mimeType
+      applicationId
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
-      addDocument: async (document) => {
-        set({ isLoading: true, error: null });
-        try {
-          const newDocument: Document = {
-            ...document,
-            id: generateId(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+const UPDATE_DOCUMENT = gql`
+  mutation UpdateDocument($id: ID!, $input: DocumentInput!) {
+    updateDocument(id: $id, input: $input) {
+      id
+      name
+      type
+      url
+      size
+      mimeType
+      applicationId
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
-          await db.documents.add(newDocument);
-          set((state) => ({
-            documents: [...state.documents, newDocument],
-            isLoading: false,
-          }));
+const DELETE_DOCUMENT = gql`
+  mutation DeleteDocument($id: ID!) {
+    deleteDocument(id: $id)
+  }
+`;
 
-          return newDocument;
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to add document',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+export const useDocumentsStore = create<DocumentsState>((set, get) => ({
+  documents: [],
+  loading: false,
+  error: null,
 
-      updateDocument: async (id, updates) => {
-        set({ isLoading: true, error: null });
-        try {
-          const document = get().documents.find((doc) => doc.id === id);
-          if (!document) {
-            throw new Error('Document not found');
-          }
+  fetchDocuments: async () => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.query({
+        query: GET_DOCUMENTS,
+        fetchPolicy: 'network-only',
+      });
 
-          // Increment version if content is being updated
-          const shouldIncrementVersion = updates.content && updates.content !== document.content;
+      set({ documents: (data as any).documents, loading: false });
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      set({ error: 'Failed to fetch documents', loading: false });
+    }
+  },
 
-          const updatedData = {
-            ...updates,
-            ...(shouldIncrementVersion ? { version: document.version + 1 } : {}),
-            updatedAt: new Date(),
-          };
+  addDocument: async (document) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.mutate({
+        mutation: CREATE_DOCUMENT,
+        variables: { input: document },
+      });
 
-          await db.documents.update(id, updatedData);
-          set((state) => ({
-            documents: state.documents.map((doc) =>
-              doc.id === id ? { ...doc, ...updatedData } : doc
-            ),
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to update document',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+      const newDocument = (data as any).createDocument;
+      set((state) => ({
+        documents: [...state.documents, newDocument],
+        loading: false,
+      }));
 
-      updateVersionName: async (id, versionName) => {
-        set({ isLoading: true, error: null });
-        try {
-          const document = get().documents.find((doc) => doc.id === id);
-          if (!document) {
-            throw new Error('Document not found');
-          }
+      return newDocument;
+    } catch (error) {
+      console.error('Error creating document:', error);
+      set({ error: 'Failed to create document', loading: false });
+      throw error;
+    }
+  },
 
-          const updatedData = {
-            versionName,
-            updatedAt: new Date(),
-          };
+  updateDocument: async (id, updates) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.mutate({
+        mutation: UPDATE_DOCUMENT,
+        variables: { id, input: updates },
+      });
 
-          await db.documents.update(id, updatedData);
-          set((state) => ({
-            documents: state.documents.map((doc) =>
-              doc.id === id ? { ...doc, ...updatedData } : doc
-            ),
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to update version name',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+      const updatedDocument = (data as any).updateDocument;
+      set((state) => ({
+        documents: state.documents.map((document) =>
+          document.id === id ? updatedDocument : document
+        ),
+        loading: false,
+      }));
 
-      deleteDocument: async (id) => {
-        set({ isLoading: true, error: null });
-        try {
-          await db.documents.delete(id);
-          set((state) => ({
-            documents: state.documents.filter((doc) => doc.id !== id),
-            selectedDocumentId: state.selectedDocumentId === id ? null : state.selectedDocumentId,
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to delete document',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+      return updatedDocument;
+    } catch (error) {
+      console.error('Error updating document:', error);
+      set({ error: 'Failed to update document', loading: false });
+      throw error;
+    }
+  },
 
-      getDocumentsByApplication: (applicationId) => {
-        return get().documents.filter((doc) => doc.applicationId === applicationId);
-      },
+  deleteDocument: async (id) => {
+    set({ loading: true, error: null });
+    try {
+      await graphqlClient.mutate({
+        mutation: DELETE_DOCUMENT,
+        variables: { id },
+      });
 
-      getDocumentsByType: (type) => {
-        return get().documents.filter((doc) => doc.type === type);
-      },
+      set((state) => ({
+        documents: state.documents.filter((document) => document.id !== id),
+        loading: false,
+      }));
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      set({ error: 'Failed to delete document', loading: false });
+      throw error;
+    }
+  },
 
-      linkDocumentToApplications: async (documentId, applicationIds) => {
-        set({ isLoading: true, error: null });
-        try {
-          const document = get().documents.find((doc) => doc.id === documentId);
-          if (!document) {
-            throw new Error('Document not found');
-          }
+  getDocumentById: (id) => {
+    return get().documents.find((document) => document.id === id);
+  },
 
-          // Merge new application IDs with existing ones (no duplicates)
-          const existingAppIds = document.usedInApplicationIds || [];
-          const mergedAppIds = Array.from(new Set([...existingAppIds, ...applicationIds]));
+  getDocumentsByApplication: (applicationId) => {
+    return get().documents.filter((document) => document.applicationId === applicationId);
+  },
 
-          const updates = {
-            usedInApplicationIds: mergedAppIds,
-            lastUsedDate: new Date(),
-            updatedAt: new Date(),
-          };
+  getDocumentsByType: (type) => {
+    return get().documents.filter((document) => document.type === type);
+  },
 
-          await db.documents.update(documentId, updates);
+  updateVersionName: async (id: string, versionName: string) => {
+    return updateDocument(id, { versionName });
+  },
 
-          // Update applications with version-tracked links
-          const { useApplicationsStore } = await import('./applicationsStore');
-          const applicationsStore = useApplicationsStore.getState();
+  linkDocumentToApplications: async (documentId: string, applicationIds: string[]) => {
+    // This would need to be implemented in the GraphQL schema
+    // For now, we'll just update the document with the first application ID
+    if (applicationIds.length > 0) {
+      return updateDocument(documentId, { applicationId: applicationIds[0] });
+    }
+  },
 
-          for (const appId of applicationIds) {
-            const app = applicationsStore.applications.find((a) => a.id === appId);
-            if (app) {
-              const existingLinks = app.linkedDocuments || [];
-              const alreadyLinked = existingLinks.some((link) => link.documentId === documentId);
-
-              if (!alreadyLinked) {
-                const newLink = {
-                  documentId: document.id,
-                  documentName: document.name,
-                  documentType: document.type,
-                  version: document.version,
-                  versionName: document.versionName,
-                  linkedAt: new Date(),
-                };
-
-                // Use the store's updateApplication method to trigger reactivity
-                await applicationsStore.updateApplication(appId, {
-                  linkedDocuments: [...existingLinks, newLink],
-                  // Keep documentIds for backward compatibility
-                  documentIds: Array.from(new Set([...(app.documentIds || []), documentId])),
-                });
-              }
-            }
-          }
-
-          set((state) => ({
-            documents: state.documents.map((doc) =>
-              doc.id === documentId ? { ...doc, ...updates } : doc
-            ),
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to link document',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
-
-      unlinkDocumentFromApplication: async (documentId, applicationId) => {
-        set({ isLoading: true, error: null });
-        try {
-          const document = get().documents.find((doc) => doc.id === documentId);
-          if (!document) {
-            throw new Error('Document not found');
-          }
-
-          const usedInApplicationIds = (document.usedInApplicationIds || []).filter(
-            (id) => id !== applicationId
-          );
-
-          const updates = {
-            usedInApplicationIds,
-            updatedAt: new Date(),
-          };
-
-          await db.documents.update(documentId, updates);
-
-          // Remove from application's linkedDocuments
-          const { useApplicationsStore } = await import('./applicationsStore');
-          const applicationsStore = useApplicationsStore.getState();
-          const app = applicationsStore.applications.find((a) => a.id === applicationId);
-          if (app) {
-            const updatedLinks = (app.linkedDocuments || []).filter(
-              (link) => link.documentId !== documentId
-            );
-            const updatedDocIds = (app.documentIds || []).filter((id) => id !== documentId);
-
-            // Use the store's updateApplication method to trigger reactivity
-            await applicationsStore.updateApplication(applicationId, {
-              linkedDocuments: updatedLinks,
-              documentIds: updatedDocIds,
-            });
-          }
-
-          set((state) => ({
-            documents: state.documents.map((doc) =>
-              doc.id === documentId ? { ...doc, ...updates } : doc
-            ),
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to unlink document',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
-
-      setSelectedDocument: (id) => {
-        set({ selectedDocumentId: id });
-      },
-
-      clearError: () => {
-        set({ error: null });
-      },
-    }),
-    { name: 'DocumentsStore' }
-  )
-);
+  unlinkDocumentFromApplication: async (documentId: string, applicationId: string) => {
+    // This would need to be implemented in the GraphQL schema
+    // For now, we'll just clear the application ID if it matches
+    const document = get().documents.find((d) => d.id === documentId);
+    if (document && document.applicationId === applicationId) {
+      return updateDocument(documentId, { applicationId: undefined });
+    }
+  },
+}));

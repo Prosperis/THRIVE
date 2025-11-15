@@ -1,204 +1,321 @@
+import { gql } from '@apollo/client';
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
-import { db } from '@/lib/db';
-import { generateId } from '@/lib/utils';
-import type { Interview, InterviewFilters } from '@/types';
+import { graphqlClient } from '@/lib/graphql';
+import type { Interview } from '@/types';
+
+// GraphQL queries
+const GET_INTERVIEWS = gql`
+  query GetInterviews {
+    interviews {
+      id
+      applicationId
+      round
+      type
+      status
+      scheduledAt
+      duration
+      location
+      meetingUrl
+      interviewers
+      preparationNotes
+      questionsAsked
+      questionsToAsk
+      feedback
+      followUpSent
+      followUpDate
+      result
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const GET_INTERVIEWS_BY_APPLICATION = gql`
+  query GetInterviewsByApplication($applicationId: ID!) {
+    interviewsByApplication(applicationId: $applicationId) {
+      id
+      applicationId
+      round
+      type
+      status
+      scheduledAt
+      duration
+      location
+      meetingUrl
+      interviewers
+      preparationNotes
+      questionsAsked
+      questionsToAsk
+      feedback
+      followUpSent
+      followUpDate
+      result
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const GET_INTERVIEW = gql`
+  query GetInterview($id: ID!) {
+    interview(id: $id) {
+      id
+      applicationId
+      round
+      type
+      status
+      scheduledAt
+      duration
+      location
+      meetingUrl
+      interviewers
+      preparationNotes
+      questionsAsked
+      questionsToAsk
+      feedback
+      followUpSent
+      followUpDate
+      result
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const CREATE_INTERVIEW = gql`
+  mutation CreateInterview($input: InterviewInput!) {
+    createInterview(input: $input) {
+      id
+      applicationId
+      round
+      type
+      status
+      scheduledAt
+      duration
+      location
+      meetingUrl
+      interviewers
+      preparationNotes
+      questionsAsked
+      questionsToAsk
+      feedback
+      followUpSent
+      followUpDate
+      result
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const UPDATE_INTERVIEW = gql`
+  mutation UpdateInterview($id: ID!, $input: InterviewUpdateInput!) {
+    updateInterview(id: $id, input: $input) {
+      id
+      applicationId
+      round
+      type
+      status
+      scheduledAt
+      duration
+      location
+      meetingUrl
+      interviewers
+      preparationNotes
+      questionsAsked
+      questionsToAsk
+      feedback
+      followUpSent
+      followUpDate
+      result
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const DELETE_INTERVIEW = gql`
+  mutation DeleteInterview($id: ID!) {
+    deleteInterview(id: $id)
+  }
+`;
 
 interface InterviewsState {
   interviews: Interview[];
-  filters: InterviewFilters;
-  selectedInterviewId: string | null;
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
-
-  // Getters
-  getFilteredInterviews: () => Interview[];
-
-  // Actions
+  filters: {
+    searchQuery?: string;
+    status?: ('scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no-show')[];
+    type?: (
+      | 'recruiter-screen'
+      | 'phone-screen'
+      | 'hiring-manager-chat'
+      | 'video'
+      | 'technical-assessment'
+      | 'on-site'
+      | 'technical-interview'
+      | 'behavioral-interview'
+      | 'leadership-interview'
+      | 'panel'
+      | 'final'
+      | 'other'
+    )[];
+    dateRange?: {
+      start?: Date;
+      end?: Date;
+    };
+  };
+  setFilters: (filters: Partial<InterviewsState['filters']>) => void;
   fetchInterviews: () => Promise<void>;
-  addInterview: (interview: Omit<Interview, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateInterview: (id: string, updates: Partial<Interview>) => Promise<void>;
+  fetchInterviewsByApplication: (applicationId: string) => Promise<Interview[]>;
+  fetchInterview: (id: string) => Promise<Interview | null>;
+  createInterview: (
+    interview: Omit<Interview, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<Interview>;
+  updateInterview: (id: string, interview: Partial<Interview>) => Promise<Interview>;
   deleteInterview: (id: string) => Promise<void>;
-  getInterviewsByApplication: (applicationId: string) => Interview[];
   getUpcomingInterviews: () => Interview[];
   getPastInterviews: () => Interview[];
-  setFilters: (filters: Partial<InterviewFilters>) => void;
-  setSelectedInterview: (id: string | null) => void;
-  clearError: () => void;
+  addInterview: (
+    interview: Omit<Interview, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<Interview>;
+  isLoading: boolean;
 }
 
-export const useInterviewsStore = create<InterviewsState>()(
-  devtools(
-    (set, get) => ({
-      interviews: [],
-      filters: {},
-      selectedInterviewId: null,
-      isLoading: false,
-      error: null,
+export const useInterviewsStore = create<InterviewsState>((set, get) => ({
+  interviews: [],
+  loading: false,
+  error: null,
+  filters: {},
+  setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
 
-      getFilteredInterviews: () => {
-        const { interviews, filters } = get();
+  fetchInterviews: async () => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.query({
+        query: GET_INTERVIEWS,
+      });
+      set({ interviews: (data as any).interviews || [], loading: false });
+    } catch (error) {
+      set({ error: (error as Error).message, loading: false });
+      throw error;
+    }
+  },
 
-        return interviews.filter((interview) => {
-          // Filter by type
-          if (filters.type && filters.type.length > 0) {
-            if (!filters.type.includes(interview.type)) {
-              return false;
-            }
-          }
+  fetchInterviewsByApplication: async (applicationId: string) => {
+    try {
+      const { data } = await graphqlClient.query({
+        query: GET_INTERVIEWS_BY_APPLICATION,
+        variables: { applicationId },
+      });
+      return (data as any).interviewsByApplication || [];
+    } catch (error) {
+      throw error;
+    }
+  },
 
-          // Filter by status
-          if (filters.status && filters.status.length > 0) {
-            if (!filters.status.includes(interview.status)) {
-              return false;
-            }
-          }
+  fetchInterview: async (id: string) => {
+    try {
+      const { data } = await graphqlClient.query({
+        query: GET_INTERVIEW,
+        variables: { id },
+      });
+      return (data as any).interview;
+    } catch (error) {
+      throw error;
+    }
+  },
 
-          // Filter by date range
-          if (filters.dateRange?.start && interview.scheduledAt) {
-            const scheduledDate = new Date(interview.scheduledAt);
-            const fromDate = new Date(filters.dateRange.start);
-            if (scheduledDate < fromDate) {
-              return false;
-            }
-          }
+  createInterview: async (interview: Omit<Interview, 'id' | 'createdAt' | 'updatedAt'>) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.mutate({
+        mutation: CREATE_INTERVIEW,
+        variables: { input: interview },
+      });
 
-          if (filters.dateRange?.end && interview.scheduledAt) {
-            const scheduledDate = new Date(interview.scheduledAt);
-            const toDate = new Date(filters.dateRange.end);
-            toDate.setHours(23, 59, 59, 999);
-            if (scheduledDate > toDate) {
-              return false;
-            }
-          }
+      const newInterview = (data as any).createInterview;
+      set((state) => ({
+        interviews: [...state.interviews, newInterview],
+        loading: false,
+      }));
 
-          return true;
-        });
-      },
+      return newInterview;
+    } catch (error) {
+      set({ error: (error as Error).message, loading: false });
+      throw error;
+    }
+  },
 
-      fetchInterviews: async () => {
-        set({ isLoading: true, error: null });
-        try {
-          const interviews = await db.interviews.toArray();
-          set({ interviews, isLoading: false });
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to fetch interviews',
-            isLoading: false,
-          });
-        }
-      },
+  updateInterview: async (id: string, interview: Partial<Interview>) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await graphqlClient.mutate({
+        mutation: UPDATE_INTERVIEW,
+        variables: { id, input: interview },
+      });
 
-      addInterview: async (interview) => {
-        set({ isLoading: true, error: null });
-        try {
-          const newInterview: Interview = {
-            ...interview,
-            id: generateId(),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+      const updatedInterview = (data as any).updateInterview;
+      set((state) => ({
+        interviews: state.interviews.map((i) => (i.id === id ? updatedInterview : i)),
+        loading: false,
+      }));
 
-          await db.interviews.add(newInterview);
-          set((state) => ({
-            interviews: [...state.interviews, newInterview],
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to add interview',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+      return updatedInterview;
+    } catch (error) {
+      set({ error: (error as Error).message, loading: false });
+      throw error;
+    }
+  },
 
-      updateInterview: async (id, updates) => {
-        set({ isLoading: true, error: null });
-        try {
-          const updatedData = {
-            ...updates,
-            updatedAt: new Date(),
-          };
+  deleteInterview: async (id: string) => {
+    set({ loading: true, error: null });
+    try {
+      await graphqlClient.mutate({
+        mutation: DELETE_INTERVIEW,
+        variables: { id },
+      });
 
-          await db.interviews.update(id, updatedData);
-          set((state) => ({
-            interviews: state.interviews.map((interview) =>
-              interview.id === id ? { ...interview, ...updatedData } : interview
-            ),
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to update interview',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+      set((state) => ({
+        interviews: state.interviews.filter((i) => i.id !== id),
+        loading: false,
+      }));
+    } catch (error) {
+      set({ error: (error as Error).message, loading: false });
+      throw error;
+    }
+  },
 
-      deleteInterview: async (id) => {
-        set({ isLoading: true, error: null });
-        try {
-          await db.interviews.delete(id);
-          set((state) => ({
-            interviews: state.interviews.filter((interview) => interview.id !== id),
-            selectedInterviewId:
-              state.selectedInterviewId === id ? null : state.selectedInterviewId,
-            isLoading: false,
-          }));
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to delete interview',
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+  getUpcomingInterviews: () => {
+    const now = new Date();
+    return get()
+      .interviews.filter((interview) => {
+        if (!interview.scheduledAt) return false;
+        return new Date(interview.scheduledAt) > now;
+      })
+      .sort((a, b) => {
+        if (!a.scheduledAt || !b.scheduledAt) return 0;
+        return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+      });
+  },
 
-      getInterviewsByApplication: (applicationId) => {
-        return get().interviews.filter((interview) => interview.applicationId === applicationId);
-      },
+  getPastInterviews: () => {
+    const now = new Date();
+    return get()
+      .interviews.filter((interview) => {
+        if (!interview.scheduledAt) return false;
+        return new Date(interview.scheduledAt) <= now;
+      })
+      .sort((a, b) => {
+        if (!a.scheduledAt || !b.scheduledAt) return 0;
+        return new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime();
+      });
+  },
 
-      getUpcomingInterviews: () => {
-        const now = new Date();
-        return get()
-          .getFilteredInterviews()
-          .filter(
-            (interview) =>
-              interview.scheduledAt &&
-              interview.scheduledAt > now &&
-              (interview.status === 'scheduled' || interview.status === 'rescheduled')
-          )
-          .sort((a, b) => (a.scheduledAt?.getTime() || 0) - (b.scheduledAt?.getTime() || 0));
-      },
+  addInterview: async (interview) => {
+    return createInterview(interview);
+  },
 
-      getPastInterviews: () => {
-        const now = new Date();
-        return get()
-          .getFilteredInterviews()
-          .filter(
-            (interview) =>
-              (interview.scheduledAt && interview.scheduledAt <= now) ||
-              interview.status === 'completed'
-          )
-          .sort((a, b) => (b.scheduledAt?.getTime() || 0) - (a.scheduledAt?.getTime() || 0));
-      },
-
-      setSelectedInterview: (id) => {
-        set({ selectedInterviewId: id });
-      },
-
-      setFilters: (filters) => {
-        set((state) => ({
-          filters: { ...state.filters, ...filters },
-        }));
-      },
-
-      clearError: () => {
-        set({ error: null });
-      },
-    }),
-    { name: 'InterviewsStore' }
-  )
-);
+  isLoading: false,
+}));
