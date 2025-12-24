@@ -136,7 +136,7 @@ function DocumentsPage() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [viewFormat, setViewFormat] = useState<
-    'pdf' | 'markdown' | 'richtext' | 'plain' | 'history'
+    'pdf' | 'markdown' | 'word' | 'html' | 'plain' | 'history'
   >('markdown');
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -2014,7 +2014,10 @@ Sincerely,
                               } else if (viewFormat === 'markdown') {
                                 fileName = `${fileName}.md`;
                                 mimeType = 'text/markdown';
-                              } else if (viewFormat === 'richtext') {
+                              } else if (viewFormat === 'word') {
+                                fileName = `${fileName}.docx`;
+                                mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                              } else if (viewFormat === 'html') {
                                 fileName = `${fileName}.html`;
                                 mimeType = 'text/html';
                               } else {
@@ -2178,12 +2181,12 @@ Sincerely,
                   <Tabs
                     value={viewFormat}
                     onValueChange={(value) =>
-                      setViewFormat(value as 'pdf' | 'markdown' | 'richtext' | 'plain' | 'history')
+                      setViewFormat(value as 'pdf' | 'markdown' | 'word' | 'html' | 'plain' | 'history')
                     }
                     className="flex-1 flex flex-col"
                   >
-                    <div className="px-6 pt-4 pb-2 border-b">
-                      <TabsList className="grid w-full max-w-3xl grid-cols-5">
+                    <div className="px-6 pt-4 pb-2 border-b flex items-center justify-between">
+                      <TabsList className="grid max-w-3xl grid-cols-5">
                         <TabsTrigger value="pdf" className="text-xs">
                           <File className="h-3 w-3 mr-1.5" />
                           PDF
@@ -2192,19 +2195,28 @@ Sincerely,
                           <FileCode className="h-3 w-3 mr-1.5" />
                           Markdown
                         </TabsTrigger>
-                        <TabsTrigger value="richtext" className="text-xs">
-                          <Type className="h-3 w-3 mr-1.5" />
-                          Rich Text
+                        <TabsTrigger value="word" className="text-xs">
+                          <FileText className="h-3 w-3 mr-1.5" />
+                          Word
+                        </TabsTrigger>
+                        <TabsTrigger value="html" className="text-xs">
+                          <FileCode className="h-3 w-3 mr-1.5" />
+                          HTML
                         </TabsTrigger>
                         <TabsTrigger value="plain" className="text-xs">
                           <FileType className="h-3 w-3 mr-1.5" />
                           Plain Text
                         </TabsTrigger>
-                        <TabsTrigger value="history" className="text-xs">
-                          <GitBranch className="h-3 w-3 mr-1.5" />
-                          History
-                        </TabsTrigger>
                       </TabsList>
+                      <Button
+                        variant={viewFormat === 'history' ? 'default' : 'outline'}
+                        size="sm"
+                        className={`text-xs h-8 ${viewFormat === 'history' ? 'bg-primary text-primary-foreground' : ''}`}
+                        onClick={() => setViewFormat('history')}
+                      >
+                        <GitBranch className="h-3 w-3 mr-1.5" />
+                        History
+                      </Button>
                     </div>
 
                     <TabsContent value="pdf" className="flex-1 m-0 overflow-hidden flex flex-col">
@@ -2337,11 +2349,20 @@ Sincerely,
                       </ScrollArea>
                     </TabsContent>
 
-                    <TabsContent value="richtext" className="flex-1 m-0 overflow-hidden">
+                    <TabsContent value="word" className="flex-1 m-0 overflow-hidden">
                       <ScrollArea className="h-full scrollbar-hide">
                         <div className="prose prose-sm dark:prose-invert max-w-none p-6 whitespace-pre-wrap">
                           {selectedDocument.content || <em>No content available</em>}
                         </div>
+                      </ScrollArea>
+                    </TabsContent>
+
+                    <TabsContent value="html" className="flex-1 m-0 overflow-hidden">
+                      <ScrollArea className="h-full scrollbar-hide">
+                        <div 
+                          className="prose prose-sm dark:prose-invert max-w-none p-6"
+                          dangerouslySetInnerHTML={{ __html: selectedDocument.content || '<em>No content available</em>' }}
+                        />
                       </ScrollArea>
                     </TabsContent>
 
