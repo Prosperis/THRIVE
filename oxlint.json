@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-explicit-any": "warn",
+    "no-array-index-key": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "import/no-nodejs-modules": "off"
+  },
+  "plugins": ["react", "typescript", "import", "unicorn", "react-hooks", "jsx-a11y"],
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+    "coverage",
+    "storybook-static",
+    "*.min.js",
+    "routeTree.gen.ts"
+  ]
+}
