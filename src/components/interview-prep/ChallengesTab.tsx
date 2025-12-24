@@ -1,5 +1,15 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Calendar, CheckCircle2, Clock, Code, Edit, Plus, Trash2 } from 'lucide-react';
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Code,
+  Edit,
+  ExternalLink,
+  Link,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,7 +36,12 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { formatRelativeTime } from '@/lib/utils';
 import { useInterviewPrepStore } from '@/stores/interviewPrepStore';
-import type { ChallengeStatus, QuestionDifficulty } from '@/types/interviewPrep';
+import { useSettingsStore } from '@/stores/settingsStore';
+import type {
+  ChallengeStatus,
+  CodingPlatformType,
+  QuestionDifficulty,
+} from '@/types/interviewPrep';
 
 const CHALLENGE_TYPES = [
   { value: 'coding', label: 'Coding Challenge', icon: '💻' },
@@ -49,12 +64,39 @@ const DIFFICULTY_LEVELS = [
   { value: 'hard', label: 'Hard', color: 'text-red-600' },
 ] as const;
 
+const CODING_PLATFORMS = [
+  { value: 'leetcode', label: 'LeetCode', icon: '🟡', baseUrl: 'https://leetcode.com/problems/' },
+  {
+    value: 'hackerrank',
+    label: 'HackerRank',
+    icon: '🟢',
+    baseUrl: 'https://hackerrank.com/challenges/',
+  },
+  { value: 'codewars', label: 'Codewars', icon: '🔴', baseUrl: 'https://codewars.com/kata/' },
+  {
+    value: 'codesignal',
+    label: 'CodeSignal',
+    icon: '🔵',
+    baseUrl: 'https://app.codesignal.com/arcade/',
+  },
+  {
+    value: 'algoexpert',
+    label: 'AlgoExpert',
+    icon: '🟣',
+    baseUrl: 'https://www.algoexpert.io/questions/',
+  },
+  { value: 'neetcode', label: 'NeetCode', icon: '⚡', baseUrl: 'https://neetcode.io/problems/' },
+  { value: 'other', label: 'Other', icon: '🔗', baseUrl: '' },
+] as const;
+
 export function ChallengesTab() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<ChallengeStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [timeLimit, setTimeLimit] = useState<number>(60); // in minutes
+  const [externalPlatform, setExternalPlatform] = useState<CodingPlatformType | ''>('');
+  const [externalUrl, setExternalUrl] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const challenges = useInterviewPrepStore((state) => state.challenges);
@@ -62,15 +104,35 @@ export function ChallengesTab() {
   const updateChallenge = useInterviewPrepStore((state) => state.updateChallenge);
   const deleteChallenge = useInterviewPrepStore((state) => state.deleteChallenge);
 
+  const codingPlatformsEnabled = useSettingsStore((state) => state.codingPlatforms.enabled);
+  const defaultPlatform = useSettingsStore((state) => state.codingPlatforms.defaultPlatform);
+
   const filteredChallenges = challenges.filter((c) => {
     const matchesStatus = filterStatus === 'all' || c.status === filterStatus;
     const matchesSearch =
       searchQuery === '' ||
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description.toLowerCase().includes(searchQuery.toLowerCase());
+      c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.externalSource?.problemName?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  // Calculate stats for external challenges
+  const externalChallengeStats = challenges.reduce(
+    (acc, c) => {
+      if (c.externalSource) {
+        acc.total++;
+        if (c.status === 'completed' || c.status === 'submitted' || c.status === 'reviewed') {
+          acc.completed++;
+        }
+        const platform = c.externalSource.platform;
+        acc.byPlatform[platform] = (acc.byPlatform[platform] || 0) + 1;
+      }
+      return acc;
+    },
+    { total: 0, completed: 0, byPlatform: {} as Record<string, number> }
+  );
 
   const virtualizer = useVirtualizer({
     count: filteredChallenges.length,
@@ -78,6 +140,39 @@ export function ChallengesTab() {
     estimateSize: () => 300, // Estimated height of each challenge card
     overscan: 3,
   });
+
+  // Helper to extract problem info from URL
+  const extractProblemInfo = (url: string, platform: CodingPlatformType) => {
+    try {
+      const urlObj = new URL(url);
+      let problemId: string | undefined;
+      let problemNumber: number | undefined;
+
+      if (platform === 'leetcode') {
+        // LeetCode URL pattern: https://leetcode.com/problems/two-sum/
+        const match = urlObj.pathname.match(/\/problems\/([^/]+)/);
+        if (match) {
+          problemId = match[1];
+        }
+      } else if (platform === 'hackerrank') {
+        // HackerRank URL pattern: https://www.hackerrank.com/challenges/solve-me-first/
+        const match = urlObj.pathname.match(/\/challenges\/([^/]+)/);
+        if (match) {
+          problemId = match[1];
+        }
+      } else if (platform === 'codewars') {
+        // Codewars URL pattern: https://www.codewars.com/kata/546e2562b03326a88e000020
+        const match = urlObj.pathname.match(/\/kata\/([^/]+)/);
+        if (match) {
+          problemId = match[1];
+        }
+      }
+
+      return { problemId, problemNumber };
+    } catch {
+      return { problemId: undefined, problemNumber: undefined };
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,6 +191,20 @@ export function ChallengesTab() {
 
     const timeLimit = formData.get('timeLimit') as string;
 
+    // Build external source if provided
+    let externalSourceData = undefined;
+    if (codingPlatformsEnabled && externalPlatform && externalUrl) {
+      const { problemId, problemNumber } = extractProblemInfo(externalUrl, externalPlatform);
+      const problemName = formData.get('problemName') as string;
+      externalSourceData = {
+        platform: externalPlatform,
+        url: externalUrl,
+        problemId,
+        problemNumber,
+        problemName: problemName || undefined,
+      };
+    }
+
     const challengeData = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
@@ -113,6 +222,7 @@ export function ChallengesTab() {
       solution: (formData.get('solution') as string) || undefined,
       feedbackReceived: (formData.get('feedbackReceived') as string) || undefined,
       tags,
+      externalSource: externalSourceData,
     };
 
     if (editingId) {
@@ -123,10 +233,20 @@ export function ChallengesTab() {
     }
 
     setShowAddDialog(false);
+    setExternalPlatform('');
+    setExternalUrl('');
     e.currentTarget.reset();
   };
 
   const handleEdit = (id: string) => {
+    const challenge = challenges.find((c) => c.id === id);
+    if (challenge?.externalSource) {
+      setExternalPlatform(challenge.externalSource.platform);
+      setExternalUrl(challenge.externalSource.url);
+    } else {
+      setExternalPlatform('');
+      setExternalUrl('');
+    }
     setEditingId(id);
     setShowAddDialog(true);
   };
@@ -195,7 +315,11 @@ export function ChallengesTab() {
               open={showAddDialog}
               onOpenChange={(open) => {
                 setShowAddDialog(open);
-                if (!open) setEditingId(null);
+                if (!open) {
+                  setEditingId(null);
+                  setExternalPlatform('');
+                  setExternalUrl('');
+                }
               }}
             >
               <DialogTrigger asChild>
@@ -354,6 +478,64 @@ export function ChallengesTab() {
                       />
                     </div>
 
+                    {/* External Coding Platform - Only show if enabled in settings */}
+                    {codingPlatformsEnabled && (
+                      <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          <Link className="h-4 w-4" />
+                          <Label className="font-medium">Link External Problem</Label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="platform">Platform</Label>
+                            <Select
+                              value={externalPlatform}
+                              onValueChange={(v) =>
+                                setExternalPlatform(v as CodingPlatformType | '')
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select platform" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">None</SelectItem>
+                                {CODING_PLATFORMS.map((platform) => (
+                                  <SelectItem key={platform.value} value={platform.value}>
+                                    {platform.icon} {platform.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="problemName">Problem Name (Optional)</Label>
+                            <Input
+                              name="problemName"
+                              placeholder="e.g., Two Sum"
+                              defaultValue={editingChallenge?.externalSource?.problemName}
+                            />
+                          </div>
+                        </div>
+                        {externalPlatform && (
+                          <div className="space-y-2">
+                            <Label htmlFor="externalUrl">Problem URL</Label>
+                            <Input
+                              value={externalUrl}
+                              onChange={(e) => setExternalUrl(e.target.value)}
+                              placeholder={
+                                CODING_PLATFORMS.find((p) => p.value === externalPlatform)
+                                  ?.baseUrl || 'https://...'
+                              }
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Paste the full URL to the problem from{' '}
+                              {CODING_PLATFORMS.find((p) => p.value === externalPlatform)?.label}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Tags */}
                     <div className="space-y-2">
                       <Label htmlFor="tags">Tags (comma-separated)</Label>
@@ -373,6 +555,37 @@ export function ChallengesTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* External Challenge Stats - Only show if enabled and has linked challenges */}
+      {codingPlatformsEnabled && externalChallengeStats.total > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Link className="h-4 w-4" />
+              Linked Challenges Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold">{externalChallengeStats.completed}</span>
+                <span className="text-muted-foreground">/ {externalChallengeStats.total}</span>
+                <span className="text-sm text-muted-foreground">completed</span>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {Object.entries(externalChallengeStats.byPlatform).map(([platform, count]) => {
+                  const platformInfo = CODING_PLATFORMS.find((p) => p.value === platform);
+                  return (
+                    <Badge key={platform} variant="secondary" className="text-xs">
+                      {platformInfo?.icon} {platformInfo?.label}: {count}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Challenges List */}
       {filteredChallenges.length > 0 ? (
@@ -457,6 +670,50 @@ export function ChallengesTab() {
                     <CardContent className="space-y-4">
                       {/* Description */}
                       <p className="text-sm text-muted-foreground">{challenge.description}</p>
+
+                      {/* External Problem Link */}
+                      {challenge.externalSource && (
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 border">
+                          <span className="text-lg">
+                            {
+                              CODING_PLATFORMS.find(
+                                (p) => p.value === challenge.externalSource?.platform
+                              )?.icon
+                            }
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">
+                                {
+                                  CODING_PLATFORMS.find(
+                                    (p) => p.value === challenge.externalSource?.platform
+                                  )?.label
+                                }
+                              </span>
+                              {challenge.externalSource.problemName && (
+                                <span className="text-sm text-muted-foreground">
+                                  • {challenge.externalSource.problemName}
+                                </span>
+                              )}
+                              {challenge.externalSource.problemId && (
+                                <Badge variant="outline" className="text-xs">
+                                  {challenge.externalSource.problemId}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" asChild>
+                            <a
+                              href={challenge.externalSource.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Open
+                            </a>
+                          </Button>
+                        </div>
+                      )}
 
                       {/* Metadata */}
                       <div className="flex gap-4 flex-wrap text-sm">

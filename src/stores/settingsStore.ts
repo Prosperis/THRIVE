@@ -42,12 +42,24 @@ export interface DemoModeSettings {
   hasUserData: boolean; // Whether there was user data when demo mode was enabled
 }
 
+export type CodingPlatform = 'leetcode' | 'hackerrank' | 'codewars' | 'codesignal' | 'algoexpert' | 'neetcode' | 'other';
+
+export interface CodingPlatformSettings {
+  enabled: boolean;
+  defaultPlatform: CodingPlatform;
+  leetcodeUsername?: string;
+  hackerrankUsername?: string;
+  showDifficultyBadges: boolean;
+  trackCompletionStats: boolean;
+}
+
 interface SettingsState {
   display: DisplaySettings;
   notifications: NotificationSettings;
   data: DataSettings;
   documents: DocumentSettings;
   demoMode: DemoModeSettings;
+  codingPlatforms: CodingPlatformSettings;
 
   // Actions
   updateDisplay: (settings: Partial<DisplaySettings>) => void;
@@ -55,6 +67,7 @@ interface SettingsState {
   updateData: (settings: Partial<DataSettings>) => void;
   updateDocuments: (settings: Partial<DocumentSettings>) => void;
   updateDemoMode: (settings: Partial<DemoModeSettings>) => void;
+  updateCodingPlatforms: (settings: Partial<CodingPlatformSettings>) => void;
   resetToDefaults: () => void;
 }
 
@@ -92,7 +105,12 @@ const DEFAULT_DEMO_MODE: DemoModeSettings = {
   enabled: false,
   hasUserData: false,
 };
-
+const DEFAULT_CODING_PLATFORMS: CodingPlatformSettings = {
+  enabled: false,
+  defaultPlatform: 'leetcode',
+  showDifficultyBadges: true,
+  trackCompletionStats: true,
+};
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
@@ -101,6 +119,7 @@ export const useSettingsStore = create<SettingsState>()(
       data: DEFAULT_DATA,
       documents: DEFAULT_DOCUMENTS,
       demoMode: DEFAULT_DEMO_MODE,
+      codingPlatforms: DEFAULT_CODING_PLATFORMS,
 
       updateDisplay: (settings) => {
         set((state) => ({
@@ -132,6 +151,12 @@ export const useSettingsStore = create<SettingsState>()(
         }));
       },
 
+      updateCodingPlatforms: (settings) => {
+        set((state) => ({
+          codingPlatforms: { ...state.codingPlatforms, ...settings },
+        }));
+      },
+
       resetToDefaults: () => {
         set({
           display: DEFAULT_DISPLAY,
@@ -139,6 +164,7 @@ export const useSettingsStore = create<SettingsState>()(
           data: DEFAULT_DATA,
           documents: DEFAULT_DOCUMENTS,
           demoMode: DEFAULT_DEMO_MODE,
+          codingPlatforms: DEFAULT_CODING_PLATFORMS,
         });
       },
     }),

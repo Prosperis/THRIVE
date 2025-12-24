@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { Menu } from 'lucide-react';
+import { Menu, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
   return (
@@ -99,20 +98,15 @@ export default function Header() {
             >
               Export
             </Link>
-            <Link
-              to="/settings"
-              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary cursor-pointer"
-              activeProps={{
-                className:
-                  'flex items-center text-sm font-medium text-foreground transition-colors cursor-pointer border-b-2 border-primary',
-              }}
-            >
-              Settings
-            </Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <ThemeToggle />
+          <Link to="/settings" aria-label="Settings">
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Settings</span>
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

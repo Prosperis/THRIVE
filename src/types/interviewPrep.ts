@@ -85,6 +85,16 @@ export interface CompanyPrepNote {
   updatedAt: Date;
 }
 
+export type CodingPlatformType = 'leetcode' | 'hackerrank' | 'codewars' | 'codesignal' | 'algoexpert' | 'neetcode' | 'other';
+
+export interface ExternalProblemSource {
+  platform: CodingPlatformType;
+  url: string;
+  problemId?: string; // e.g., "two-sum" for LeetCode
+  problemNumber?: number; // e.g., 1 for LeetCode
+  problemName?: string; // The name as shown on the platform
+}
+
 export interface TechnicalChallenge {
   id: string;
   title: string;
@@ -103,6 +113,8 @@ export interface TechnicalChallenge {
   solution?: string;
   feedbackReceived?: string;
   tags?: string[];
+  // External coding platform integration
+  externalSource?: ExternalProblemSource;
   createdAt: Date;
   updatedAt: Date;
 }

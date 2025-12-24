@@ -5,6 +5,7 @@ import {
   BookOpen,
   Calendar,
   Clock,
+  Code,
   Database,
   ExternalLink,
   FileText,
@@ -15,18 +16,22 @@ import {
   Info,
   Keyboard,
   Layout,
+  Moon,
   Palette,
   RotateCcw,
   Save,
   Scale,
+  Sun,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { ChangelogDialog } from '@/components/features/settings/ChangelogDialog';
 import { KeyboardShortcutsDialog } from '@/components/features/settings/KeyboardShortcutsDialog';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { useTheme } from '@/components/layout/ThemeProvider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -68,11 +73,13 @@ function SettingsPage() {
     data,
     documents,
     demoMode,
+    codingPlatforms,
     updateDisplay,
     updateNotifications,
     updateData,
     updateDocuments,
     updateDemoMode,
+    updateCodingPlatforms,
     resetToDefaults,
   } = useSettingsStore();
 
@@ -85,6 +92,7 @@ function SettingsPage() {
   const { fetchDocuments } = useDocumentsStore();
   const { fetchInterviews } = useInterviewsStore();
   const { confirm } = useConfirm();
+  const { theme, setTheme } = useTheme();
 
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -323,6 +331,43 @@ function SettingsPage() {
             </div>
 
             <div className="space-y-4">
+              {/* Theme */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="flex items-center gap-2">
+                    {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                    Theme
+                  </Label>
+                  <p className="text-sm text-muted-foreground">Choose light or dark mode</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={theme === 'light' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      setTheme('light');
+                      toast.success('Theme set to Light');
+                    }}
+                    className="gap-2"
+                  >
+                    <Sun className="h-4 w-4" />
+                    Light
+                  </Button>
+                  <Button
+                    variant={theme === 'dark' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      setTheme('dark');
+                      toast.success('Theme set to Dark');
+                    }}
+                    className="gap-2"
+                  >
+                    <Moon className="h-4 w-4" />
+                    Dark
+                  </Button>
+                </div>
+              </div>
+
               {/* Language */}
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -767,6 +812,205 @@ function SettingsPage() {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Coding Platforms Integration Section */}
+          <div className="border rounded-lg p-6 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <Code className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Coding Platforms</h2>
+                <p className="text-sm text-muted-foreground">
+                  Link challenges from LeetCode, HackerRank, and other platforms
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Enable Coding Platforms */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Enable Platform Integration</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Link external coding challenges to your prep
+                  </p>
+                </div>
+                <Switch
+                  checked={codingPlatforms.enabled}
+                  onCheckedChange={(checked: boolean) => {
+                    updateCodingPlatforms({ enabled: checked });
+                    toast.success(
+                      checked ? 'Coding Platforms Enabled' : 'Coding Platforms Disabled'
+                    );
+                  }}
+                />
+              </div>
+
+              {codingPlatforms.enabled && (
+                <>
+                  {/* Default Platform */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label>Default Platform</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Pre-selected when adding new challenges
+                      </p>
+                    </div>
+                    <Select
+                      value={codingPlatforms.defaultPlatform}
+                      onValueChange={(
+                        value:
+                          | 'leetcode'
+                          | 'hackerrank'
+                          | 'codewars'
+                          | 'codesignal'
+                          | 'algoexpert'
+                          | 'neetcode'
+                          | 'other'
+                      ) => {
+                        updateCodingPlatforms({ defaultPlatform: value });
+                        toast.success('Default Platform Updated');
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="leetcode">LeetCode</SelectItem>
+                        <SelectItem value="hackerrank">HackerRank</SelectItem>
+                        <SelectItem value="codewars">Codewars</SelectItem>
+                        <SelectItem value="codesignal">CodeSignal</SelectItem>
+                        <SelectItem value="algoexpert">AlgoExpert</SelectItem>
+                        <SelectItem value="neetcode">NeetCode</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* LeetCode Username */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label>LeetCode Username</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Optional: for quick profile access
+                      </p>
+                    </div>
+                    <Input
+                      className="w-[180px]"
+                      placeholder="your_username"
+                      value={codingPlatforms.leetcodeUsername || ''}
+                      onChange={(e) => updateCodingPlatforms({ leetcodeUsername: e.target.value })}
+                    />
+                  </div>
+
+                  {/* HackerRank Username */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label>HackerRank Username</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Optional: for quick profile access
+                      </p>
+                    </div>
+                    <Input
+                      className="w-[180px]"
+                      placeholder="your_username"
+                      value={codingPlatforms.hackerrankUsername || ''}
+                      onChange={(e) =>
+                        updateCodingPlatforms({ hackerrankUsername: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  {/* Show Difficulty Badges */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label>Show Difficulty Badges</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Display Easy/Medium/Hard badges on challenges
+                      </p>
+                    </div>
+                    <Switch
+                      checked={codingPlatforms.showDifficultyBadges}
+                      onCheckedChange={(checked: boolean) => {
+                        updateCodingPlatforms({ showDifficultyBadges: checked });
+                      }}
+                    />
+                  </div>
+
+                  {/* Track Completion Stats */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label>Track Completion Stats</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Show progress statistics for linked challenges
+                      </p>
+                    </div>
+                    <Switch
+                      checked={codingPlatforms.trackCompletionStats}
+                      onCheckedChange={(checked: boolean) => {
+                        updateCodingPlatforms({ trackCompletionStats: checked });
+                      }}
+                    />
+                  </div>
+
+                  {/* Quick Links */}
+                  <div className="pt-4 border-t space-y-3">
+                    <Label className="text-sm font-medium">Quick Links</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={
+                            codingPlatforms.leetcodeUsername
+                              ? `https://leetcode.com/${codingPlatforms.leetcodeUsername}`
+                              : 'https://leetcode.com/problemset/'
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-2" />
+                          LeetCode
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={
+                            codingPlatforms.hackerrankUsername
+                              ? `https://hackerrank.com/${codingPlatforms.hackerrankUsername}`
+                              : 'https://hackerrank.com/dashboard'
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-2" />
+                          HackerRank
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href="https://neetcode.io/roadmap"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-2" />
+                          NeetCode 150
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className="rounded-lg bg-muted p-4">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">How it works:</strong> When enabled, you can
+                  link challenges from external platforms like LeetCode when creating technical
+                  challenges. The link will open directly to the problem, and your progress is
+                  tracked locally in Thrive.
+                </p>
               </div>
             </div>
           </div>
