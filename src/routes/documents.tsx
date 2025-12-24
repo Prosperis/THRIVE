@@ -2191,10 +2191,6 @@ Sincerely,
                           <File className="h-3 w-3 mr-1.5" />
                           PDF
                         </TabsTrigger>
-                        <TabsTrigger value="markdown" className="text-xs">
-                          <FileCode className="h-3 w-3 mr-1.5" />
-                          Markdown
-                        </TabsTrigger>
                         <TabsTrigger value="word" className="text-xs">
                           <FileText className="h-3 w-3 mr-1.5" />
                           Word
@@ -2203,9 +2199,13 @@ Sincerely,
                           <FileCode className="h-3 w-3 mr-1.5" />
                           HTML
                         </TabsTrigger>
+                        <TabsTrigger value="markdown" className="text-xs">
+                          <FileCode className="h-3 w-3 mr-1.5" />
+                          Markdown
+                        </TabsTrigger>
                         <TabsTrigger value="plain" className="text-xs">
                           <FileType className="h-3 w-3 mr-1.5" />
-                          Plain Text
+                          Text
                         </TabsTrigger>
                       </TabsList>
                       <Button
@@ -2351,18 +2351,26 @@ Sincerely,
 
                     <TabsContent value="word" className="flex-1 m-0 overflow-hidden">
                       <ScrollArea className="h-full scrollbar-hide">
-                        <div className="prose prose-sm dark:prose-invert max-w-none p-6 whitespace-pre-wrap">
-                          {selectedDocument.content || <em>No content available</em>}
+                        <div className="flex flex-col items-center p-6 space-y-4 w-full bg-muted/30 min-h-full">
+                          <div className="bg-white dark:bg-zinc-900 shadow-lg rounded-sm w-full max-w-[816px] min-h-[1056px] p-12 border">
+                            <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap font-serif">
+                              {selectedDocument.content || <em className="text-muted-foreground">No content available</em>}
+                            </div>
+                          </div>
                         </div>
                       </ScrollArea>
                     </TabsContent>
 
                     <TabsContent value="html" className="flex-1 m-0 overflow-hidden">
                       <ScrollArea className="h-full scrollbar-hide">
-                        <div 
-                          className="prose prose-sm dark:prose-invert max-w-none p-6"
-                          dangerouslySetInnerHTML={{ __html: selectedDocument.content || '<em>No content available</em>' }}
-                        />
+                        <div className="flex flex-col items-center p-6 space-y-4 w-full bg-muted/30 min-h-full">
+                          <div className="bg-white dark:bg-zinc-900 shadow-lg rounded-sm w-full max-w-[816px] min-h-[1056px] p-12 border">
+                            <div 
+                              className="prose prose-sm dark:prose-invert max-w-none"
+                              dangerouslySetInnerHTML={{ __html: selectedDocument.content || '<em class="text-muted-foreground">No content available</em>' }}
+                            />
+                          </div>
+                        </div>
                       </ScrollArea>
                     </TabsContent>
 
