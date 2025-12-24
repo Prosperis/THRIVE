@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import {
   AlertTriangle,
   Bell,
@@ -21,7 +21,9 @@ import {
   RotateCcw,
   Save,
   Scale,
+  Settings,
   Sun,
+  Wrench,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -41,6 +43,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfirm } from '@/hooks/useConfirm';
 import { CREDITS, HELP_RESOURCES } from '@/lib/about';
 import {
@@ -62,11 +65,22 @@ import { useInterviewsStore } from '@/stores/interviewsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useUIStore } from '@/stores/uiStore';
 
+type SettingsTab = 'general' | 'data' | 'integrations' | 'about';
+
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
+  validateSearch: (search: Record<string, unknown>): { tab: SettingsTab } => {
+    const validTabs: SettingsTab[] = ['general', 'data', 'integrations', 'about'];
+    const tab = search.tab as string;
+    return {
+      tab: validTabs.includes(tab as SettingsTab) ? (tab as SettingsTab) : 'general',
+    };
+  },
 });
 
 function SettingsPage() {
+  const { tab } = Route.useSearch();
+  const navigate = useNavigate();
   const {
     display,
     notifications,
@@ -315,7 +329,34 @@ function SettingsPage() {
           </Button>
         </div>
 
-        <div className="grid gap-6">
+        <Tabs 
+          value={tab || 'general'} 
+          onValueChange={(value) => {
+            navigate({ search: { tab: value as SettingsTab } });
+          }}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="general" className="gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">General</span>
+            </TabsTrigger>
+            <TabsTrigger value="data" className="gap-2">
+              <Database className="h-4 w-4" />
+              <span className="hidden sm:inline">Data</span>
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="gap-2">
+              <Wrench className="h-4 w-4" />
+              <span className="hidden sm:inline">Integrations</span>
+            </TabsTrigger>
+            <TabsTrigger value="about" className="gap-2">
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">About</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* General Tab */}
+          <TabsContent value="general" className="space-y-6">
           {/* Theme & Display Settings */}
           <div className="border rounded-lg p-6 space-y-6">
             <div className="flex items-center gap-3">
@@ -603,7 +644,10 @@ function SettingsPage() {
               </div>
             </div>
           </div>
+          </TabsContent>
 
+          {/* Data Tab */}
+          <TabsContent value="data" className="space-y-6">
           {/* Data & View Settings */}
           <div className="border rounded-lg p-6 space-y-6">
             <div className="flex items-center gap-3">
@@ -816,6 +860,99 @@ function SettingsPage() {
             </div>
           </div>
 
+          {/* Documents Section */}
+          <div className="border rounded-lg p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Documents</h2>
+                <p className="text-sm text-muted-foreground">
+                  Manage document deletion and recovery settings
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 pl-[52px]">
+              {/* Auto Delete Days */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Auto Delete After (Days)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently delete documents after this many days
+                  </p>
+                </div>
+                <Select
+                  value={String(documents.autoDeleteDays)}
+                  onValueChange={(value) => {
+                    const days = Number.parseInt(value, 10);
+                    updateDocuments({ autoDeleteDays: days });
+                    toast.success('Auto Delete Setting Updated', {
+                      description: `Documents will be permanently deleted after ${days} days`,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 day</SelectItem>
+                    <SelectItem value="3">3 days</SelectItem>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="14">14 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                    <SelectItem value="60">60 days</SelectItem>
+                    <SelectItem value="90">90 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Recently Deleted Days */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label>Show Recently Deleted (Days)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display deleted documents within this timeframe
+                  </p>
+                </div>
+                <Select
+                  value={String(documents.recentlyDeletedDays)}
+                  onValueChange={(value) => {
+                    const days = Number.parseInt(value, 10);
+                    updateDocuments({ recentlyDeletedDays: days });
+                    toast.success('Recently Deleted Display Updated', {
+                      description: `Showing deleted documents from the last ${days} days`,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 day</SelectItem>
+                    <SelectItem value="3">3 days</SelectItem>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="14">14 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="rounded-lg bg-muted p-4">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Note:</strong> Documents are soft-deleted when
+                  you click the trash icon. They remain recoverable in the "Recently Deleted" tab
+                  until the auto-delete period expires. After that, they are permanently removed
+                  from the database.
+                </p>
+              </div>
+            </div>
+          </div>
+          </TabsContent>
+
+          {/* Integrations Tab */}
+          <TabsContent value="integrations" className="space-y-6">
           {/* Coding Platforms Integration Section */}
           <div className="border rounded-lg p-6 space-y-6">
             <div className="flex items-center gap-3">
@@ -1014,97 +1151,10 @@ function SettingsPage() {
               </div>
             </div>
           </div>
+          </TabsContent>
 
-          {/* Documents Section */}
-          <div className="border rounded-lg p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold">Documents</h2>
-                <p className="text-sm text-muted-foreground">
-                  Manage document deletion and recovery settings
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4 pl-[52px]">
-              {/* Auto Delete Days */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>Auto Delete After (Days)</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently delete documents after this many days
-                  </p>
-                </div>
-                <Select
-                  value={String(documents.autoDeleteDays)}
-                  onValueChange={(value) => {
-                    const days = Number.parseInt(value, 10);
-                    updateDocuments({ autoDeleteDays: days });
-                    toast.success('Auto Delete Setting Updated', {
-                      description: `Documents will be permanently deleted after ${days} days`,
-                    });
-                  }}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 day</SelectItem>
-                    <SelectItem value="3">3 days</SelectItem>
-                    <SelectItem value="7">7 days</SelectItem>
-                    <SelectItem value="14">14 days</SelectItem>
-                    <SelectItem value="30">30 days</SelectItem>
-                    <SelectItem value="60">60 days</SelectItem>
-                    <SelectItem value="90">90 days</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Recently Deleted Days */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>Show Recently Deleted (Days)</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Display deleted documents within this timeframe
-                  </p>
-                </div>
-                <Select
-                  value={String(documents.recentlyDeletedDays)}
-                  onValueChange={(value) => {
-                    const days = Number.parseInt(value, 10);
-                    updateDocuments({ recentlyDeletedDays: days });
-                    toast.success('Recently Deleted Display Updated', {
-                      description: `Showing deleted documents from the last ${days} days`,
-                    });
-                  }}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 day</SelectItem>
-                    <SelectItem value="3">3 days</SelectItem>
-                    <SelectItem value="7">7 days</SelectItem>
-                    <SelectItem value="14">14 days</SelectItem>
-                    <SelectItem value="30">30 days</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="rounded-lg bg-muted p-4">
-                <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">Note:</strong> Documents are soft-deleted when
-                  you click the trash icon. They remain recoverable in the "Recently Deleted" tab
-                  until the auto-delete period expires. After that, they are permanently removed
-                  from the database.
-                </p>
-              </div>
-            </div>
-          </div>
-
+          {/* About Tab */}
+          <TabsContent value="about" className="space-y-6">
           {/* About Section */}
           <div className="border rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-3">
@@ -1281,7 +1331,8 @@ function SettingsPage() {
               ))}
             </div>
           </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialogs */}
