@@ -242,7 +242,8 @@ export function URLImportDialog({ open, onOpenChange, onImport }: URLImportDialo
                 </Badge>
               </div>
 
-              <div className="border rounded-lg divide-y max-h-[300px] overflow-y-auto">
+              <div className="border rounded-lg max-h-[280px] overflow-hidden">
+                <div className="divide-y h-full max-h-[280px] overflow-y-auto">
                 {fieldConfig.map(({ key, label, getValue }) => {
                   const value = getValue(extractedData);
                   if (!value) return null;
@@ -250,21 +251,24 @@ export function URLImportDialog({ open, onOpenChange, onImport }: URLImportDialo
                   return (
                     <div
                       key={key}
-                      className="flex items-start gap-3 p-3 hover:bg-muted/50 cursor-pointer"
+                      className="flex items-start gap-3 py-3 pl-3 pr-4 hover:bg-muted/50 cursor-pointer"
                       onClick={() => toggleField(key)}
                     >
                       <Checkbox
                         checked={selectedFields.has(key)}
                         onCheckedChange={() => toggleField(key)}
-                        className="mt-0.5"
+                        className="mt-0.5 shrink-0"
                       />
-                      <div className="flex-1 min-w-0">
+                      <div className="overflow-hidden">
                         <div className="text-sm font-medium">{label}</div>
-                        <div className="text-sm text-muted-foreground truncate">{value}</div>
+                        <div className="text-sm text-muted-foreground truncate max-w-[320px]">
+                          {value}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+                </div>
               </div>
 
               {!extractedData.position && !extractedData.companyName && (

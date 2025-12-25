@@ -42,6 +42,27 @@ interface JobBoardPattern {
  */
 const JOB_BOARD_PATTERNS: JobBoardPattern[] = [
   {
+    domain: 'github.careers',
+    name: 'GitHub',
+    selectors: {
+      title: ['h1', '.job-title', '[class*="title"]'],
+      company: ['.company-name'],
+      location: ['[class*="location"]', '.location'],
+      salary: ['[class*="salary"]', '[class*="compensation"]'],
+      description: ['.job-description', '[class*="description"]', '#job-description'],
+    },
+  },
+  {
+    domain: 'icims.com',
+    name: 'iCIMS',
+    selectors: {
+      title: ['h1', '.iCIMS_Header', '.job-title'],
+      company: ['.iCIMS_CompanyName', '.company-name'],
+      location: ['.iCIMS_JobLocation', '.location'],
+      description: ['.iCIMS_JobContent', '.job-description'],
+    },
+  },
+  {
     domain: 'linkedin.com',
     name: 'LinkedIn',
     selectors: {
@@ -135,17 +156,50 @@ export function parseSalary(salaryText: string): {
 } {
   if (!salaryText) return {};
 
-  // Clean the text
-  const cleanText = salaryText.replace(/,/g, '').toLowerCase();
-
-  // Currency detection
+  // Currency detection (before cleaning)
   let currency = 'USD';
-  if (cleanText.includes('£') || cleanText.includes('gbp')) currency = 'GBP';
-  else if (cleanText.includes('€') || cleanText.includes('eur')) currency = 'EUR';
-  else if (cleanText.includes('cad') || cleanText.includes('c$')) currency = 'CAD';
-  else if (cleanText.includes('aud') || cleanText.includes('a$')) currency = 'AUD';
+  const lowerText = salaryText.toLowerCase();
+  if (lowerText.includes('£') || lowerText.includes('gbp')) currency = 'GBP';
+  else if (lowerText.includes('€') || lowerText.includes('eur')) currency = 'EUR';
+  else if (lowerText.includes('cad') || /c\s*\$/i.test(salaryText)) currency = 'CAD';
+  else if (lowerText.includes('aud') || /a\s*\$/i.test(salaryText)) currency = 'AUD';
+  else if (lowerText.includes('usd') || salaryText.includes('$')) currency = 'USD';
 
-  // Extract numbers
+  // Clean the text - remove currency symbols and commas
+  const cleanText = salaryText.replace(/[,$£€]/g, '').toLowerCase();
+
+  // Try to match salary patterns like "$107,700.00 - $285,900.00" or "107700 - 285900"
+  // Handle both integer and decimal formats
+  const rangeMatch = cleanText.match(/(\d+(?:\.\d+)?)\s*(?:k)?\s*(?:-|to|–|—)\s*(?:usd\s*)?\$?\s*(\d+(?:\.\d+)?)\s*(?:k)?/i);
+  
+  if (rangeMatch) {
+    const parseNumber = (str: string, hasK: boolean): number => {
+      const num = parseFloat(str);
+      // If the number has decimals like 107700.00, it's already full amount
+      // If it's like 107.7k, multiply by 1000
+      if (hasK) return num * 1000;
+      // If number is small (< 1000) and no 'k', might be in thousands
+      return num;
+    };
+    
+    const hasK1 = cleanText.slice(0, cleanText.indexOf(rangeMatch[2])).includes('k');
+    const hasK2 = cleanText.slice(cleanText.indexOf(rangeMatch[2])).includes('k');
+    
+    let min = parseNumber(rangeMatch[1], hasK1);
+    let max = parseNumber(rangeMatch[2], hasK2);
+    
+    // Handle annual vs hourly
+    const isHourly = cleanText.includes('hour') || cleanText.includes('/hr') || cleanText.includes('per hr');
+    const multiplier = isHourly ? 2080 : 1;
+    
+    return {
+      min: Math.round(min * multiplier),
+      max: Math.round(max * multiplier),
+      currency,
+    };
+  }
+
+  // Extract numbers as fallback
   const numbers = cleanText.match(/\d+(?:\.\d+)?(?:k)?/g);
   if (!numbers || numbers.length === 0) return {};
 
@@ -179,13 +233,21 @@ export function parseSalary(salaryText: string): {
 export function detectWorkType(text: string): 'remote' | 'hybrid' | 'onsite' | undefined {
   const lowerText = text.toLowerCase();
 
-  if (lowerText.includes('fully remote') || lowerText.includes('100% remote') || lowerText.includes('work from home')) {
+  // Check for explicit remote indicators
+  if (
+    lowerText.includes('fully remote') || 
+    lowerText.includes('100% remote') || 
+    lowerText.includes('work from home') ||
+    lowerText.includes('remote-first') ||
+    /remote\s*:\s*yes/i.test(text) ||
+    /\bremote,\s*\w/i.test(text) // "Remote, United States" pattern
+  ) {
     return 'remote';
   }
-  if (lowerText.includes('hybrid') || lowerText.includes('flexible')) {
+  if (lowerText.includes('hybrid') || lowerText.includes('flexible location')) {
     return 'hybrid';
   }
-  if (lowerText.includes('on-site') || lowerText.includes('onsite') || lowerText.includes('in-office')) {
+  if (lowerText.includes('on-site') || lowerText.includes('onsite') || lowerText.includes('in-office') || lowerText.includes('in office')) {
     return 'onsite';
   }
   if (lowerText.includes('remote')) {
@@ -197,21 +259,40 @@ export function detectWorkType(text: string): 'remote' | 'hybrid' | 'onsite' | u
 
 /**
  * Detect employment type from text
+ * Prioritizes explicit labels like "Employment Type: Full Time" over general mentions
  */
 export function detectEmploymentType(text: string): 'full-time' | 'part-time' | 'contract' | 'internship' | undefined {
-  const lowerText = text.toLowerCase();
+  // First, check for explicit employment type labels (most reliable)
+  const explicitPatterns = [
+    { pattern: /employment\s*type[:\s]*(full[\s-]?time)/i, type: 'full-time' as const },
+    { pattern: /employment\s*type[:\s]*(part[\s-]?time)/i, type: 'part-time' as const },
+    { pattern: /employment\s*type[:\s]*(contract|contractor)/i, type: 'contract' as const },
+    { pattern: /employment\s*type[:\s]*(intern|internship)/i, type: 'internship' as const },
+    { pattern: /job\s*type[:\s]*(full[\s-]?time)/i, type: 'full-time' as const },
+    { pattern: /job\s*type[:\s]*(part[\s-]?time)/i, type: 'part-time' as const },
+    { pattern: /job\s*type[:\s]*(contract)/i, type: 'contract' as const },
+    { pattern: /job\s*type[:\s]*(intern)/i, type: 'internship' as const },
+  ];
 
-  if (lowerText.includes('intern') || lowerText.includes('internship')) {
-    return 'internship';
+  for (const { pattern, type } of explicitPatterns) {
+    if (pattern.test(text)) {
+      return type;
+    }
   }
-  if (lowerText.includes('contract') || lowerText.includes('contractor') || lowerText.includes('freelance')) {
-    return 'contract';
+
+  // Check for position-level indicators (less reliable, but still useful)
+  if (/\b(?:full[\s-]?time)\b/i.test(text) && !/internship/i.test(text.slice(0, 500))) {
+    return 'full-time';
   }
-  if (lowerText.includes('part-time') || lowerText.includes('part time')) {
+  if (/\b(?:part[\s-]?time)\b/i.test(text)) {
     return 'part-time';
   }
-  if (lowerText.includes('full-time') || lowerText.includes('full time') || lowerText.includes('permanent')) {
-    return 'full-time';
+  if (/\b(?:contract(?:or)?|freelance)\b/i.test(text) && !/full[\s-]?time/i.test(text.slice(0, 500))) {
+    return 'contract';
+  }
+  // Only return internship if it's clearly in the title/header area, not in qualifications
+  if (/\b(?:internship|intern\b)(?!.*experience|.*qualif)/i.test(text.slice(0, 300))) {
+    return 'internship';
   }
 
   return undefined;
@@ -273,6 +354,48 @@ function extractFromMetaTags(html: string): Partial<ExtractedJobData> {
       if (content) {
         (data as Record<string, unknown>)[field] = content;
         break;
+      }
+    }
+  }
+
+  // Split combined position/company patterns like "Job Title | Company Name" or "Job Title at Company"
+  if (data.position && !data.companyName) {
+    const combinedPatterns = [
+      /^(.+?)\s*\|\s*(.+?)$/,  // "Job Title | Company"
+      /^(.+?)\s+at\s+(.+?)$/i, // "Job Title at Company"
+      /^(.+?)\s*[-–—]\s*(.+?)$/, // "Job Title - Company"
+    ];
+    
+    for (const pattern of combinedPatterns) {
+      const match = data.position.match(pattern);
+      if (match) {
+        const [, possibleTitle, possibleCompany] = match;
+        // Clean up and validate
+        const cleanTitle = possibleTitle.trim();
+        const cleanCompany = possibleCompany.trim();
+        
+        // Only split if both parts look reasonable
+        if (cleanTitle.length > 2 && cleanCompany.length > 1) {
+          data.position = cleanTitle;
+          data.companyName = cleanCompany;
+          break;
+        }
+      }
+    }
+  }
+  
+  // If position still contains location info like "in United States", try to clean it
+  if (data.position) {
+    const locationInTitle = data.position.match(/^(.+?)\s+in\s+([\w\s]+?)$/i);
+    if (locationInTitle) {
+      const [, cleanTitle, locationPart] = locationInTitle;
+      // Check if location part looks like a country/state, not part of the job title
+      const locationIndicators = ['united states', 'usa', 'uk', 'canada', 'remote', 'california', 'new york', 'texas', 'florida'];
+      if (locationIndicators.some(loc => locationPart.toLowerCase().includes(loc))) {
+        data.position = cleanTitle.trim();
+        if (!data.location) {
+          data.location = locationPart.trim();
+        }
       }
     }
   }
@@ -481,7 +604,7 @@ export async function fetchJobFromUrl(url: string): Promise<ExtractedJobData> {
     }
 
     // Detect work type and employment type from all available text
-    const fullText = [result.position, result.location, result.jobDescription]
+    const fullText = [result.position, result.location, result.jobDescription, html]
       .filter(Boolean)
       .join(' ');
 
@@ -490,6 +613,98 @@ export async function fetchJobFromUrl(url: string): Promise<ExtractedJobData> {
     }
     if (!result.employmentType) {
       result.employmentType = detectEmploymentType(fullText);
+    }
+
+    // Try to extract salary from full HTML if not found yet
+    if (!result.salaryMin) {
+      // Look for common salary patterns in the HTML
+      const salaryPatterns = [
+        /(?:salary|compensation|pay)(?:\s*range)?[:\s]*\$?\s*([\d,]+(?:\.\d+)?)\s*(?:-|to|–|—)\s*\$?\s*([\d,]+(?:\.\d+)?)/gi,
+        /\$\s*([\d,]+(?:\.\d+)?)\s*(?:-|to|–|—)\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(?:\/yr|\/year|annually|per year)?/gi,
+        /USD\s*\$?\s*([\d,]+(?:\.\d+)?)\s*(?:-|to|–|—)\s*USD?\s*\$?\s*([\d,]+(?:\.\d+)?)/gi,
+      ];
+      
+      for (const pattern of salaryPatterns) {
+        const match = pattern.exec(html);
+        if (match) {
+          const salaryText = match[0];
+          const salary = parseSalary(salaryText);
+          if (salary.min && salary.max) {
+            result.salaryMin = salary.min;
+            result.salaryMax = salary.max;
+            result.salaryCurrency = salary.currency || 'USD';
+            break;
+          }
+        }
+      }
+    }
+
+    // Try to extract location from common patterns if still UNAVAILABLE or missing
+    if (!result.location || result.location.toUpperCase() === 'UNAVAILABLE') {
+      // Look for explicit location patterns in structured data
+      const locationPatterns = [
+        /Locations?:([\w\s,]+?)(?:Category|Job Type|Remote|Employment|$)/i,
+        /in this role you can work from[:\s]*(?:Remote,?\s*)?([\w\s,]+?)(?:\.|Overview|About|$)/i,
+        /(?:Remote,\s*)([\w\s]+?)(?:\s*Category|Job|$)/i,
+        /work\s*location[:\s]*([\w\s,]+?)(?:\.|$)/i,
+      ];
+      
+      for (const pattern of locationPatterns) {
+        const match = pattern.exec(html);
+        if (match && match[1]) {
+          let location = match[1].trim();
+          // Clean up common suffixes
+          location = location.replace(/\s*(Category|Job Type|Remote|Employment Type).*$/i, '').trim();
+          if (location && location.length > 2 && location.length < 100 && !/^(Category|Job|Remote|Employment)$/i.test(location)) {
+            result.location = location;
+            break;
+          }
+        }
+      }
+    }
+
+    // Post-process: Split combined position/company if they're the same or contain separators
+    if (result.position) {
+      // Check if position and company are the same (both got set to the combined value)
+      if (result.companyName && result.position === result.companyName) {
+        result.companyName = undefined; // Clear it so we can extract properly
+      }
+      
+      // Split combined patterns like "Software Engineer in United States | GitHub, Inc."
+      const combinedPatterns = [
+        /^(.+?)\s*\|\s*(.+?)$/,  // "Job Title | Company"
+        /^(.+?)\s+at\s+(.+?)$/i, // "Job Title at Company"
+      ];
+      
+      for (const pattern of combinedPatterns) {
+        const match = result.position.match(pattern);
+        if (match) {
+          let [, possibleTitle, possibleCompany] = match;
+          possibleTitle = possibleTitle.trim();
+          possibleCompany = possibleCompany.trim();
+          
+          if (possibleTitle.length > 2 && possibleCompany.length > 1) {
+            result.position = possibleTitle;
+            if (!result.companyName) {
+              result.companyName = possibleCompany;
+            }
+            break;
+          }
+        }
+      }
+      
+      // Clean location from title like "Software Engineer in United States"
+      const locationInTitle = result.position.match(/^(.+?)\s+in\s+([\w\s]+)$/i);
+      if (locationInTitle) {
+        const [, cleanTitle, locationPart] = locationInTitle;
+        const locationIndicators = ['united states', 'usa', 'uk', 'canada', 'remote', 'california', 'new york', 'texas', 'florida', 'germany', 'india', 'australia'];
+        if (locationIndicators.some(loc => locationPart.toLowerCase().includes(loc))) {
+          result.position = cleanTitle.trim();
+          if (!result.location || result.location.toUpperCase() === 'UNAVAILABLE') {
+            result.location = locationPart.trim();
+          }
+        }
+      }
     }
 
     // Clean up job description (remove excessive whitespace, limit length)
