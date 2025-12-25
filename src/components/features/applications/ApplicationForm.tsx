@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText, Plus, Search, X } from 'lucide-react';
+import { CalendarIcon, FileText, Globe, Plus, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -46,8 +46,10 @@ import {
   PRIORITY_LEVELS,
   WORK_TYPES,
 } from '@/lib/constants';
+import type { ExtractedJobData } from '@/lib/url-import';
 import { useApplicationsStore, useDocumentsStore } from '@/stores';
 import type { Application, Document } from '@/types';
+import { URLImportDialog } from './URLImportDialog';
 
 // Form schema based on application schema
 const applicationFormSchema = z.object({
@@ -98,6 +100,7 @@ export function ApplicationForm({
   const [uploadedFile, setUploadedFile] = useState<{ file: File; content: string } | null>(null);
   const [selectedDocType, setSelectedDocType] = useState<Document['type']>('resume');
   const [isUploading, setIsUploading] = useState(false);
+  const [urlImportDialogOpen, setUrlImportDialogOpen] = useState(false);
 
   // Document search and filter state
   const [documentSearch, setDocumentSearch] = useState('');
@@ -277,6 +280,51 @@ export function ApplicationForm({
     }
   };
 
+  const handleUrlImport = (data: ExtractedJobData, selectedFields: Set<string>) => {
+    // Populate form fields based on selected fields from URL import
+    if (selectedFields.has('position') && data.position) {
+      form.setValue('position', data.position, { shouldDirty: true });
+    }
+    if (selectedFields.has('companyName') && data.companyName) {
+      form.setValue('companyName', data.companyName, { shouldDirty: true });
+    }
+    if (selectedFields.has('location') && data.location) {
+      form.setValue('location', data.location, { shouldDirty: true });
+    }
+    if (selectedFields.has('workType') && data.workType) {
+      form.setValue('workType', data.workType, { shouldDirty: true });
+    }
+    if (selectedFields.has('employmentType') && data.employmentType) {
+      form.setValue('employmentType', data.employmentType, { shouldDirty: true });
+    }
+    if (selectedFields.has('salary')) {
+      if (data.salaryMin) {
+        form.setValue('salaryMin', data.salaryMin, { shouldDirty: true });
+      }
+      if (data.salaryMax) {
+        form.setValue('salaryMax', data.salaryMax, { shouldDirty: true });
+      }
+      if (data.salaryCurrency) {
+        form.setValue('salaryCurrency', data.salaryCurrency, { shouldDirty: true });
+      }
+    }
+    if (selectedFields.has('jobUrl') && data.jobUrl) {
+      form.setValue('jobUrl', data.jobUrl, { shouldDirty: true });
+    }
+    if (selectedFields.has('jobDescription') && data.jobDescription) {
+      // Append to notes if there's already content, otherwise set it
+      const currentNotes = form.getValues('notes') || '';
+      const newNotes = currentNotes 
+        ? `${currentNotes}\n\n--- Job Description ---\n${data.jobDescription}`
+        : data.jobDescription;
+      form.setValue('notes', newNotes, { shouldDirty: true });
+    }
+
+    toast.success('Job data imported', {
+      description: `${selectedFields.size} fields populated from URL`,
+    });
+  };
+
   const handleSubmit = (values: ApplicationFormValues) => {
     // Transform form values to Application format
     const applicationData: Partial<Application> = {
@@ -315,9 +363,30 @@ export function ApplicationForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* URL Import Dialog */}
+        <URLImportDialog
+          open={urlImportDialogOpen}
+          onOpenChange={setUrlImportDialogOpen}
+          onImport={handleUrlImport}
+        />
+
         {/* Basic Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Basic Information</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Basic Information</h3>
+            {!application && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setUrlImportDialogOpen(true)}
+                className="gap-2"
+              >
+                <Globe className="h-4 w-4" />
+                Import from URL
+              </Button>
+            )}
+          </div>
 
           <FormField
             control={form.control}
